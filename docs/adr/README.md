@@ -14,22 +14,24 @@ being asked to defend a design out loud; see [../learning-track.md](../learning-
 
 ## Index
 
-| # | Title | Status |
-| --- | --- | --- |
-| [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
-| [0002](0002-use-supabase-as-the-primary-datastore.md) | Use Supabase as the primary datastore | Accepted |
-| [0003](0003-keep-business-logic-in-packages-core.md) | Keep business logic in `packages/core` | Accepted |
-| [0004](0004-treat-region-as-a-first-class-dimension.md) | Treat region as a first-class dimension | Accepted |
-| [0005](0005-choose-a-license.md) | Choose a licence | Proposed |
+| #                                                                        | Title                                                        | Status   |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------ | -------- |
+| [0001](0001-record-architecture-decisions.md)                            | Record architecture decisions                                | Accepted |
+| [0002](0002-use-supabase-as-the-primary-datastore.md)                    | Use Supabase as the primary datastore                        | Accepted |
+| [0003](0003-keep-business-logic-in-packages-core.md)                     | Keep business logic in `packages/core`                       | Accepted |
+| [0004](0004-treat-region-as-a-first-class-dimension.md)                  | Treat region as a first-class dimension                      | Accepted |
+| [0005](0005-choose-a-license.md)                                         | Choose a licence                                             | Proposed |
+| [0006](0006-use-npm-workspaces-for-the-monorepo.md)                      | Use npm workspaces for the monorepo                          | Accepted |
+| [0007](0007-enforce-google-typescript-style-with-eslint-and-prettier.md) | Enforce the Google TypeScript style with ESLint and Prettier | Accepted |
 
 ## Status lifecycle
 
-| Status | Meaning |
-| --- | --- |
-| **Proposed** | Written, not yet decided. Open for argument, including from your future self. |
-| **Accepted** | Decided. The codebase is expected to reflect it. |
-| **Superseded by ADR-NNNN** | A later decision replaced it. The record stays, unedited. |
-| **Deprecated** | No longer relevant — the thing it decided about is gone. |
+| Status                     | Meaning                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------- |
+| **Proposed**               | Written, not yet decided. Open for argument, including from your future self. |
+| **Accepted**               | Decided. The codebase is expected to reflect it.                              |
+| **Superseded by ADR-NNNN** | A later decision replaced it. The record stays, unedited.                     |
+| **Deprecated**             | No longer relevant — the thing it decided about is gone.                      |
 
 ## Rules
 
