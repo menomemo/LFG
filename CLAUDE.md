@@ -20,26 +20,59 @@ system-design practice and the full development lifecycle, tracked in
 
 ## Current state
 
-- **Phase 1 · Foundation.** No application code has been written yet; the repository
-  contains documentation only.
+**Always read [docs/progress.md](docs/progress.md) first.** It is the one document that
+records where the project actually is, and it is more current than this section.
+
+- **Phase 1 · Foundation.** Iteration zero is done: npm workspace, strict TypeScript,
+  Google-style lint and format, the ADR-0003 boundary rules, commitlint, CI, and
+  `@lfg/core` with its first tested modules. No user-facing code yet.
+- Next: the walking skeleton — one table with RLS and its isolation test, one `core`
+  function, one page, deployed. No features.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.
 - Update this section when a phase gate is passed, and [docs/roadmap.md](docs/roadmap.md)
   with it.
 
+## Finishing a module
+
+**Every time a module is finished, update [docs/progress.md](docs/progress.md) in the same
+pull request** — the Gantt chart, the status table, the "Right now" block and the date. The
+protocol is at the bottom of that file. The point is that the whole picture stays visible:
+which of the 24 tracked items are done, which phase we are in, and which gate is still
+open. A module is finished when its gate-relevant behaviour works and is tested, not when
+it compiles.
+
+Keep it honest in both directions. An item that slipped moves; an item that turned out
+unnecessary is struck, not left quietly planned.
+
+## Commands
+
+| Command              | Does                                                                            |
+| -------------------- | ------------------------------------------------------------------------------- |
+| `npm run check`      | Format, lint, types, tests — what CI runs, in CI's order. Run before committing |
+| `npm run format:fix` | Prettier writes, Markdown included                                              |
+| `npm run lint`       | ESLint, including the `packages/core` boundary rules                            |
+| `npm run typecheck`  | `tsc --noEmit` across every workspace                                           |
+| `npm run test`       | Vitest once; `test:watch` to watch                                              |
+
+Setup, and the table of which standard is enforced by which tool, is in
+[docs/development.md](docs/development.md).
+
 ## Documentation map
 
-| Need | Document |
-| --- | --- |
-| Structure and why it is that way | [docs/architecture.md](docs/architecture.md) |
-| What a module should do | [docs/product-spec.md](docs/product-spec.md) |
-| Tables, fields, conventions | [docs/data-model.md](docs/data-model.md) |
-| Market rules, visas, CV formats | [docs/regions.md](docs/regions.md) |
-| Phases and gates | [docs/roadmap.md](docs/roadmap.md) |
-| Style, tests, commits, review | [docs/code-standards.md](docs/code-standards.md) |
-| Why a decision was made | [docs/adr/](docs/adr/README.md) |
-| Shipping, compliance, growth | [docs/launch.md](docs/launch.md) |
+| Need                             | Document                                         |
+| -------------------------------- | ------------------------------------------------ |
+| Structure and why it is that way | [docs/architecture.md](docs/architecture.md)     |
+| What a module should do          | [docs/product-spec.md](docs/product-spec.md)     |
+| Tables, fields, conventions      | [docs/data-model.md](docs/data-model.md)         |
+| Market rules, visas, CV formats  | [docs/regions.md](docs/regions.md)               |
+| Phases and gates                 | [docs/roadmap.md](docs/roadmap.md)               |
+| Where the project actually is    | [docs/progress.md](docs/progress.md)             |
+| Setup and commands               | [docs/development.md](docs/development.md)       |
+| Style, tests, commits, review    | [docs/code-standards.md](docs/code-standards.md) |
+| Why a decision was made          | [docs/adr/](docs/adr/README.md)                  |
+| Shipping, compliance, growth     | [docs/launch.md](docs/launch.md)                 |
 
 Documentation rules, including the ADR-versus-architecture split, are in
 [docs/README.md](docs/README.md).

@@ -9,7 +9,7 @@ researches every company, tailors every résumé to its source evidence, and con
 things you learn along the way into interview reps you actually do.
 
 [![Status: pre-alpha](https://img.shields.io/badge/status-pre--alpha-orange)](docs/roadmap.md)
-[![License: AGPL--3.0 (proposed)](https://img.shields.io/badge/license-AGPL--3.0%20(proposed)-blue)](docs/adr/0005-choose-a-license.md)
+[![License: AGPL-3.0 proposed](https://img.shields.io/badge/license-AGPL--3.0%20%28proposed%29-blue)](docs/adr/0005-choose-a-license.md)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](docs/code-standards.md)
 [![Built in public](https://img.shields.io/badge/built%20in-public-8957e5)](docs/launch.md)
 
@@ -53,21 +53,21 @@ help with the first:
 
 Doing all three well for one application takes hours, so people either apply carefully to
 very few roles or spray hundreds of generic ones. LFG's bet is that an AI-assisted
-pipeline collapses the cost of the careful version, so that *careful* and *at volume* stop
+pipeline collapses the cost of the careful version, so that _careful_ and _at volume_ stop
 being a trade-off. The second bet is that every one of those three activities produces
 evidence, and that evidence — not self-assessment — is what should drive what you practise
 next.
 
 **Design principles**
 
-| Principle | What it means in practice |
-| --- | --- |
-| Evidence first | Every score and claim links back to the artefact it came from |
-| No fabrication | Résumé rewrites may reorder and re-emphasise, never invent; each bullet carries a `source_bullet_id` |
-| Lawful collection | Public APIs and user-pasted input only — no LinkedIn scraping |
-| Logic decoupled from the runtime | Business rules live in `packages/core`; the agent runtime only adapts |
-| Cost bounded by design | Tiered models, cached results, per-plugin daily caps, every call metered |
-| Region-aware | Visa, language, résumé format and sourcing channels are first-class, not an afterthought |
+| Principle                        | What it means in practice                                                                            |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Evidence first                   | Every score and claim links back to the artefact it came from                                        |
+| No fabrication                   | Résumé rewrites may reorder and re-emphasise, never invent; each bullet carries a `source_bullet_id` |
+| Lawful collection                | Public APIs and user-pasted input only — no LinkedIn scraping                                        |
+| Logic decoupled from the runtime | Business rules live in `packages/core`; the agent runtime only adapts                                |
+| Cost bounded by design           | Tiered models, cached results, per-plugin daily caps, every call metered                             |
+| Region-aware                     | Visa, language, résumé format and sourcing channels are first-class, not an afterthought             |
 
 ## What it does
 
@@ -90,7 +90,7 @@ Status key: ✅ shipped · 🚧 in progress · 📋 planned
 - 📋 **Insight library** — capture anything in three seconds from your phone's share sheet;
   it gets tagged, deduped, turned into a drill, and pushed back to you before the
   interview where it's relevant.
-- 📋 **Portfolio risk dashboard** — concentration (industry *and* region), pipeline
+- 📋 **Portfolio risk dashboard** — concentration (industry _and_ region), pipeline
   coverage, stage conversion, sponsorship coverage, plus a weekly rebalance report.
 
 Full behavioural spec: [`docs/product-spec.md`](docs/product-spec.md).
@@ -100,11 +100,11 @@ Full behavioural spec: [`docs/product-spec.md`](docs/product-spec.md).
 LFG is built for someone searching across several countries at once, which is why region
 is a modelled dimension rather than a text field.
 
-| Wave | Markets | Why grouped |
-| --- | --- | --- |
-| 1 | 🇬🇧 United Kingdom (home base), 🇮🇪 Ireland, 🇪🇪 Estonia | English-language JDs, overlapping ATS platforms, EU/UK-style CV |
-| 1 | 🇯🇵 Japan | Separate track: different résumé artefacts, agency-led funnel, language gating |
-| 2 | 🇩🇪 Germany | Added once the language-requirement handling from the Japan track generalises |
+| Wave | Markets                                               | Why grouped                                                                    |
+| ---- | ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| 1    | 🇬🇧 United Kingdom (home base), 🇮🇪 Ireland, 🇪🇪 Estonia | English-language JDs, overlapping ATS platforms, EU/UK-style CV                |
+| 1    | 🇯🇵 Japan                                              | Separate track: different résumé artefacts, agency-led funnel, language gating |
+| 2    | 🇩🇪 Germany                                            | Added once the language-requirement handling from the Japan track generalises  |
 
 Per-market visa routes, sourcing channels, résumé formats and etiquette:
 [`docs/regions.md`](docs/regions.md).
@@ -147,49 +147,61 @@ code. The reasoning behind each of these boundaries is recorded in
 
 ## Tech stack
 
-| Layer | Choice | Notes |
-| --- | --- | --- |
-| Web | Next.js, ECharts, dnd-kit | Board, radar charts, Sankey flow export |
-| Mobile | Expo (React Native) | Share-sheet capture, push, offline queue |
-| Data | Supabase — Postgres, pgvector, Auth, RLS | Every table carries `user_id` with RLS on |
-| Business logic | TypeScript `packages/core` | Shared by web, mobile and plugins |
-| Agent runtime | DeepSeek Harness (pinned version) | Developer preview; adapter layer isolates it |
-| Documents | Typst | Region-specific résumé PDF templates |
-| Scheduling | Runtime scheduler plugins, Supabase cron as fallback | Weekly reports, signal scans, reminders |
+| Layer          | Choice                                               | Notes                                        |
+| -------------- | ---------------------------------------------------- | -------------------------------------------- |
+| Web            | Next.js, ECharts, dnd-kit                            | Board, radar charts, Sankey flow export      |
+| Mobile         | Expo (React Native)                                  | Share-sheet capture, push, offline queue     |
+| Data           | Supabase — Postgres, pgvector, Auth, RLS             | Every table carries `user_id` with RLS on    |
+| Business logic | TypeScript `packages/core`                           | Shared by web, mobile and plugins            |
+| Agent runtime  | DeepSeek Harness (pinned version)                    | Developer preview; adapter layer isolates it |
+| Documents      | Typst                                                | Region-specific résumé PDF templates         |
+| Scheduling     | Runtime scheduler plugins, Supabase cron as fallback | Weekly reports, signal scans, reminders      |
 
 ## Getting started
 
-There is nothing to run yet. Local development instructions — prerequisites, `.env`
-contract, Supabase bootstrap, seed data and test commands — land with Phase 1 and will
-live in [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Node 22.12 or newer, npm 10 or newer, nothing else.
 
-If you want to follow along or give feedback on the design before code exists, start with
-[`docs/architecture.md`](docs/architecture.md) and open an issue.
+```bash
+git clone git@github.com:menomemo/LFG.git
+cd LFG
+npm install
+npm run check
+```
+
+`npm run check` runs format, lint, types and tests — the same four checks CI runs, in the
+same order — and should be green on a fresh clone.
+
+There is still nothing to look at: the only package is `packages/core`, which holds
+business rules and renders nothing. Setup in full, and the table of which standard is
+enforced by which tool, is in [`docs/development.md`](docs/development.md); where the
+project has actually got to is in [`docs/progress.md`](docs/progress.md).
 
 ## Documentation
 
-| Document | What it answers |
-| --- | --- |
-| [docs/README.md](docs/README.md) | Map of all documentation and how it's maintained |
-| [docs/architecture.md](docs/architecture.md) | How the system is built, and why it is built that way |
-| [docs/product-spec.md](docs/product-spec.md) | What each module does, with MVP and later scope |
-| [docs/data-model.md](docs/data-model.md) | Tables, key fields, relationships, conventions |
-| [docs/regions.md](docs/regions.md) | Per-market playbook: visas, channels, CV formats |
-| [docs/roadmap.md](docs/roadmap.md) | Phases, release gates, what "done" means for each |
+| Document                                         | What it answers                                          |
+| ------------------------------------------------ | -------------------------------------------------------- |
+| [docs/README.md](docs/README.md)                 | Map of all documentation and how it's maintained         |
+| [docs/progress.md](docs/progress.md)             | Where the project actually is, as a Gantt chart          |
+| [docs/development.md](docs/development.md)       | Setup, commands, and what enforces which standard        |
+| [docs/architecture.md](docs/architecture.md)     | How the system is built, and why it is built that way    |
+| [docs/product-spec.md](docs/product-spec.md)     | What each module does, with MVP and later scope          |
+| [docs/data-model.md](docs/data-model.md)         | Tables, key fields, relationships, conventions           |
+| [docs/regions.md](docs/regions.md)               | Per-market playbook: visas, channels, CV formats         |
+| [docs/roadmap.md](docs/roadmap.md)               | Phases, release gates, what "done" means for each        |
 | [docs/code-standards.md](docs/code-standards.md) | Google-derived TypeScript style, reviews, commits, tests |
-| [docs/launch.md](docs/launch.md) | Shipping, compliance, distribution and growth |
-| [docs/learning-track.md](docs/learning-track.md) | The system-design and full-lifecycle learning goals |
-| [docs/adr/](docs/adr/README.md) | Architecture decision records |
+| [docs/launch.md](docs/launch.md)                 | Shipping, compliance, distribution and growth            |
+| [docs/learning-track.md](docs/learning-track.md) | The system-design and full-lifecycle learning goals      |
+| [docs/adr/](docs/adr/README.md)                  | Architecture decision records                            |
 
 ## Roadmap
 
-| Phase | Theme | Gate to the next phase |
-| --- | --- | --- |
-| 1 | Foundation — datastore, pipeline board, insight capture, first plugin | Four straight weeks with every application in the system |
-| 2 | Precision applying — research agent, stack inference, tailored résumés, outreach | Five high-effort applications end to end |
-| 3 | Capability — competency framework, radar, FSRS cards, mocks | Radar backed by real evidence, no self-assessment |
-| 4 | Risk — portfolio metrics, signal scanning, weekly report, insight sparring | Two consecutive weekly reports acted on |
-| 5 | Launch — public web signup, subscriptions, then the App Store | 20 active users who are not the author |
+| Phase | Theme                                                                            | Gate to the next phase                                   |
+| ----- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 1     | Foundation — datastore, pipeline board, insight capture, first plugin            | Four straight weeks with every application in the system |
+| 2     | Precision applying — research agent, stack inference, tailored résumés, outreach | Five high-effort applications end to end                 |
+| 3     | Capability — competency framework, radar, FSRS cards, mocks                      | Radar backed by real evidence, no self-assessment        |
+| 4     | Risk — portfolio metrics, signal scanning, weekly report, insight sparring       | Two consecutive weekly reports acted on                  |
+| 5     | Launch — public web signup, subscriptions, then the App Store                    | 20 active users who are not the author                   |
 
 Each gate is "I used it for real for a week", not "the feature exists". Details and the
 reasoning behind the ordering: [`docs/roadmap.md`](docs/roadmap.md).

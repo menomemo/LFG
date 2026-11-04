@@ -28,9 +28,22 @@ than in review.
 
 ## Local development
 
-Not yet possible. Setup instructions — prerequisites, the `.env` contract, Supabase
-bootstrap, seed data, how to run the tests — land here with Phase 1. See
-[docs/roadmap.md](docs/roadmap.md) for timing.
+Node 22.12 or newer and npm 10 or newer. Nothing else.
+
+```bash
+git clone git@github.com:menomemo/LFG.git
+cd LFG
+npm install
+npm run check
+```
+
+`npm run check` runs format, lint, types and tests — the same four checks CI runs, in the
+same order. It should be green on a fresh clone; if it is not, that is a bug worth an
+issue.
+
+There is no application to look at yet: `packages/core` holds the business rules and
+nothing renders. Full setup, every command, and the table of which standard is enforced by
+which tool: [docs/development.md](docs/development.md).
 
 ## Workflow
 
