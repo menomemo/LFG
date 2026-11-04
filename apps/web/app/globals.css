@@ -1,0 +1,147 @@
+:root {
+  --bg: #fbfbfa;
+  --fg: #16161a;
+  --muted: #6b6b76;
+  --line: #e4e4e1;
+  --card: #ffffff;
+  --accent: #2f5fd6;
+  --warn: #a8571b;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #131316;
+    --fg: #ececf0;
+    --muted: #9a9aa4;
+    --line: #2b2b31;
+    --card: #1b1b1f;
+    --accent: #8ab0ff;
+    --warn: #e2a06a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font:
+    15px/1.55 ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 16px 80px;
+}
+
+h1 {
+  font-size: 20px;
+  margin: 0 0 4px;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0 0 28px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+li {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.co {
+  font-weight: 600;
+}
+
+.role,
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stage {
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.ghost {
+  color: var(--warn);
+}
+
+.empty {
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 28px 16px;
+  text-align: center;
+}
+
+form {
+  display: grid;
+  gap: 10px;
+  max-width: 320px;
+}
+
+input {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+}
+
+button {
+  font: inherit;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.linkish {
+  background: none;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 13px;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 13px;
+  margin: 0;
+}
