@@ -1,0 +1,13 @@
+{
+  "name": "@lfg/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Business rules for LFG. Imports no framework, no runtime, no I/O.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}
