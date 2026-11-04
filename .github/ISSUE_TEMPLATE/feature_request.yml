@@ -1,0 +1,73 @@
+name: Feature or design proposal
+description: Propose a capability, or argue with a design decision
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Design critique is the most valuable contribution at this stage. If you think an
+        [ADR](https://github.com/menomemo/LFG/tree/main/docs/adr) got something wrong,
+        this is the right template — each ADR ends with a "what to watch" section, and an
+        argument that one of those signals is already visible is worth a lot.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: >-
+        What is hard today, for whom, in what situation. Not the solution yet.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you propose
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Including doing nothing, and why that is worse.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - New capability
+        - Change to an existing module
+        - Disagreement with an architecture decision (ADR)
+        - Market rule correction (docs/regions.md)
+        - Documentation improvement
+    validations:
+      required: true
+
+  - type: input
+    id: adr
+    attributes:
+      label: Related ADR, if any
+      placeholder: ADR-0004
+
+  - type: checkboxes
+    id: non-goals
+    attributes:
+      label: Non-goals check
+      description: >-
+        These are settled, with reasoning in docs/architecture.md#non-goals. Proposals that
+        require them will be declined — not because they are bad ideas, but because they
+        are not this product.
+      options:
+        - label: >-
+            This does not require auto-submitting applications or sending messages on a
+            user's behalf
+          required: true
+        - label: >-
+            This does not require scraping LinkedIn, automating a login, or working around
+            bot detection
+          required: true
+        - label: >-
+            This does not require a number to be shown without traceable evidence behind it
+          required: true

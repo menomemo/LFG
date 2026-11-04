@@ -1,0 +1,17 @@
+node_modules/
+.next/
+dist/
+build/
+.expo/
+.turbo/
+coverage/
+
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+*.log
+supabase/.temp/
+
+.claude/settings.local.json

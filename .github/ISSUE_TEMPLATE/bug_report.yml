@@ -1,0 +1,75 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        The project is pre-alpha and has no runnable code yet, so bugs in documentation —
+        a wrong market rule, a broken link, a claim that contradicts another document —
+        are entirely in scope and welcome.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you observed, and what you expected instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Documentation
+        - Application pipeline
+        - Company research / résumé tailoring
+        - Outreach
+        - Competency radar
+        - Practice
+        - Insight library
+        - Risk dashboard
+        - Mobile
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: region
+    attributes:
+      label: Market, if the bug is market-specific
+      description: Region-specific rules live in docs/regions.md.
+      options:
+        - Not market-specific
+        - United Kingdom
+        - Ireland
+        - Estonia
+        - Japan
+        - Germany
+        - Another market
+
+  - type: textarea
+    id: data-concern
+    attributes:
+      label: Does this involve incorrect data about a real company, person or visa rule?
+      description: >-
+        Wrong visa information and fabricated résumé content are the highest-severity bugs
+        in this project. Say so here and link the official source if you have it.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Environment and anything else
+      description: Version or commit, browser or device, logs. Please redact personal data.

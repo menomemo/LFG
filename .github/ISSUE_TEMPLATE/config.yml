@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Design critique
+    url: https://github.com/menomemo/LFG/blob/main/docs/architecture.md
+    about: >-
+      The most useful contribution right now. Read the architecture doc and the ADRs, then
+      open a feature/design proposal saying where the reasoning is wrong.
+  - name: Report a security vulnerability
+    url: https://github.com/menomemo/LFG/security/advisories/new
+    about: Never in a public issue. Use private vulnerability reporting.
+  - name: Roadmap and current phase
+    url: https://github.com/menomemo/LFG/blob/main/docs/roadmap.md
+    about: Check whether what you want is already planned, and for which phase.
