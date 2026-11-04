@@ -28,22 +28,26 @@ than in review.
 
 ## Local development
 
-Node 22.12 or newer and npm 10 or newer. Nothing else.
+Node 22.12 or newer, npm 10 or newer, and Docker running for the local Supabase stack.
 
 ```bash
 git clone git@github.com:menomemo/LFG.git
 cd LFG
 npm install
 npm run check
+npm run db:start && npm run dev -w @lfg/web
 ```
 
 `npm run check` runs format, lint, types and tests — the same four checks CI runs, in the
 same order. It should be green on a fresh clone; if it is not, that is a bug worth an
 issue.
 
-There is no application to look at yet: `packages/core` holds the business rules and
-nothing renders. Full setup, every command, and the table of which standard is enforced by
-which tool: [docs/development.md](docs/development.md).
+What exists today is the walking skeleton: sign in at http://localhost:3000 as
+`alice@lfg.test` / `lfg-dev-password` and you get a read-only list. It is there to prove
+the architecture runs end to end, not to be useful yet.
+
+Full setup, every command, and the table of which standard is enforced by which tool:
+[docs/development.md](docs/development.md).
 
 ## Workflow
 

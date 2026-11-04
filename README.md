@@ -159,7 +159,7 @@ code. The reasoning behind each of these boundaries is recorded in
 
 ## Getting started
 
-Node 22.12 or newer, npm 10 or newer, nothing else.
+Node 22.12 or newer, npm 10 or newer, and Docker running for the local database.
 
 ```bash
 git clone git@github.com:menomemo/LFG.git
@@ -168,13 +168,19 @@ npm install
 npm run check
 ```
 
-`npm run check` runs format, lint, types and tests — the same four checks CI runs, in the
-same order — and should be green on a fresh clone.
+```bash
+npm run db:start && npm run dev -w @lfg/web
+```
 
-There is still nothing to look at: the only package is `packages/core`, which holds
-business rules and renders nothing. Setup in full, and the table of which standard is
-enforced by which tool, is in [`docs/development.md`](docs/development.md); where the
-project has actually got to is in [`docs/progress.md`](docs/progress.md).
+Then open http://localhost:3000 and sign in as `alice@lfg.test` / `lfg-dev-password`, a
+seeded local account. You get a read-only list of four applications — the walking skeleton,
+which exists to prove the architecture runs rather than to be useful.
+
+`npm run check` runs format, lint, types and tests, the same four checks CI runs and in the
+same order. `npm run test:db` runs the row-level security isolation suite against the local
+database. Setup in full, and the table of which standard is enforced by which tool, is in
+[`docs/development.md`](docs/development.md); where the project has actually got to is in
+[`docs/progress.md`](docs/progress.md).
 
 ## Documentation
 

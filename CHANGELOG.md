@@ -47,6 +47,26 @@ first release. Nothing is released yet, so everything lives under Unreleased.
 - [docs/progress.md](docs/progress.md): a Gantt chart and status table covering all five
   phases, updated whenever a module is finished
 
+### Added — walking skeleton
+
+- `applications` table, created with row-level security enabled, four policies and
+  `force row level security` in the same migration — never a follow-up
+  ([ADR-0002](docs/adr/0002-use-supabase-as-the-primary-datastore.md))
+- A nine-test isolation suite proving one user cannot read, update, delete or take
+  ownership of another's rows, run by `npm run test:db` and by its own CI job
+- `applications` has no `stage` column: the current stage, days in stage and ghosting are
+  derived in `packages/core` from the append-only `stage_history`
+- `ghosted` removed from the stage set and derived from silence instead, so it reverses
+  itself when a reply arrives rather than needing a row unwritten
+- `@lfg/core` gained `currentStage`, `enteredCurrentStageAt`, `daysInCurrentStage`,
+  `isGhosted` and `parseStageHistory`, with 55 further tests
+- `apps/web`: a Next.js sign-in page and a read-only application list, rendering values
+  derived by `core` from an RLS-protected query that filters by nothing
+- `supabase/database.types.ts` generated from the schema and committed; CI fails if it
+  drifts from the migrations
+- Local analytics disabled in `supabase/config.toml` — its container fails its health check
+  and takes the whole stack down
+
 <!--
 Release entries look like:
 

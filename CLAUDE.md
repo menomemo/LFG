@@ -48,16 +48,18 @@ unnecessary is struck, not left quietly planned.
 
 ## Commands
 
-| Command              | Does                                                                            |
-| -------------------- | ------------------------------------------------------------------------------- |
-| `npm run check`      | Format, lint, types, tests — what CI runs, in CI's order. Run before committing |
-| `npm run format:fix` | Prettier writes, Markdown included                                              |
-| `npm run lint`       | ESLint, including the `packages/core` boundary rules                            |
-| `npm run typecheck`  | `tsc --noEmit` across every workspace                                           |
-| `npm run test`       | Vitest once; `test:watch` to watch                                              |
-
-Setup, and the table of which standard is enforced by which tool, is in
-[docs/development.md](docs/development.md).
+| Command                                                                 | Does                                                                            |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `npm run check`                                                         | Format, lint, types, tests — what CI runs, in CI's order. Run before committing |
+| `npm run format:fix`                                                    | Prettier writes, Markdown included                                              |
+| `npm run lint`                                                          | ESLint, including the `packages/core` boundary rules                            |
+| `npm run typecheck`                                                     | `tsc --noEmit` across every workspace                                           |
+| `npm run test`                                                          | Vitest once; `test:watch` to watch                                              |
+| `npm run test:db`                                                       | Row-level security isolation, needs `npm run db:start` first                    |
+| `npm run db:reset`                                                      | Re-apply every migration and re-seed                                            |
+| `npm run db:types`                                                      | Regenerate the committed `supabase/database.types.ts` after a migration         |
+| Setup, and the table of which standard is enforced by which tool, is in |
+| [docs/development.md](docs/development.md).                             |
 
 ## Documentation map
 

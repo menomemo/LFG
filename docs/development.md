@@ -16,6 +16,10 @@ document is the mechanics.
 | Node.js | ≥ 22.12 (`.nvmrc` pins the major) | Vitest 5 requires 22.12 or newer                                                                                        |
 | npm     | ≥ 10                              | Ships with Node 22; workspaces are the monorepo mechanism ([ADR-0006](adr/0006-use-npm-workspaces-for-the-monorepo.md)) |
 | git     | any current                       | —                                                                                                                       |
+| Docker  | any current, **running**          | The local Supabase stack runs in containers                                                                             |
+
+Docker must actually be running, not merely installed. `supabase start` fails with a
+health-check timeout otherwise, and the message does not say so plainly.
 
 Nothing else yet. Supabase CLI, a local model runtime and the agent runtime arrive with
 the walking skeleton; see [What is not set up yet](#what-is-not-set-up-yet).
@@ -28,8 +32,19 @@ cd LFG
 nvm use          # optional; reads .nvmrc
 npm install      # also installs the git hooks, via the prepare script
 npm run check    # should be green on a fresh clone
-cp .env.example .env.local
+
+npm run db:start                      # local Supabase; first run pulls images
+npx supabase status -o env            # prints API_URL, ANON_KEY and the rest
+cp .env.example .env.local            # then fill in from that output:
+                                      #   SUPABASE_URL      <- API_URL
+                                      #   SUPABASE_ANON_KEY <- ANON_KEY
+npm run test:db                       # row-level security isolation, 9 tests
+npm run dev -w @lfg/web               # http://localhost:3000
 ```
+
+Sign in with a seeded account: `alice@lfg.test` / `lfg-dev-password`. Alice has four
+applications; Bob has one that Alice must never see, which is what the isolation suite
+checks.
 
 `npm run check` passing on a clean clone is the contract. If it fails on a fresh clone,
 that is a bug in the repository, not in your machine — please open an issue.
@@ -40,16 +55,21 @@ bundle.
 
 ## Daily commands
 
-| Command              | Does                                                                |
-| -------------------- | ------------------------------------------------------------------- |
-| `npm run check`      | Format, lint, types, tests — in that order. Run before every commit |
-| `npm run format`     | Prettier in check mode                                              |
-| `npm run format:fix` | Prettier writes. Also formats Markdown                              |
-| `npm run lint`       | ESLint, including the boundary rules                                |
-| `npm run lint:fix`   | ESLint with `--fix`                                                 |
-| `npm run typecheck`  | `tsc --noEmit` across every workspace that has the script           |
-| `npm run test`       | Vitest, once                                                        |
-| `npm run test:watch` | Vitest, watching                                                    |
+| Command                        | Does                                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| `npm run check`                | Format, lint, types, tests — in that order. Run before every commit          |
+| `npm run format`               | Prettier in check mode                                                       |
+| `npm run format:fix`           | Prettier writes. Also formats Markdown                                       |
+| `npm run lint`                 | ESLint, including the boundary rules                                         |
+| `npm run lint:fix`             | ESLint with `--fix`                                                          |
+| `npm run typecheck`            | `tsc --noEmit` across every workspace that has the script                    |
+| `npm run test`                 | Vitest, once                                                                 |
+| `npm run test:watch`           | Vitest, watching                                                             |
+| `npm run test:db`              | Row-level security isolation, against a running local stack                  |
+| `npm run db:start` / `db:stop` | The local Supabase containers                                                |
+| `npm run db:reset`             | Drop, re-apply every migration, re-seed. The fastest way to test a migration |
+| `npm run db:types`             | Regenerate `supabase/database.types.ts`. Run after every migration           |
+| `npm run dev -w @lfg/web`      | The web app on port 3000                                                     |
 
 **CI runs exactly these four, in this order, from
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).** That is deliberate: a green
@@ -103,7 +123,8 @@ rule real or aspirational?".
 | No non-null assertions in `core`      | `no-non-null-assertion`                                         | code-standards.md                                                                |
 | Conventional Commits                  | commitlint, via the `commit-msg` hook and in CI                 | code-standards.md#commits                                                        |
 | Tests avoid the network and the clock | Convention plus the `core` rules; **not** fully machine-checked | code-standards.md#tests                                                          |
-| RLS isolation test exists             | **Review only** until `supabase/` exists                        | [ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)                    |
+| RLS actually isolates tenants         | `npm run test:db`, and the `database` job in CI                 | [ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)                    |
+| Generated types match the migrations  | CI regenerates them and fails on a diff                         | code-standards.md                                                                |
 | Model calls metered and capped        | **Review only** until there are model calls                     | code-standards.md                                                                |
 | Provenance columns                    | Will be `NOT NULL` in the schema                                | data-model.md                                                                    |
 
@@ -132,20 +153,26 @@ and is sometimes right, but the commit will fail in CI.
   `>=4.8.4 <6.1.0`, so type-aware linting breaks above it. Revisit when
   `typescript-eslint` supports TypeScript 7.
 - **No task runner.** Deliberate; see ADR-0006.
+- **Local analytics is disabled** in `supabase/config.toml`. The Logflare container fails
+  its health check on this setup and takes the whole stack down with it; nothing in
+  development reads it. Re-enable it if you ever need local log search.
+- **`supabase/database.types.ts` is generated and committed.** Never hand-edit it. It
+  lives beside the migrations rather than inside `apps/web` because the web app and the
+  isolation suite both consume it.
 
 ## What is not set up yet
 
 Honest list, so nothing here reads as working when it is not.
 
-| Missing                                                           | Lands with                                                            |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Supabase project, migrations, RLS policies and the isolation test | Walking skeleton                                                      |
-| `apps/web` and anything to look at in a browser                   | Walking skeleton                                                      |
-| Deployment and environments                                       | Walking skeleton — deliberately early, so deploying is never an event |
-| Agent runtime, plugin scaffolding, model backends                 | Phase 1, with `followup-writer`                                       |
-| Coverage thresholds in CI                                         | When there is enough code for a threshold to mean anything            |
-| Error tracking, uptime, cost dashboard                            | Phase 5 ([launch.md](launch.md))                                      |
+| Missing                                                            | Lands with                                                 |
+| ------------------------------------------------------------------ | ---------------------------------------------------------- |
+| **Deployment and environments** — the skeleton runs locally only   | Needs hosting accounts; see [progress.md](progress.md)     |
+| The rest of the schema: everything except `applications`           | Phase 1                                                    |
+| Creating, editing or moving an application — the page is read-only | Phase 1, with the board                                    |
+| Agent runtime, plugin scaffolding, model backends                  | Phase 1, with `followup-writer`                            |
+| Coverage thresholds in CI                                          | When there is enough code for a threshold to mean anything |
+| Error tracking, uptime, cost dashboard                             | Phase 5 ([launch.md](launch.md))                           |
 
-The next step is the walking skeleton: one table with RLS and its isolation test, one
-`core` function, one page, deployed. No features. See
-[roadmap.md](roadmap.md#phase-1--foundation--weeks-13).
+The walking skeleton is built and verified locally; deploying it is the one piece still
+outstanding, and it is deliberately next rather than later, so that deploying never becomes
+an event. See [roadmap.md](roadmap.md#phase-1--foundation--weeks-13).

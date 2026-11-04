@@ -16,8 +16,12 @@ Status key: ✅ shipped · 🚧 in progress · 📋 planned
 A kanban board over the real stages of a search. `stage_history` is append-only and is the
 single source of truth for every conversion number elsewhere in the product.
 
-**Stages:** saved → applied → assessment → interview → offer / rejected / ghosted /
-withdrawn.
+**Stages:** saved → applied → assessment → interview → offer / rejected / withdrawn.
+
+`ghosted` is deliberately not one of them. Ghosting is the absence of events, not an event
+anyone performs, and the rule below says it reverses itself the moment a reply arrives — so
+storing it would mean writing a row into an append-only history and later needing to unwrite
+it. It is derived from silence instead, by `isGhosted` in `packages/core`.
 
 | Scope    | Item                                                                                                                                                                                           |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

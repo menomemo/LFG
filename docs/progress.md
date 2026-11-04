@@ -1,27 +1,27 @@
 # Progress
 
-|             |                                                                                                      |
-| ----------- | ---------------------------------------------------------------------------------------------------- |
-| **Updated** | 2026-11-04                                                                                           |
-| **Phase**   | 1 of 5 — Foundation                                                                                  |
-| **Next**    | Walking skeleton: one table with RLS and its isolation test, one `core` function, one page, deployed |
-
-Where the project actually is, against the whole picture. This document is updated **every
-time a module is finished** — see [Update protocol](#update-protocol). It is the only
-document that tracks state rather than intent, which is why it is separate from
-[roadmap.md](roadmap.md): the roadmap says what the plan is, this says where we got to.
+|                                                                                            |                                                                                        |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| **Updated**                                                                                | 2026-11-04                                                                             |
+| **Phase**                                                                                  | 1 of 5 — Foundation                                                                    |
+| **Next**                                                                                   | Finish the schema: the remaining tables, each with its policies and isolation coverage |
+| Where the project actually is, against the whole picture. This document is updated **every |
+| time a module is finished** — see [Update protocol](#update-protocol). It is the only      |
+| document that tracks state rather than intent, which is why it is separate from            |
+| [roadmap.md](roadmap.md): the roadmap says what the plan is, this says where we got to.    |
 
 ## Right now
 
-|                           |                                                                                                                                                                             |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Done**                  | Documentation set · iteration zero (workspace, strict TypeScript, Google-style lint and format, boundary rules, commitlint, CI, first tested `core` module)                 |
-| **In progress**           | Nothing — iteration zero closed, walking skeleton not started                                                                                                               |
-| **Blocked on a decision** | Licence ([ADR-0005](adr/0005-choose-a-license.md)) · can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions)) |
-| **Phase 1 gate**          | Not started: four consecutive weeks with every application in the system                                                                                                    |
-
-Progress through the whole plan: **1 of 24 tracked items complete.** Iteration zero is
-infrastructure, so the user-visible count is still zero — which is the honest reading.
+|                                                                                           |                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Done**                                                                                  | Documentation set · iteration zero · walking skeleton (browser → Next → RLS-protected Postgres → `core`, verified end to end locally)                                       |
+| **In progress**                                                                           | Supabase schema: `applications` exists with policies and an isolation suite; the remaining tables do not                                                                    |
+| **Not done**                                                                              | **Deployment.** The skeleton runs locally only — hosting needs accounts that are the author's to create                                                                     |
+| **Blocked on a decision**                                                                 | Licence ([ADR-0005](adr/0005-choose-a-license.md)) · can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions)) |
+| **Phase 1 gate**                                                                          | Not started: four consecutive weeks with every application in the system                                                                                                    |
+| Progress through the whole plan: **3 of 25 tracked items complete.** Two of the three are |
+| infrastructure and the third renders a read-only list, so the count of things that help   |
+| anyone find a job is still zero — which is the honest reading.                            |
 
 ## Gantt
 
@@ -40,8 +40,9 @@ gantt
   Iteration zero               :done,  d1, 2026-11-04, 1d
 
   section Phase 1 · Foundation
-  Walking skeleton             :        p1a, after d1, 3d
-  Supabase schema and RLS      :        p1b, after p1a, 4d
+  Walking skeleton             :done,   p1a, 2026-11-04, 1d
+  Deploy the skeleton          :crit,   p1a2, after p1a, 1d
+  Supabase schema and RLS      :active, p1b, after p1a2, 4d
   Application board            :        p1c, after p1b, 5d
   JD parsing and manual create :        p1d, after p1c, 3d
   Insight capture              :        p1e, after p1d, 3d
@@ -86,36 +87,37 @@ gantt
 Every tracked item, so position is visible without reading the chart.
 Status key: ✅ done · 🚧 in progress · 📋 planned · ⛔ blocked
 
-| Phase | Item                          | Status | Notes                                                               |
-| ----- | ----------------------------- | ------ | ------------------------------------------------------------------- |
-| 0     | Documentation set             | ✅     | 2026-11-04                                                          |
-| 0     | Iteration zero                | ✅     | 2026-11-04 · workspace, lint, CI, `@lfg/core` with 36 tests         |
-| 1     | Walking skeleton              | 📋     | Next up                                                             |
-| 1     | Supabase schema and RLS       | 📋     | Isolation test is required, not optional                            |
-| 1     | Application board             | 📋     |                                                                     |
-| 1     | JD parsing and manual create  | 📋     |                                                                     |
-| 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                          |
-| 1     | `followup-writer` plugin      | 📋     | First plugin, with a regression test                                |
-| 2     | Company research agent        | 📋     |                                                                     |
-| 2     | Stack inference               | 📋     |                                                                     |
-| 2     | Résumé templates per region   | 📋     | UK/IE and Japan first                                               |
-| 2     | Résumé tailoring and diff     | 📋     |                                                                     |
-| 2     | Outreach drafting             | 📋     |                                                                     |
-| 2     | UK sponsor register ingest    | 📋     | The only market with an authoritative list                          |
-| 3     | Competency framework content  | 📋     | Two axes first, then the rest                                       |
-| 3     | Radar and evidence drill-down | 📋     |                                                                     |
-| 3     | FSRS cards and review queue   | 📋     |                                                                     |
-| 3     | Mock interviews with rubric   | 📋     |                                                                     |
-| 4     | Portfolio metrics             | 📋     | HHI already implemented in `core`                                   |
-| 4     | Signal scanning               | 📋     |                                                                     |
-| 4     | Weekly portfolio report       | 📋     |                                                                     |
-| 4     | Insight sparring              | 📋     |                                                                     |
-| 4     | Sankey funnel export          | 📋     | Also the distribution channel ([launch.md](launch.md#distribution)) |
-| 5     | Multi-tenant hardening        | 📋     |                                                                     |
-| 5     | Billing and quotas            | 📋     |                                                                     |
-| 5     | Legal, export, deletion       | 📋     | GDPR in four jurisdictions                                          |
-| 5     | Observability and runbook     | 📋     |                                                                     |
-| 5     | Mobile to App Store           | 📋     | Web goes public first                                               |
+| Phase | Item                          | Status | Notes                                                                                                      |
+| ----- | ----------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
+| 0     | Documentation set             | ✅     | 2026-11-04                                                                                                 |
+| 0     | Iteration zero                | ✅     | 2026-11-04 · workspace, lint, CI, `@lfg/core` with 36 tests                                                |
+| 1     | Walking skeleton              | ✅     | 2026-11-04 · sign-in → RLS-protected query → `core` derivation → rendered page, locally                    |
+| 1     | Deploy the skeleton           | ⛔     | Needs hosting accounts only the author can create. Deliberately early, so deploying never becomes an event |
+| 1     | Supabase schema and RLS       | 🚧     | `applications` done: 4 policies, 9-test isolation suite. The other tables remain                           |
+| 1     | Application board             | 📋     |                                                                                                            |
+| 1     | JD parsing and manual create  | 📋     |                                                                                                            |
+| 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                                                                 |
+| 1     | `followup-writer` plugin      | 📋     | First plugin, with a regression test                                                                       |
+| 2     | Company research agent        | 📋     |                                                                                                            |
+| 2     | Stack inference               | 📋     |                                                                                                            |
+| 2     | Résumé templates per region   | 📋     | UK/IE and Japan first                                                                                      |
+| 2     | Résumé tailoring and diff     | 📋     |                                                                                                            |
+| 2     | Outreach drafting             | 📋     |                                                                                                            |
+| 2     | UK sponsor register ingest    | 📋     | The only market with an authoritative list                                                                 |
+| 3     | Competency framework content  | 📋     | Two axes first, then the rest                                                                              |
+| 3     | Radar and evidence drill-down | 📋     |                                                                                                            |
+| 3     | FSRS cards and review queue   | 📋     |                                                                                                            |
+| 3     | Mock interviews with rubric   | 📋     |                                                                                                            |
+| 4     | Portfolio metrics             | 📋     | HHI already implemented in `core`                                                                          |
+| 4     | Signal scanning               | 📋     |                                                                                                            |
+| 4     | Weekly portfolio report       | 📋     |                                                                                                            |
+| 4     | Insight sparring              | 📋     |                                                                                                            |
+| 4     | Sankey funnel export          | 📋     | Also the distribution channel ([launch.md](launch.md#distribution))                                        |
+| 5     | Multi-tenant hardening        | 📋     |                                                                                                            |
+| 5     | Billing and quotas            | 📋     |                                                                                                            |
+| 5     | Legal, export, deletion       | 📋     | GDPR in four jurisdictions                                                                                 |
+| 5     | Observability and runbook     | 📋     |                                                                                                            |
+| 5     | Mobile to App Store           | 📋     | Web goes public first                                                                                      |
 
 ## Gates
 

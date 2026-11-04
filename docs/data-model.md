@@ -2,7 +2,7 @@
 
 |                     |                                                                       |
 | ------------------- | --------------------------------------------------------------------- |
-| **Status**          | Draft — no migrations written yet                                     |
+| **Status**          | `applications` implemented; the rest is still draft                   |
 | **Last reviewed**   | 2026-11-04                                                            |
 | **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document. |
 
@@ -54,9 +54,15 @@ These are enforced in the schema, not by discipline.
 
 ## Notes on the fields that carry weight
 
-**`applications.stage_history`** — append-only JSONB array of `{stage, at, by}`. Every
+**`applications.stage_history`** — append-only JSONB array of `{stage, at}`. Every
 conversion rate, time-in-stage median, ghost determination and Sankey flow is computed from
 this one column, which is why nothing is allowed to rewrite it.
+
+There is deliberately **no `stage` column**. The current stage is derived by `currentStage`
+in `packages/core`; a mutable column holding the same fact would eventually disagree with
+the history, and the history is what every metric is built on. The same reasoning makes
+`ghosted` derived rather than stored — see
+[product-spec.md](product-spec.md#module-1--application-pipeline).
 
 **`jobs.visa_sponsorship`** — tri-state (`yes` / `no` / `unknown`) with its own
 `generated_by` and source, because an inferred value and a value read from an official
