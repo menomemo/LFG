@@ -4,5 +4,9 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["vitest.config.ts"]
+  "include": [
+    "vitest.config.ts",
+    "vitest.db.config.ts",
+    "supabase/tests/**/*.ts"
+  ]
 }

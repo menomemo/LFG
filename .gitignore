@@ -15,3 +15,8 @@ coverage/
 supabase/.temp/
 
 .claude/settings.local.json
+
+# Next.js build output is already covered by .next/; this is its generated types file.
+next-env.d.ts
+
+*.tsbuildinfo
