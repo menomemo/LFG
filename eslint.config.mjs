@@ -148,7 +148,10 @@ export default tseslint.config(
       'no-restricted-syntax': [
         'error',
         {
-          selector: 'NewExpression[callee.name="Date"]',
+          /* Zero-argument only: `new Date()` reads the clock, `new Date(iso)`
+             parses a value that was handed to us, which is what a boundary
+             parser must do. */
+          selector: 'NewExpression[callee.name="Date"][arguments.length=0]',
           message:
             'docs/code-standards.md: the clock is an argument. Accept `now: Date` instead.',
         },
@@ -167,6 +170,33 @@ export default tseslint.config(
 
       /* No escape hatches in the module that computes people's scores. */
       '@typescript-eslint/no-non-null-assertion': 'error',
+    },
+  },
+
+  /* React components are PascalCase functions, and a component's return type
+     is idiomatically inferred rather than annotated. Neither is a deviation
+     from the Google guide so much as a case it does not cover. */
+  {
+    files: ['apps/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {selector: 'default', format: ['camelCase']},
+        {
+          selector: 'variable',
+          format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
+        },
+        {selector: 'function', format: ['camelCase', 'PascalCase']},
+        {
+          selector: 'parameter',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+        },
+        {selector: 'typeLike', format: ['PascalCase']},
+        {selector: 'objectLiteralProperty', format: null},
+        {selector: 'import', format: ['camelCase', 'PascalCase']},
+      ],
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
     },
   },
 
