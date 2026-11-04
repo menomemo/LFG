@@ -71,3 +71,48 @@ jobs:
           --from ${{ github.event.pull_request.base.sha }}
           --to ${{ github.event.pull_request.head.sha }}
           --verbose
+
+  database:
+    name: Row-level security isolation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Start Supabase
+        run: npx supabase start
+
+      # `status -o env` emits API_URL="..." / ANON_KEY="..."; the suite reads
+      # SUPABASE_URL and SUPABASE_ANON_KEY, and GITHUB_ENV takes values
+      # unquoted. Both are translated here rather than in the test.
+      - name: Export connection settings
+        run: |
+          eval "$(npx supabase status -o env)"
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_ANON_KEY=$ANON_KEY"
+          } >> "$GITHUB_ENV"
+
+      # SECURITY.md calls this test required rather than optional. It runs on a
+      # real database because a policy that is only unit-tested is a policy
+      # nobody has seen refuse anything.
+      - name: Isolation suite
+        run: npm run test:db
+
+      - name: Fail if the committed types drifted from the migrations
+        run: |
+          npm run db:types
+          git diff --exit-code supabase/database.types.ts
+
+      - name: Stop Supabase
+        if: always()
+        run: npx supabase stop --no-backup
