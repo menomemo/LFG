@@ -10,3 +10,16 @@ export {REGIONS, isRegion, assertExhaustive} from './regions/region';
 export type {Region} from './regions/region';
 
 export {herfindahlIndex, shareByCategory} from './portfolio/concentration';
+
+export {
+  APPLICATION_STAGES,
+  TERMINAL_STAGES,
+  DEFAULT_GHOST_AFTER_DAYS,
+  isApplicationStage,
+  currentStage,
+  enteredCurrentStageAt,
+  daysInCurrentStage,
+  isGhosted,
+  parseStageHistory,
+} from './pipeline/stage';
+export type {ApplicationStage, StageEvent} from './pipeline/stage';
