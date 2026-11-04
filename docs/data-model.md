@@ -1,9 +1,9 @@
 # Data model
 
-| | |
-| --- | --- |
-| **Status** | Draft — no migrations written yet |
-| **Last reviewed** | 2026-11-04 |
+|                     |                                                                       |
+| ------------------- | --------------------------------------------------------------------- |
+| **Status**          | Draft — no migrations written yet                                     |
+| **Last reviewed**   | 2026-11-04                                                            |
 | **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document. |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
@@ -34,23 +34,23 @@ These are enforced in the schema, not by discipline.
 
 ## Tables
 
-| Table | Key fields | Related to |
-| --- | --- | --- |
-| `companies` | `name`, `domain`, `ats_type`, `ats_slug`, `sector`, `size`, `hq_country`, `regions`, `research_json`, `research_at` | `jobs`, `contacts`, `signals` |
-| `jobs` | `company_id`, `title`, `jd_text`, `jd_embedding`, `skill_vector`, `source_url`, `posted_at`, `region`, `work_mode`, `visa_sponsorship`, `language_required` | `applications` |
-| `applications` | `job_id`, `region`, `tier`, `stage`, `stage_history`, `resume_version_id`, `applied_at`, `next_action_at` | `contacts`, `interviews` |
-| `interviews` | `application_id`, `round`, `scheduled_at`, `notes`, `feedback`, `followup_sent` | `evidence` |
-| `resume_versions` | `base_json`, `tailored_json`, `diff`, `pdf_url`, `region_profile`, `locale` | `applications` |
-| `contacts` | `company_id`, `role_type`, `name`, `profile_url`, `source`, `last_touch_at`, `sequence_step` | `applications` |
-| `competencies` | `axis`, `sub_skill`, `level_junior`, `level_mid`, `level_senior` | `evidence`, `cards` |
-| `evidence` | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at` | `competencies` |
-| `cards` | `competency_id`, `front`, `back`, `fsrs_state`, `due_at` | `review_logs` |
-| `review_logs` | `card_id`, `rating`, `reviewed_at` | `cards` |
-| `stories` | `title`, `star_json`, `competency_ids` | `interviews` |
-| `insights` | `raw_text`, `source_url`, `summary`, `sales_dims`, `embedding`, `cluster_id` | `drills`, `evidence` |
-| `drills` | `insight_id`, `scenario`, `attempts`, `last_score` | `evidence` |
-| `signals` | `company_id`, `type`, `payload`, `observed_at`, `severity` | `companies` |
-| `llm_usage` | `user_id`, `task`, `model`, `tokens_in`, `tokens_out`, `cost`, `created_at` | cost control |
+| Table             | Key fields                                                                                                                                                  | Related to                    |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| `companies`       | `name`, `domain`, `ats_type`, `ats_slug`, `sector`, `size`, `hq_country`, `regions`, `research_json`, `research_at`                                         | `jobs`, `contacts`, `signals` |
+| `jobs`            | `company_id`, `title`, `jd_text`, `jd_embedding`, `skill_vector`, `source_url`, `posted_at`, `region`, `work_mode`, `visa_sponsorship`, `language_required` | `applications`                |
+| `applications`    | `job_id`, `region`, `tier`, `stage`, `stage_history`, `resume_version_id`, `applied_at`, `next_action_at`                                                   | `contacts`, `interviews`      |
+| `interviews`      | `application_id`, `round`, `scheduled_at`, `notes`, `feedback`, `followup_sent`                                                                             | `evidence`                    |
+| `resume_versions` | `base_json`, `tailored_json`, `diff`, `pdf_url`, `region_profile`, `locale`                                                                                 | `applications`                |
+| `contacts`        | `company_id`, `role_type`, `name`, `profile_url`, `source`, `last_touch_at`, `sequence_step`                                                                | `applications`                |
+| `competencies`    | `axis`, `sub_skill`, `level_junior`, `level_mid`, `level_senior`                                                                                            | `evidence`, `cards`           |
+| `evidence`        | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at`                                                                               | `competencies`                |
+| `cards`           | `competency_id`, `front`, `back`, `fsrs_state`, `due_at`                                                                                                    | `review_logs`                 |
+| `review_logs`     | `card_id`, `rating`, `reviewed_at`                                                                                                                          | `cards`                       |
+| `stories`         | `title`, `star_json`, `competency_ids`                                                                                                                      | `interviews`                  |
+| `insights`        | `raw_text`, `source_url`, `summary`, `sales_dims`, `embedding`, `cluster_id`                                                                                | `drills`, `evidence`          |
+| `drills`          | `insight_id`, `scenario`, `attempts`, `last_score`                                                                                                          | `evidence`                    |
+| `signals`         | `company_id`, `type`, `payload`, `observed_at`, `severity`                                                                                                  | `companies`                   |
+| `llm_usage`       | `user_id`, `task`, `model`, `tokens_in`, `tokens_out`, `cost`, `created_at`                                                                                 | cost control                  |
 
 ## Notes on the fields that carry weight
 
@@ -84,9 +84,9 @@ without it, so an unmetered call is a bug.
 
 ## Open schema questions
 
-| Question | Decide by |
-| --- | --- |
-| Does `companies.regions` need to be an array (multinationals hire in several of our markets) or is one row per region cleaner? | First migration |
-| Do insight clusters deserve their own table once they carry a canonical summary? | Phase 1, when clustering first runs |
-| Which embedding model, and is one shared vector space right for both JDs and insights? | Phase 1 |
-| Is `competencies` user-scoped content or shared reference data with per-user overrides? | Phase 3 |
+| Question                                                                                                                       | Decide by                           |
+| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| Does `companies.regions` need to be an array (multinationals hire in several of our markets) or is one row per region cleaner? | First migration                     |
+| Do insight clusters deserve their own table once they carry a canonical summary?                                               | Phase 1, when clustering first runs |
+| Which embedding model, and is one shared vector space right for both JDs and insights?                                         | Phase 1                             |
+| Is `competencies` user-scoped content or shared reference data with per-user overrides?                                        | Phase 3                             |

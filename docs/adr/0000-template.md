@@ -1,11 +1,11 @@
 # ADR-NNNN: Imperative verb phrase describing the decision
 
-| | |
-| --- | --- |
-| **Status** | Proposed / Accepted / Superseded by ADR-NNNN / Deprecated |
-| **Date** | YYYY-MM-DD |
-| **Deciders** | @handle |
-| **Supersedes** | — |
+|                |                                                           |
+| -------------- | --------------------------------------------------------- |
+| **Status**     | Proposed / Accepted / Superseded by ADR-NNNN / Deprecated |
+| **Date**       | YYYY-MM-DD                                                |
+| **Deciders**   | @handle                                                   |
+| **Supersedes** | —                                                         |
 
 ## Context
 
@@ -27,8 +27,8 @@ codebase.
 ## Alternatives considered
 
 | Option | What it would give us | Why not |
-| --- | --- | --- |
-| | | |
+| ------ | --------------------- | ------- |
+|        |                       |         |
 
 "Do nothing" is an option and often deserves a row.
 

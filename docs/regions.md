@@ -1,10 +1,10 @@
 # Region playbook
 
-| | |
-| --- | --- |
-| **Status** | Living document |
-| **Last reviewed** | 2026-11-04 |
-| **Markets** | 🇬🇧 UK (home base) · 🇮🇪 Ireland · 🇪🇪 Estonia · 🇯🇵 Japan — wave 1 · 🇩🇪 Germany — wave 2 |
+|                   |                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------- |
+| **Status**        | Living document                                                                       |
+| **Last reviewed** | 2026-11-04                                                                            |
+| **Markets**       | 🇬🇧 UK (home base) · 🇮🇪 Ireland · 🇪🇪 Estonia · 🇯🇵 Japan — wave 1 · 🇩🇪 Germany — wave 2 |
 
 Why this document exists: searching in four countries at once means four sets of visa
 routes, sourcing channels, résumé artefacts and etiquette. Keeping that in a person's head
@@ -21,15 +21,15 @@ does not scale, which is why `region` is a first-class column rather than a labe
 
 ## At a glance
 
-| | 🇬🇧 UK | 🇮🇪 Ireland | 🇪🇪 Estonia | 🇯🇵 Japan | 🇩🇪 Germany |
-| --- | --- | --- | --- | --- | --- |
-| Wave | 1 (home) | 1 | 1 | 1 | 2 |
-| JD language | English | English | English in tech | Japanese-first, English at global firms | German-first, English at startups/global firms |
-| Résumé artefact | 2-page CV, no photo | 2-page CV, no photo | EU-style CV | 履歴書 + 職務経歴書, or English CV at global firms | Lebenslauf + Anschreiben |
-| Employer sponsorship needed | Yes, licensed sponsor | Yes, employment permit | Yes, unless EU-eligible | Yes, certificate of eligibility | Yes, unless EU Blue Card eligible |
-| Public sponsor register | ✅ Yes — a real data source | Partial (trusted-partner scheme) | ❌ No | ❌ No | ❌ No |
-| Funnel shape | Direct + grad schemes | Direct, heavy multinational presence | Direct, small market, high signal | Agency-mediated | Direct + portals |
-| Typical time to offer | Weeks | Weeks | Fast | Long, multi-round | Moderate, structured |
+|                             | 🇬🇧 UK                       | 🇮🇪 Ireland                           | 🇪🇪 Estonia                        | 🇯🇵 Japan                                           | 🇩🇪 Germany                                     |
+| --------------------------- | --------------------------- | ------------------------------------ | --------------------------------- | -------------------------------------------------- | ---------------------------------------------- |
+| Wave                        | 1 (home)                    | 1                                    | 1                                 | 1                                                  | 2                                              |
+| JD language                 | English                     | English                              | English in tech                   | Japanese-first, English at global firms            | German-first, English at startups/global firms |
+| Résumé artefact             | 2-page CV, no photo         | 2-page CV, no photo                  | EU-style CV                       | 履歴書 + 職務経歴書, or English CV at global firms | Lebenslauf + Anschreiben                       |
+| Employer sponsorship needed | Yes, licensed sponsor       | Yes, employment permit               | Yes, unless EU-eligible           | Yes, certificate of eligibility                    | Yes, unless EU Blue Card eligible              |
+| Public sponsor register     | ✅ Yes — a real data source | Partial (trusted-partner scheme)     | ❌ No                             | ❌ No                                              | ❌ No                                          |
+| Funnel shape                | Direct + grad schemes       | Direct, heavy multinational presence | Direct, small market, high signal | Agency-mediated                                    | Direct + portals                               |
+| Typical time to offer       | Weeks                       | Weeks                                | Fast                              | Long, multi-round                                  | Moderate, structured                           |
 
 ## 🇬🇧 United Kingdom — home base
 
@@ -114,7 +114,7 @@ employers expect none. This is exactly why `jobs.language_required` carries a le
 evidence rather than a boolean.
 
 **Etiquette and timing.** More rounds, longer cycles, a stronger expectation of commitment
-and of knowing why *this* company. The follow-up cadence and the pre-interview prep need
+and of knowing why _this_ company. The follow-up cadence and the pre-interview prep need
 different copy, which is a reason region drives reminder text and not just metric slicing.
 
 ## 🇩🇪 Germany — wave 2
@@ -136,15 +136,15 @@ if attempted first.
 
 ## How this reaches the code
 
-| Mechanism | Where |
-| --- | --- |
-| `region` enum on companies, jobs, applications | [data-model.md](data-model.md) |
-| Résumé template and content policy per region | `resume_versions.region_profile` → Typst templates |
-| Language requirement with level and evidence | `jobs.language_required`, participates in match scoring |
-| Sponsorship state, inferred vs. confirmed, kept distinct | `jobs.visa_sponsorship` with `generated_by` |
-| Region concentration and sponsorship coverage | [Risk dashboard](product-spec.md#module-7--portfolio-risk-dashboard) |
-| Thresholds and numbers with a `checked_on` date | One config module in `packages/core` |
-| Reminder and outreach copy per region | Plugin prompt templates keyed by region |
+| Mechanism                                                | Where                                                                |
+| -------------------------------------------------------- | -------------------------------------------------------------------- |
+| `region` enum on companies, jobs, applications           | [data-model.md](data-model.md)                                       |
+| Résumé template and content policy per region            | `resume_versions.region_profile` → Typst templates                   |
+| Language requirement with level and evidence             | `jobs.language_required`, participates in match scoring              |
+| Sponsorship state, inferred vs. confirmed, kept distinct | `jobs.visa_sponsorship` with `generated_by`                          |
+| Region concentration and sponsorship coverage            | [Risk dashboard](product-spec.md#module-7--portfolio-risk-dashboard) |
+| Thresholds and numbers with a `checked_on` date          | One config module in `packages/core`                                 |
+| Reminder and outreach copy per region                    | Plugin prompt templates keyed by region                              |
 
 ## Maintenance
 

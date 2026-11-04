@@ -1,10 +1,10 @@
 # ADR-0005: Choose a licence
 
-| | |
-| --- | --- |
-| **Status** | **Proposed** — needs a decision before the first push |
-| **Date** | 2026-11-04 |
-| **Deciders** | @Yihong |
+|              |                                                       |
+| ------------ | ----------------------------------------------------- |
+| **Status**   | **Proposed** — needs a decision before the first push |
+| **Date**     | 2026-11-04                                            |
+| **Deciders** | @Yihong                                               |
 
 ## Context
 
@@ -37,14 +37,14 @@ README states that no licence is granted.
 
 ## Alternatives considered
 
-| Option | What it would give us | Why not |
-| --- | --- | --- |
-| **AGPL-3.0** (proposed) | Source-available, forkable, readable; network use triggers the share-alike obligation, so a competing host must publish modifications. The common choice for open products with a hosted business | Some companies forbid employees contributing to AGPL code, which narrows contribution; dual licensing later needs a CLA |
-| MIT / Apache-2.0 | Maximum adoption and contribution; easiest for anyone to reuse | Anyone can host it commercially with no reciprocity, which is the one scenario the hosted model cannot absorb |
-| Business Source License | Protects the hosted business while the source stays visible; converts to open later | Not an OSI-approved open-source licence, so it attracts criticism and loses some of the goodwill that is the point of being public |
-| Proprietary, repository stays private | Nothing to decide, no exposure | Forfeits the portfolio value and the distribution that comes from being readable — two of the three goals |
-| Keep the code private and publish only `docs/` | Portfolio value, no code exposure | Plausible and worth real consideration: the documentation is the part most likely to be read and shared. Rejected as the primary plan only because the code is the credibility |
-| Defer the decision | No commitment today | Only safe while the repository is private. It becomes urgent the moment it is pushed, which is why this ADR exists now |
+| Option                                         | What it would give us                                                                                                                                                                             | Why not                                                                                                                                                                        |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **AGPL-3.0** (proposed)                        | Source-available, forkable, readable; network use triggers the share-alike obligation, so a competing host must publish modifications. The common choice for open products with a hosted business | Some companies forbid employees contributing to AGPL code, which narrows contribution; dual licensing later needs a CLA                                                        |
+| MIT / Apache-2.0                               | Maximum adoption and contribution; easiest for anyone to reuse                                                                                                                                    | Anyone can host it commercially with no reciprocity, which is the one scenario the hosted model cannot absorb                                                                  |
+| Business Source License                        | Protects the hosted business while the source stays visible; converts to open later                                                                                                               | Not an OSI-approved open-source licence, so it attracts criticism and loses some of the goodwill that is the point of being public                                             |
+| Proprietary, repository stays private          | Nothing to decide, no exposure                                                                                                                                                                    | Forfeits the portfolio value and the distribution that comes from being readable — two of the three goals                                                                      |
+| Keep the code private and publish only `docs/` | Portfolio value, no code exposure                                                                                                                                                                 | Plausible and worth real consideration: the documentation is the part most likely to be read and shared. Rejected as the primary plan only because the code is the credibility |
+| Defer the decision                             | No commitment today                                                                                                                                                                               | Only safe while the repository is private. It becomes urgent the moment it is pushed, which is why this ADR exists now                                                         |
 
 ## Consequences
 

@@ -1,9 +1,9 @@
 # Roadmap
 
-| | |
-| --- | --- |
-| **Status** | Phase 1 in progress |
-| **Last reviewed** | 2026-11-04 |
+|                   |                     |
+| ----------------- | ------------------- |
+| **Status**        | Phase 1 in progress |
+| **Last reviewed** | 2026-11-04          |
 
 Build the things used every single day first. The radar and the risk dashboard are
 arithmetic over data that does not exist yet, so they cannot come first no matter how
@@ -95,15 +95,15 @@ flowchart LR
 
 Saying no in writing is what keeps the phases finishable.
 
-| Not building | Why |
-| --- | --- |
-| Auto-submission of applications | A product stance, not a limitation. See the non-goals in [architecture.md](architecture.md#non-goals) |
-| A Telegram bot | The share sheet is faster where it counts; two capture surfaces is double maintenance for one user |
-| Any LinkedIn automation | Non-negotiable |
-| Microservices, Kubernetes, a message broker | One developer, one user. The internal boundaries are where a split would go if it were ever needed |
-| A documentation site | Nothing to document for users until Phase 5 |
-| Model fine-tuning | Prompts and configuration do the job |
-| Germany | Wave 2, after the Japan track generalises ([regions.md](regions.md)) |
+| Not building                                | Why                                                                                                   |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Auto-submission of applications             | A product stance, not a limitation. See the non-goals in [architecture.md](architecture.md#non-goals) |
+| A Telegram bot                              | The share sheet is faster where it counts; two capture surfaces is double maintenance for one user    |
+| Any LinkedIn automation                     | Non-negotiable                                                                                        |
+| Microservices, Kubernetes, a message broker | One developer, one user. The internal boundaries are where a split would go if it were ever needed    |
+| A documentation site                        | Nothing to document for users until Phase 5                                                           |
+| Model fine-tuning                           | Prompts and configuration do the job                                                                  |
+| Germany                                     | Wave 2, after the Japan track generalises ([regions.md](regions.md))                                  |
 
 ## Re-planning rule
 

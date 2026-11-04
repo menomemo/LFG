@@ -1,9 +1,9 @@
 # Product specification
 
-| | |
-| --- | --- |
-| **Status** | Draft — Phase 1 in progress |
-| **Last reviewed** | 2026-11-04 |
+|                   |                             |
+| ----------------- | --------------------------- |
+| **Status**        | Draft — Phase 1 in progress |
+| **Last reviewed** | 2026-11-04                  |
 
 What each module does and in what order it gets built. Structure is in
 [architecture.md](architecture.md); schema is in [data-model.md](data-model.md); phase
@@ -19,17 +19,17 @@ single source of truth for every conversion number elsewhere in the product.
 **Stages:** saved → applied → assessment → interview → offer / rejected / ghosted /
 withdrawn.
 
-| Scope | Item |
-| --- | --- |
-| 📋 MVP | Board view, drag to change stage (dnd-kit) |
-| 📋 MVP | Manual create: paste a JD link or body; AI extracts company, title, key skills, region, language requirement |
-| 📋 MVP | Record which résumé version each application used |
-| 📋 MVP | Interview records: round, time, notes |
-| 📋 MVP | Follow-up reminder 24h after an interview, with a drafted thank-you note |
-| 📋 MVP | `next_action_at` reminders, in-app and email |
+| Scope    | Item                                                                                                                                                                                           |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 📋 MVP   | Board view, drag to change stage (dnd-kit)                                                                                                                                                     |
+| 📋 MVP   | Manual create: paste a JD link or body; AI extracts company, title, key skills, region, language requirement                                                                                   |
+| 📋 MVP   | Record which résumé version each application used                                                                                                                                              |
+| 📋 MVP   | Interview records: round, time, notes                                                                                                                                                          |
+| 📋 MVP   | Follow-up reminder 24h after an interview, with a drafted thank-you note                                                                                                                       |
+| 📋 MVP   | `next_action_at` reminders, in-app and email                                                                                                                                                   |
 | 📋 Later | Browser extension (Manifest V3): one-click JD clipping, then assisted form fill for Greenhouse / Lever / Ashby — fields and values shown for confirmation first, submission always by the user |
-| 📋 Later | Read-only Gmail scope: detect interview invitations and rejections, propose a stage change, user confirms |
-| 📋 Later | Calendar sync for interviews |
+| 📋 Later | Read-only Gmail scope: detect interview invitations and rejections, propose a stage change, user confirms                                                                                      |
+| 📋 Later | Calendar sync for interviews                                                                                                                                                                   |
 
 **Build vs. use:** build the board, the clipper and the email classifier (rules first, a
 small model as fallback). Use dnd-kit, Supabase cron, and a transactional email provider.
@@ -91,13 +91,13 @@ required skills, returning a score and an explicit list of what is missing.
 For each target company, answer who to talk to, how to open, and when to follow up.
 Sources are public and lawful; LinkedIn profiles are pasted by the user, never fetched.
 
-| Role | What they can tell you | Priority |
-| --- | --- | --- |
-| Engineer on the target team | The real stack, team texture, interview style | High |
-| Hiring manager | What the role actually needs, the timeline | High |
-| Alumni / shared background | Referral, culture | Medium |
-| Recruiter | Process, salary band | Medium |
-| Conference or blog author | Technical direction, open problems | Low |
+| Role                        | What they can tell you                        | Priority |
+| --------------------------- | --------------------------------------------- | -------- |
+| Engineer on the target team | The real stack, team texture, interview style | High     |
+| Hiring manager              | What the role actually needs, the timeline    | High     |
+| Alumni / shared background  | Referral, culture                             | Medium   |
+| Recruiter                   | Process, salary band                          | Medium   |
+| Conference or blog author   | Technical direction, open problems            | Low      |
 
 **Lawful lead sources:** engineering blog authors, conference and meetup speakers, core
 GitHub contributors, meetup organisers.
@@ -166,16 +166,16 @@ length and structural completeness as metrics.
 The differentiating module, and the one with no off-the-shelf equivalent. The premise: the
 world runs on sales, so everything you learn gets filed and trained along sales dimensions.
 
-| Dimension | What it looks like in a job search |
-| --- | --- |
-| Opening | Cold messages, the first three minutes of an interview |
-| Discovery | Asking an interviewer about the team's real problems |
-| Storytelling | STAR answers, project walkthroughs |
-| Value proposition | "Why you" |
-| Handling objections | Doubts about experience, visa, language |
-| Building trust | Follow-ups, referral relationships |
-| Closing | Asking for next steps, salary conversations |
-| Following up | Thank-you notes, staying in touch after a rejection |
+| Dimension           | What it looks like in a job search                     |
+| ------------------- | ------------------------------------------------------ |
+| Opening             | Cold messages, the first three minutes of an interview |
+| Discovery           | Asking an interviewer about the team's real problems   |
+| Storytelling        | STAR answers, project walkthroughs                     |
+| Value proposition   | "Why you"                                              |
+| Handling objections | Doubts about experience, visa, language                |
+| Building trust      | Follow-ups, referral relationships                     |
+| Closing             | Asking for next steps, salary conversations            |
+| Following up        | Thank-you notes, staying in touch after a rejection    |
 
 **Capture** — the lower the friction the better: the mobile share sheet plus text, voice or
 screenshot (the MVP path); a paste box on the web; an offline queue when there is no
@@ -199,15 +199,15 @@ generate one or two job-search drills → turn the insight itself into an FSRS c
 Treat the pipeline as a portfolio: watch concentration, coverage and conversion, track
 market signals, and produce a weekly rebalance note.
 
-| Metric | Computation | Initial alert threshold |
-| --- | --- | --- |
-| Industry concentration | HHI over industry / company size | > 0.4 |
-| Region concentration | HHI over `region` | > 0.6 (betting on one market) |
-| Sponsorship coverage | Share of applications needing sponsorship where the employer is confirmed able to sponsor | < 60% |
-| Pipeline coverage | In-flight applications × historical conversion ÷ target offers | < 1.5 |
-| Stage conversion | Ratio between adjacent stages | Materially below its own trailing average |
-| Time in stage | Median days per stage | > 14 days without movement |
-| Expected offers | Sum over in-flight applications of their stage's conversion rate | < 1 |
+| Metric                 | Computation                                                                               | Initial alert threshold                   |
+| ---------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Industry concentration | HHI over industry / company size                                                          | > 0.4                                     |
+| Region concentration   | HHI over `region`                                                                         | > 0.6 (betting on one market)             |
+| Sponsorship coverage   | Share of applications needing sponsorship where the employer is confirmed able to sponsor | < 60%                                     |
+| Pipeline coverage      | In-flight applications × historical conversion ÷ target offers                            | < 1.5                                     |
+| Stage conversion       | Ratio between adjacent stages                                                             | Materially below its own trailing average |
+| Time in stage          | Median days per stage                                                                     | > 14 days without movement                |
+| Expected offers        | Sum over in-flight applications of their stage's conversion rate                          | < 1                                       |
 
 Concentration, where $s_i$ is category $i$'s share of applications:
 
@@ -218,11 +218,11 @@ $$HHI = \sum_i s_i^2$$
 Each application gets a tier, managed like a position size. AI drives the preparation cost
 down; the tier decides how much of the user's own time goes in.
 
-| Tier | What AI does | What you do | Time each | Target share |
-| --- | --- | --- | --- | --- |
-| A — concentrated | Full profile, deep tailoring, contacts and outreach drafts, interview prep list | Review, talk to people, prepare properly | 1–2 h | 10–20% |
-| B — standard | Research summary plus a tailored résumé | Skim the diff and apply | 10–15 min | 40–50% |
-| C — exploratory | Match score plus light tailoring | One-click confirm | < 2 min | 30–40% |
+| Tier             | What AI does                                                                    | What you do                              | Time each | Target share |
+| ---------------- | ------------------------------------------------------------------------------- | ---------------------------------------- | --------- | ------------ |
+| A — concentrated | Full profile, deep tailoring, contacts and outreach drafts, interview prep list | Review, talk to people, prepare properly | 1–2 h     | 10–20%       |
+| B — standard     | Research summary plus a tailored résumé                                         | Skim the diff and apply                  | 10–15 min | 40–50%       |
+| C — exploratory  | Match score plus light tailoring                                                | One-click confirm                        | < 2 min   | 30–40%       |
 
 - The AI proposes a tier from match score and stated interest; the user can always override
 - Capacity cap: at most five tier-A applications in flight (configurable); beyond that the
@@ -277,24 +277,24 @@ transcribes into the interview record and `evidence`.
 
 ## Plugin inventory
 
-| Plugin | Kind | Module | Model tier |
-| --- | --- | --- | --- |
-| `followup-writer` | skill | 1 | light |
-| `jd-parser` | tool | 1 | light |
-| `company-research` | tool | 2 | heavy |
-| `stack-inference` | tool | 2 | light |
-| `resume-tailor` | skill | 2 | heavy |
-| `contact-mapper` | tool | 3 | heavy |
-| `outreach-writer` | skill | 3 | light |
-| `card-generator` | skill | 5 | light |
-| `mock-interviewer` | skill | 5 | heavy |
-| `fsrs-scheduler` | scheduler | 5 | none |
-| `insight-ingest` | tool | 6 | none |
-| `insight-tagger` | skill | 6 | light |
-| `roleplay-sparring` | skill | 6 | heavy |
-| `signal-scanner` | tool + scheduler | 7 | light |
-| `portfolio-report` | skill | 7 | heavy |
-| `db-store` | storage | all | none |
+| Plugin              | Kind             | Module | Model tier |
+| ------------------- | ---------------- | ------ | ---------- |
+| `followup-writer`   | skill            | 1      | light      |
+| `jd-parser`         | tool             | 1      | light      |
+| `company-research`  | tool             | 2      | heavy      |
+| `stack-inference`   | tool             | 2      | light      |
+| `resume-tailor`     | skill            | 2      | heavy      |
+| `contact-mapper`    | tool             | 3      | heavy      |
+| `outreach-writer`   | skill            | 3      | light      |
+| `card-generator`    | skill            | 5      | light      |
+| `mock-interviewer`  | skill            | 5      | heavy      |
+| `fsrs-scheduler`    | scheduler        | 5      | none       |
+| `insight-ingest`    | tool             | 6      | none       |
+| `insight-tagger`    | skill            | 6      | light      |
+| `roleplay-sparring` | skill            | 6      | heavy      |
+| `signal-scanner`    | tool + scheduler | 7      | light      |
+| `portfolio-report`  | skill            | 7      | heavy      |
+| `db-store`          | storage          | all    | none       |
 
 Every plugin declares a daily call ceiling and a maximum step count, ships with regression
 tests, and translates parameters only — the rules it applies live in `packages/core`.

@@ -1,10 +1,10 @@
 # ADR-0003: Keep business logic in `packages/core`
 
-| | |
-| --- | --- |
-| **Status** | Accepted |
-| **Date** | 2026-11-04 |
-| **Deciders** | @Yihong |
+|              |            |
+| ------------ | ---------- |
+| **Status**   | Accepted   |
+| **Date**     | 2026-11-04 |
+| **Deciders** | @Yihong    |
 
 ## Context
 
@@ -32,12 +32,12 @@ inside a plugin, because that is the shortest path to a working feature.
 
 ## Alternatives considered
 
-| Option | What it would give us | Why not |
-| --- | --- | --- |
-| Logic inside the plugins | Fewer layers, faster first feature | A preview-stage dependency would own our scoring and rubrics. Every breaking release becomes a rewrite of the product's substance, and the same rule gets reimplemented for the web app |
-| Logic in the web app, plugins call its API | One obvious home | Mobile and schedulers then depend on the web app being up, and the rules become entangled with HTTP and framework concerns |
-| Logic in Postgres functions | Close to the data, one implementation | Hard to version and test, hostile to the typed client, and unavailable to the mobile app offline |
-| A thin `core` for types only, rules duplicated where used | Minimal indirection | Duplicated rules diverge. That divergence shows up as two different numbers on two screens |
+| Option                                                    | What it would give us                 | Why not                                                                                                                                                                                 |
+| --------------------------------------------------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logic inside the plugins                                  | Fewer layers, faster first feature    | A preview-stage dependency would own our scoring and rubrics. Every breaking release becomes a rewrite of the product's substance, and the same rule gets reimplemented for the web app |
+| Logic in the web app, plugins call its API                | One obvious home                      | Mobile and schedulers then depend on the web app being up, and the rules become entangled with HTTP and framework concerns                                                              |
+| Logic in Postgres functions                               | Close to the data, one implementation | Hard to version and test, hostile to the typed client, and unavailable to the mobile app offline                                                                                        |
+| A thin `core` for types only, rules duplicated where used | Minimal indirection                   | Duplicated rules diverge. That divergence shows up as two different numbers on two screens                                                                                              |
 
 ## Consequences
 

@@ -1,10 +1,10 @@
 # Launch
 
-| | |
-| --- | --- |
-| **Status** | Planning — Phase 5 |
-| **Last reviewed** | 2026-11-04 |
-| **Shape** | Public web first, mobile app to the App Store after |
+|                   |                                                     |
+| ----------------- | --------------------------------------------------- |
+| **Status**        | Planning — Phase 5                                  |
+| **Last reviewed** | 2026-11-04                                          |
+| **Shape**         | Public web first, mobile app to the App Store after |
 
 Three goals in a fixed order, because skipping one makes the next meaningless: it works for
 its author, it is available to other people, it reaches people who would want it. This
@@ -86,10 +86,10 @@ of text:
 
 ## Commercial model
 
-| Tier | Who | What limits it |
-| --- | --- | --- |
-| Free | Trying it out, light searchers | A daily inference allowance |
-| Paid subscription | Active searchers | Generous caps, heavy-tier models available |
+| Tier               | Who                             | What limits it                               |
+| ------------------ | ------------------------------- | -------------------------------------------- |
+| Free               | Trying it out, light searchers  | A daily inference allowance                  |
+| Paid subscription  | Active searchers                | Generous caps, heavy-tier models available   |
 | Bring your own key | Power users, the cost-sensitive | Their key, their spend, near-zero cost to us |
 
 Inference is our cost, not the user's, which is the whole reason the cost controls in
@@ -104,13 +104,13 @@ A funnel Sankey diagram showing 180 applications, 12 interviews and 2 offers is 
 post that circulates in job-search communities on its own merits. The export is designed
 for that — company names hidden by default, numbers kept, a small watermark.
 
-| Channel | Form | Cadence |
-| --- | --- | --- |
-| Build in public | Development log, short video or carousel | 1–2 per week |
-| Job-search insights, drawn from the insight library | Carousel | 1–2 per week |
-| Cross-border hiring observations (UK, EU, Japan) | Short video | Every two weeks |
-| Feature demos | Screen recording | On each release |
-| Shareable artefacts | Sankey and weekly-report exports | When the user chooses |
+| Channel                                             | Form                                     | Cadence               |
+| --------------------------------------------------- | ---------------------------------------- | --------------------- |
+| Build in public                                     | Development log, short video or carousel | 1–2 per week          |
+| Job-search insights, drawn from the insight library | Carousel                                 | 1–2 per week          |
+| Cross-border hiring observations (UK, EU, Japan)    | Short video                              | Every two weeks       |
+| Feature demos                                       | Screen recording                         | On each release       |
+| Shareable artefacts                                 | Sankey and weekly-report exports         | When the user chooses |
 
 **Division of labour.** AI drafts: topics, scripts, carousel copy, image drafts — produced
 in batches on a schedule. The author reviews, appears or narrates, and publishes. Accounts
@@ -136,9 +136,9 @@ Vanity metrics are easy to accumulate and teach nothing. These are the ones wort
 
 ## Open decisions
 
-| Decision | Blocks | Needed by |
-| --- | --- | --- |
-| Licence, and public repository before or after launch | Everything about distribution | Before the first push ([ADR-0005](adr/0005-choose-a-license.md)) |
-| Product name as presented to users, and the handles to match | Domain, store listing, accounts | Phase 4 |
-| In-app purchase or web-only billing | Mobile launch, pricing | Before App Store submission |
-| Whether a free tier is viable at all once cost per user is measured | Pricing | Phase 5 |
+| Decision                                                            | Blocks                          | Needed by                                                        |
+| ------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------- |
+| Licence, and public repository before or after launch               | Everything about distribution   | Before the first push ([ADR-0005](adr/0005-choose-a-license.md)) |
+| Product name as presented to users, and the handles to match        | Domain, store listing, accounts | Phase 4                                                          |
+| In-app purchase or web-only billing                                 | Mobile launch, pricing          | Before App Store submission                                      |
+| Whether a free tier is viable at all once cost per user is measured | Pricing                         | Phase 5                                                          |

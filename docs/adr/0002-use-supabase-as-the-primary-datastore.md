@@ -1,10 +1,10 @@
 # ADR-0002: Use Supabase as the primary datastore
 
-| | |
-| --- | --- |
-| **Status** | Accepted |
-| **Date** | 2026-11-04 |
-| **Deciders** | @Yihong |
+|              |            |
+| ------------ | ---------- |
+| **Status**   | Accepted   |
+| **Date**     | 2026-11-04 |
+| **Deciders** | @Yihong    |
 
 ## Context
 
@@ -29,13 +29,13 @@ since Postgres and its security model are on the
 
 ## Alternatives considered
 
-| Option | What it would give us | Why not |
-| --- | --- | --- |
-| Self-hosted Postgres plus a hand-written API and auth | Full control, no vendor | Auth, policies, vector search and cron is most of Phase 1 rebuilt by hand, and then operated forever |
-| Firebase or another document store | Fast start, generous free tier | The data is deeply relational — the hub-and-spoke shape around `applications` is the product. Vector search and SQL aggregation would both fight the model |
-| Postgres plus a separate vector database | Best-in-class vector search | Two stores to keep consistent for a corpus measured in thousands of rows. pgvector is comfortably sufficient at this scale |
-| Application-level tenancy (filter by `user_id` in code) | No policy language to learn | One missing `where` clause leaks a stranger's résumé. The database is the right place for a boundary that must not fail |
-| Do nothing yet, start with local files | Fastest possible Phase 1 | Guarantees a migration later, and teaches nothing that is on the learning track |
+| Option                                                  | What it would give us          | Why not                                                                                                                                                    |
+| ------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Self-hosted Postgres plus a hand-written API and auth   | Full control, no vendor        | Auth, policies, vector search and cron is most of Phase 1 rebuilt by hand, and then operated forever                                                       |
+| Firebase or another document store                      | Fast start, generous free tier | The data is deeply relational — the hub-and-spoke shape around `applications` is the product. Vector search and SQL aggregation would both fight the model |
+| Postgres plus a separate vector database                | Best-in-class vector search    | Two stores to keep consistent for a corpus measured in thousands of rows. pgvector is comfortably sufficient at this scale                                 |
+| Application-level tenancy (filter by `user_id` in code) | No policy language to learn    | One missing `where` clause leaks a stranger's résumé. The database is the right place for a boundary that must not fail                                    |
+| Do nothing yet, start with local files                  | Fastest possible Phase 1       | Guarantees a migration later, and teaches nothing that is on the learning track                                                                            |
 
 ## Consequences
 

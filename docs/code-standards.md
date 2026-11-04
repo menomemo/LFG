@@ -1,10 +1,10 @@
 # Code standards
 
-| | |
-| --- | --- |
-| **Status** | Active |
-| **Last reviewed** | 2026-11-04 |
-| **Baseline** | [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) |
+|                   |                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------- |
+| **Status**        | Active                                                                            |
+| **Last reviewed** | 2026-11-04                                                                        |
+| **Baseline**      | [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html) |
 
 The baseline is Google's TypeScript style guide. This document records the deltas, the
 things the guide does not cover (SQL, migrations, prompts, plugins), and the process
@@ -49,15 +49,15 @@ user's personal data in its message.
 
 Google's rules, which are worth restating because they are the ones most often broken:
 
-| Thing | Case | Example |
-| --- | --- | --- |
-| Type, class, enum, React component | `UpperCamelCase` | `ApplicationStage`, `RadarChart` |
-| Variable, function, method, property | `lowerCamelCase` | `computeHhi`, `nextActionAt` |
-| Module-level constant, genuinely deeply immutable | `CONST_CASE` | `MAX_TIER_A_IN_FLIGHT` |
-| File, directory | `kebab-case` | `portfolio-metrics.ts`, `company-research/` |
-| React component file | `UpperCamelCase.tsx` | `ApplicationBoard.tsx` |
-| Database table, column | `snake_case`, tables plural | `resume_versions.source_bullet_id` |
-| Test file | matches the subject | `portfolio-metrics.test.ts` |
+| Thing                                             | Case                        | Example                                     |
+| ------------------------------------------------- | --------------------------- | ------------------------------------------- |
+| Type, class, enum, React component                | `UpperCamelCase`            | `ApplicationStage`, `RadarChart`            |
+| Variable, function, method, property              | `lowerCamelCase`            | `computeHhi`, `nextActionAt`                |
+| Module-level constant, genuinely deeply immutable | `CONST_CASE`                | `MAX_TIER_A_IN_FLIGHT`                      |
+| File, directory                                   | `kebab-case`                | `portfolio-metrics.ts`, `company-research/` |
+| React component file                              | `UpperCamelCase.tsx`        | `ApplicationBoard.tsx`                      |
+| Database table, column                            | `snake_case`, tables plural | `resume_versions.source_bullet_id`          |
+| Test file                                         | matches the subject         | `portfolio-metrics.test.ts`                 |
 
 Names say what a thing is, not how it is stored or what type it has: `applications`, not
 `applicationList`; `dueAt`, not `dueAtTimestamp`. No abbreviations beyond the ones already
@@ -115,12 +115,12 @@ Commented-out code is deleted. Git remembers.
 **A new feature ships with a test or a runnable example.** Not both required, not neither
 allowed.
 
-| Layer | What is tested | Tooling |
-| --- | --- | --- |
-| `packages/core` | Every rule: scoring, HHI, ghost detection, FSRS wiring, region policy. Pure functions, table-driven cases, edge cases first | vitest |
-| `plugins/*` | A regression test per plugin against recorded fixtures, so a runtime upgrade fails loudly. Prompts are asserted on shape and invariants, never on exact model prose | vitest |
-| `apps/*` | The flows that lose data if they break: stage changes, capture, diff acceptance | vitest + Playwright |
-| Database | RLS policies — a test that proves user A cannot read user B's rows | SQL tests against a local Supabase |
+| Layer           | What is tested                                                                                                                                                      | Tooling                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `packages/core` | Every rule: scoring, HHI, ghost detection, FSRS wiring, region policy. Pure functions, table-driven cases, edge cases first                                         | vitest                             |
+| `plugins/*`     | A regression test per plugin against recorded fixtures, so a runtime upgrade fails loudly. Prompts are asserted on shape and invariants, never on exact model prose | vitest                             |
+| `apps/*`        | The flows that lose data if they break: stage changes, capture, diff acceptance                                                                                     | vitest + Playwright                |
+| Database        | RLS policies — a test that proves user A cannot read user B's rows                                                                                                  | SQL tests against a local Supabase |
 
 Test names read as sentences: `returns unknown when there is no evidence`. No test depends
 on the wall clock, on network access, or on the order the suite runs in. Model calls are
@@ -202,14 +202,14 @@ code was written. Different surface, different mistakes caught.
 
 ## Tooling
 
-| Concern | Tool | Gate |
-| --- | --- | --- |
-| Format | prettier | CI |
-| Lint | eslint with `@typescript-eslint`, plus import-boundary rules | CI |
-| Types | `tsc --noEmit` | CI |
-| Tests | vitest, Playwright | CI |
-| Commit format | commitlint | pre-commit hook |
-| Dependency hygiene | `npm audit`, dependabot | Weekly |
+| Concern            | Tool                                                         | Gate            |
+| ------------------ | ------------------------------------------------------------ | --------------- |
+| Format             | prettier                                                     | CI              |
+| Lint               | eslint with `@typescript-eslint`, plus import-boundary rules | CI              |
+| Types              | `tsc --noEmit`                                               | CI              |
+| Tests              | vitest, Playwright                                           | CI              |
+| Commit format      | commitlint                                                   | pre-commit hook |
+| Dependency hygiene | `npm audit`, dependabot                                      | Weekly          |
 
 CI configuration lands with Phase 1. Until it exists, these run locally before every
 commit — the standard is not conditional on the automation being built.

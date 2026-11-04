@@ -1,10 +1,10 @@
 # ADR-0004: Treat region as a first-class dimension
 
-| | |
-| --- | --- |
-| **Status** | Accepted |
-| **Date** | 2026-11-04 |
-| **Deciders** | @Yihong |
+|              |            |
+| ------------ | ---------- |
+| **Status**   | Accepted   |
+| **Date**     | 2026-11-04 |
+| **Deciders** | @Yihong    |
 
 ## Context
 
@@ -38,13 +38,13 @@ The cheap option is a free-text `location` field, as every job tracker has.
 
 ## Alternatives considered
 
-| Option | What it would give us | Why not |
-| --- | --- | --- |
-| Free-text `location` | Nothing to design, handles anywhere on earth | Cannot drive behaviour. Visa and language constraints have to be queryable and must participate in matching and alerting |
-| ISO country code, no enum | Universal, no migration to add a market | Invites rows for 190 countries we have no playbook for, and loses the compile-time exhaustiveness check that forces a template decision when a market is added |
-| Per-region deployments or schemas | Clean separation | Absurd at this scale. One user searching four markets needs them joined in one pipeline, not partitioned |
-| Handle Japan as a separate product | Honest about how different it is | The point of the product is one pipeline across markets; splitting it discards the only feature no competitor has |
-| Defer regions until after Phase 2 | Faster Phase 1 | The résumé renderer and the matcher are both built in Phase 2 and both need it. Adding it after means rebuilding both |
+| Option                             | What it would give us                        | Why not                                                                                                                                                        |
+| ---------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Free-text `location`               | Nothing to design, handles anywhere on earth | Cannot drive behaviour. Visa and language constraints have to be queryable and must participate in matching and alerting                                       |
+| ISO country code, no enum          | Universal, no migration to add a market      | Invites rows for 190 countries we have no playbook for, and loses the compile-time exhaustiveness check that forces a template decision when a market is added |
+| Per-region deployments or schemas  | Clean separation                             | Absurd at this scale. One user searching four markets needs them joined in one pipeline, not partitioned                                                       |
+| Handle Japan as a separate product | Honest about how different it is             | The point of the product is one pipeline across markets; splitting it discards the only feature no competitor has                                              |
+| Defer regions until after Phase 2  | Faster Phase 1                               | The résumé renderer and the matcher are both built in Phase 2 and both need it. Adding it after means rebuilding both                                          |
 
 ## Consequences
 

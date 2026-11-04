@@ -1,10 +1,10 @@
 # ADR-0001: Record architecture decisions
 
-| | |
-| --- | --- |
-| **Status** | Accepted |
-| **Date** | 2026-11-04 |
-| **Deciders** | @Yihong |
+|              |            |
+| ------------ | ---------- |
+| **Status**   | Accepted   |
+| **Date**     | 2026-11-04 |
+| **Deciders** | @Yihong    |
 
 ## Context
 
@@ -29,12 +29,12 @@ the reasoning to be written down somewhere it can be reread and judged.
 
 ## Alternatives considered
 
-| Option | What it would give us | Why not |
-| --- | --- | --- |
-| Nothing — rely on commit messages and the design doc | No overhead | Commits record what changed, not what was rejected; a design doc edited in place loses history exactly when it matters |
-| Keep the reasoning inline in `architecture.md` | One file to read | It becomes a changelog interleaved with a specification, and neither reads well. The "we used to do X" sentences are the tell |
+| Option                                               | What it would give us    | Why not                                                                                                                                              |
+| ---------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nothing — rely on commit messages and the design doc | No overhead              | Commits record what changed, not what was rejected; a design doc edited in place loses history exactly when it matters                               |
+| Keep the reasoning inline in `architecture.md`       | One file to read         | It becomes a changelog interleaved with a specification, and neither reads well. The "we used to do X" sentences are the tell                        |
 | A full RFD process with a branch and PR per proposal | Strong review discipline | Built for a team reaching consensus; with one author the ceremony costs more than it returns. The useful part is the status lifecycle, which we took |
-| A decision log in an external tool | Nicer to write | Separates the reasoning from the code it governs, and goes stale the moment the tool is not opened |
+| A decision log in an external tool                   | Nicer to write           | Separates the reasoning from the code it governs, and goes stale the moment the tool is not opened                                                   |
 
 ## Consequences
 

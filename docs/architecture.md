@@ -1,12 +1,12 @@
 # Architecture
 
-| | |
-| --- | --- |
-| **Status** | Draft — Phase 1 in progress |
-| **Author** | @Yihong |
-| **Created** | 2026-11-04 |
-| **Last reviewed** | 2026-11-04 |
-| **Decisions** | [ADR index](adr/README.md) |
+|                   |                             |
+| ----------------- | --------------------------- |
+| **Status**        | Draft — Phase 1 in progress |
+| **Author**        | @Yihong                     |
+| **Created**       | 2026-11-04                  |
+| **Last reviewed** | 2026-11-04                  |
+| **Decisions**     | [ADR index](adr/README.md)  |
 
 This is the system-level design document: structure, boundaries, and the reasoning behind
 both. Behaviour lives in [product-spec.md](product-spec.md); the schema lives in
@@ -52,13 +52,13 @@ that going public is a deployment change rather than a rewrite.
 
 ## 3. Constraints
 
-| Constraint | Consequence |
-| --- | --- |
-| Single developer, evenings and weekends | Boring, well-documented technology; no component we would have to operate ourselves |
-| Agent runtime is in developer preview | Version pinned, adapter layer isolated, regression tests per plugin ([ADR-0003](adr/0003-keep-business-logic-in-packages-core.md)) |
-| Inference is paid for by us, not the user | Tiered models, aggressive caching, per-plugin caps, every call metered |
-| Résumé and interview content is sensitive personal data | Row-level security from the first migration; GDPR applies in the UK, IE, EE and DE |
-| Free tiers and model prices change monthly | No provider or model name in business code; backends are configuration |
+| Constraint                                              | Consequence                                                                                                                        |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Single developer, evenings and weekends                 | Boring, well-documented technology; no component we would have to operate ourselves                                                |
+| Agent runtime is in developer preview                   | Version pinned, adapter layer isolated, regression tests per plugin ([ADR-0003](adr/0003-keep-business-logic-in-packages-core.md)) |
+| Inference is paid for by us, not the user               | Tiered models, aggressive caching, per-plugin caps, every call metered                                                             |
+| Résumé and interview content is sensitive personal data | Row-level security from the first migration; GDPR applies in the UK, IE, EE and DE                                                 |
+| Free tiers and model prices change monthly              | No provider or model name in business code; backends are configuration                                                             |
 
 ## 4. System overview
 
@@ -95,13 +95,13 @@ flowchart TB
 
 ### Layer responsibilities
 
-| Layer | Owns | Must never |
-| --- | --- | --- |
-| Surfaces | Capture, display, confirmation of anything irreversible | Hold business rules or talk to model backends directly |
-| Adapter layer | Translating runtime plugin calls into `core` calls | Contain a rule worth testing on its own |
-| Plugins | Fetching, prompting, multi-step agent work | Encode scoring, scheduling or region logic |
-| `packages/core` | Every rule: schema types, scoring, rubrics, FSRS wiring, portfolio metrics, region policy | Import anything runtime-specific |
-| Supabase | Storage, auth, tenancy enforcement, cron fallback | Be bypassed by a surface writing with a service key |
+| Layer           | Owns                                                                                      | Must never                                             |
+| --------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Surfaces        | Capture, display, confirmation of anything irreversible                                   | Hold business rules or talk to model backends directly |
+| Adapter layer   | Translating runtime plugin calls into `core` calls                                        | Contain a rule worth testing on its own                |
+| Plugins         | Fetching, prompting, multi-step agent work                                                | Encode scoring, scheduling or region logic             |
+| `packages/core` | Every rule: schema types, scoring, rubrics, FSRS wiring, portfolio metrics, region policy | Import anything runtime-specific                       |
+| Supabase        | Storage, auth, tenancy enforcement, cron fallback                                         | Be bypassed by a surface writing with a service key    |
 
 The sharp version of the rule: **if a behaviour deserves a unit test, it belongs in
 `core`.** The adapter layer exists so that a breaking runtime release is a day of work
@@ -208,13 +208,13 @@ uptime monitoring are deliberately deferred to Phase 5 — see
 
 ### Failure modes
 
-| Failure | Behaviour |
-| --- | --- |
-| Model backend down or rate-limited | Fall back down the tier ladder, then queue; never block a user-initiated apply on inference |
-| Agent runtime breaking change | Pinned version keeps production working; adapter layer absorbs the migration |
-| External source unavailable | Profile is written with the fields that succeeded, each marked with its own confidence; partial is better than absent |
-| Research produces nothing credible | Return "unknown" rather than a guess — the no-fabrication rule outranks completeness |
-| Offline capture | Local queue, idempotent sync on a client-side id |
+| Failure                            | Behaviour                                                                                                             |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Model backend down or rate-limited | Fall back down the tier ladder, then queue; never block a user-initiated apply on inference                           |
+| Agent runtime breaking change      | Pinned version keeps production working; adapter layer absorbs the migration                                          |
+| External source unavailable        | Profile is written with the fields that succeeded, each marked with its own confidence; partial is better than absent |
+| Research produces nothing credible | Return "unknown" rather than a guess — the no-fabrication rule outranks completeness                                  |
+| Offline capture                    | Local queue, idempotent sync on a client-side id                                                                      |
 
 ### Compliance and privacy
 
@@ -226,11 +226,11 @@ nothing is sent on a user's behalf. The collection stance is in
 
 ## 8. Deployment
 
-| Environment | Models | Data | Purpose |
-| --- | --- | --- | --- |
-| Local | Local models, zero cost | Local Supabase, seed data | Development and plugin regression tests |
-| Personal | Free tiers and student credits | Production database, one user | The author's real search — this is the one that must not break |
-| Public (Phase 5) | Free tier plus paid, metered | Multi-tenant, same schema | Signups, subscriptions |
+| Environment      | Models                         | Data                          | Purpose                                                        |
+| ---------------- | ------------------------------ | ----------------------------- | -------------------------------------------------------------- |
+| Local            | Local models, zero cost        | Local Supabase, seed data     | Development and plugin regression tests                        |
+| Personal         | Free tiers and student credits | Production database, one user | The author's real search — this is the one that must not break |
+| Public (Phase 5) | Free tier plus paid, metered   | Multi-tenant, same schema     | Signups, subscriptions                                         |
 
 Hosted by us, so users never configure an API key. The mobile app ships via TestFlight for
 personal use long before it goes near the App Store; the public web app comes first. See
@@ -238,32 +238,32 @@ personal use long before it goes near the App Store; the public web app comes fi
 
 ## 9. Alternatives considered
 
-| Instead of | We would get | Rejected because |
-| --- | --- | --- |
-| Supabase | Self-hosted Postgres plus a backend | Auth, RLS and pgvector in one managed box is most of Phase 1 for free; the exit path is plain Postgres ([ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)) |
-| Business logic inside plugins | Less indirection, faster first build | A preview-stage runtime would own our scoring and rubrics; every breaking change would be a rewrite |
-| A Telegram bot for capture | A capture path in a weekend | The share sheet is faster at the moment that matters, and two capture surfaces is double maintenance for one user |
-| Separate services per module | Independent scaling | One user, one developer; a monolith with hard internal boundaries is the honest choice, and the boundaries are where a split would go |
-| Spreadsheet-grade regions (a text field) | Nothing to design | Visa and language constraints have to participate in matching and alerting, which a free-text field cannot do |
+| Instead of                               | We would get                         | Rejected because                                                                                                                                                       |
+| ---------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Supabase                                 | Self-hosted Postgres plus a backend  | Auth, RLS and pgvector in one managed box is most of Phase 1 for free; the exit path is plain Postgres ([ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)) |
+| Business logic inside plugins            | Less indirection, faster first build | A preview-stage runtime would own our scoring and rubrics; every breaking change would be a rewrite                                                                    |
+| A Telegram bot for capture               | A capture path in a weekend          | The share sheet is faster at the moment that matters, and two capture surfaces is double maintenance for one user                                                      |
+| Separate services per module             | Independent scaling                  | One user, one developer; a monolith with hard internal boundaries is the honest choice, and the boundaries are where a split would go                                  |
+| Spreadsheet-grade regions (a text field) | Nothing to design                    | Visa and language constraints have to participate in matching and alerting, which a free-text field cannot do                                                          |
 
 ## 10. Open questions
 
-| Question | Blocks | Needed by |
-| --- | --- | --- |
-| Can the runtime's UI plugin host the board and radar, or does the web app own all display? | Phase 1 surface split | Start of Phase 1 |
-| iOS or Android first for the mobile capture path? | Mobile MVP | Phase 1 capture work |
-| Does AI Engineer need a ninth competency axis for model evaluation? | Competency framework content | Phase 3 |
-| Which licence, and does the repository go public before or after launch? | Everything about distribution | Before first push ([ADR-0005](adr/0005-choose-a-license.md)) |
-| Where do the first external users come from? | Phase 5 | Phase 4 |
+| Question                                                                                   | Blocks                        | Needed by                                                    |
+| ------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------ |
+| Can the runtime's UI plugin host the board and radar, or does the web app own all display? | Phase 1 surface split         | Start of Phase 1                                             |
+| iOS or Android first for the mobile capture path?                                          | Mobile MVP                    | Phase 1 capture work                                         |
+| Does AI Engineer need a ninth competency axis for model evaluation?                        | Competency framework content  | Phase 3                                                      |
+| Which licence, and does the repository go public before or after launch?                   | Everything about distribution | Before first push ([ADR-0005](adr/0005-choose-a-license.md)) |
+| Where do the first external users come from?                                               | Phase 5                       | Phase 4                                                      |
 
 ## 11. Risks
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Runtime breaking changes | Plugins stop working | Pin the version, regression-test each plugin, keep logic in `core` |
-| Free tiers tighten | Personal-use cost rises | Swappable backends, local models always viable |
-| Scope outruns the time available | A half-built product | Phase gates are "used it for real for a week", not "feature exists" |
-| Competency framework is low quality | A radar that misleads its only user | Ship two axes first, calibrate against real interview feedback |
-| Collection crosses a line | Account bans or legal exposure | Public APIs and user input only; the stance is a non-goal, not a setting |
-| AI fabricates résumé content | Reputational damage, in the one place it cannot be risked | Provenance columns are `NOT NULL`; diffs accepted bullet by bullet |
-| Building replaces applying | The product succeeds, the job search fails | Phase gates are defined in terms of the author's actual search |
+| Risk                                | Impact                                                    | Mitigation                                                               |
+| ----------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Runtime breaking changes            | Plugins stop working                                      | Pin the version, regression-test each plugin, keep logic in `core`       |
+| Free tiers tighten                  | Personal-use cost rises                                   | Swappable backends, local models always viable                           |
+| Scope outruns the time available    | A half-built product                                      | Phase gates are "used it for real for a week", not "feature exists"      |
+| Competency framework is low quality | A radar that misleads its only user                       | Ship two axes first, calibrate against real interview feedback           |
+| Collection crosses a line           | Account bans or legal exposure                            | Public APIs and user input only; the stance is a non-goal, not a setting |
+| AI fabricates résumé content        | Reputational damage, in the one place it cannot be risked | Provenance columns are `NOT NULL`; diffs accepted bullet by bullet       |
+| Building replaces applying          | The product succeeds, the job search fails                | Phase gates are defined in terms of the author's actual search           |

@@ -35,15 +35,15 @@ are architectural rather than aspirational.
 
 ## Security model
 
-| Control | How it works |
-| --- | --- |
-| Tenancy | Every table carries `user_id` with row-level security enabled in the migration that creates the table. The boundary is in the database, so a bug in a surface cannot bypass it ([ADR-0002](docs/adr/0002-use-supabase-as-the-primary-datastore.md)) |
-| Tested isolation | An automated test proves one user cannot read another's rows. It is required, not optional ([code-standards.md](docs/code-standards.md#tests)) |
-| Privileged access | Surfaces use the end user's token. The service key is confined to scheduler plugins, which pass an explicit user context |
-| Secrets | Environment configuration only, never committed. Git history is scanned before the repository goes public |
-| Logs | Ids, not content. No résumé text, interview notes or personal data in logs |
-| Model providers | Content sent for inference goes to third-party providers. The current list is published in the privacy policy and kept in step with configuration changes |
-| Input handling | All external input, model output included, is schema-validated at the boundary and never evaluated |
+| Control           | How it works                                                                                                                                                                                                                                        |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenancy           | Every table carries `user_id` with row-level security enabled in the migration that creates the table. The boundary is in the database, so a bug in a surface cannot bypass it ([ADR-0002](docs/adr/0002-use-supabase-as-the-primary-datastore.md)) |
+| Tested isolation  | An automated test proves one user cannot read another's rows. It is required, not optional ([code-standards.md](docs/code-standards.md#tests))                                                                                                      |
+| Privileged access | Surfaces use the end user's token. The service key is confined to scheduler plugins, which pass an explicit user context                                                                                                                            |
+| Secrets           | Environment configuration only, never committed. Git history is scanned before the repository goes public                                                                                                                                           |
+| Logs              | Ids, not content. No résumé text, interview notes or personal data in logs                                                                                                                                                                          |
+| Model providers   | Content sent for inference goes to third-party providers. The current list is published in the privacy policy and kept in step with configuration changes                                                                                           |
+| Input handling    | All external input, model output included, is schema-validated at the boundary and never evaluated                                                                                                                                                  |
 
 ## Data collection stance
 
