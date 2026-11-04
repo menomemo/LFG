@@ -1,0 +1,3 @@
+# Conventional Commits, enforced locally so CI is not the first to tell you.
+# docs/code-standards.md#commits
+npx --no -- commitlint --edit "$1"
