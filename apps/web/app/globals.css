@@ -283,3 +283,47 @@ select {
   flex: 1 1 100%;
   font-size: 12px;
 }
+
+/* Drag-and-drop. Structure only — the lane and card styling above is
+   unchanged, and the visual design is a separate round. */
+
+.face {
+  cursor: grab;
+}
+
+.face:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* The card stays in its lane while a copy of it follows the pointer, so the
+   board does not reflow under the hand that is dragging. */
+.cards li.dragging {
+  opacity: 0.35;
+}
+
+.cards li.overlay {
+  cursor: grabbing;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+/* A lane needs a floor to drop onto when it is empty. */
+.lane {
+  min-height: 96px;
+}
+
+.lane.over .lane-head {
+  border-bottom-color: var(--accent);
+}
+
+.lane.over .cards {
+  outline: 2px dashed var(--line);
+  outline-offset: 6px;
+  border-radius: 10px;
+  min-height: 48px;
+}
+
+.signed-in {
+  margin-bottom: 0;
+}

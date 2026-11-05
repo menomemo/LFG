@@ -164,13 +164,12 @@ and is sometimes right, but the commit will fail in CI.
 
 Honest list, so nothing here reads as working when it is not.
 
-| Missing                                                           | Lands with                                                 |
-| ----------------------------------------------------------------- | ---------------------------------------------------------- |
-| Parsing a pasted job advert into the create form                  | Phase 1, with `jd-parser`                                  |
-| Dragging a card between lanes — the stage is chosen from a select | Phase 1                                                    |
-| Agent runtime, plugin scaffolding, model backends                 | Phase 1, with `followup-writer`                            |
-| Coverage thresholds in CI                                         | When there is enough code for a threshold to mean anything |
-| Error tracking, uptime, cost dashboard                            | Phase 5 ([launch.md](launch.md))                           |
+| Missing                                           | Lands with                                                 |
+| ------------------------------------------------- | ---------------------------------------------------------- |
+| Parsing a pasted job advert into the create form  | Phase 1, with `jd-parser`                                  |
+| Agent runtime, plugin scaffolding, model backends | Phase 1, with `followup-writer`                            |
+| Coverage thresholds in CI                         | When there is enough code for a threshold to mean anything |
+| Error tracking, uptime, cost dashboard            | Phase 5 ([launch.md](launch.md))                           |
 
 The board is built, deployed and in use; what is listed above is what it still cannot do.
 See [roadmap.md](roadmap.md#phase-1--foundation--weeks-13).

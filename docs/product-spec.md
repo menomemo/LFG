@@ -28,7 +28,7 @@ it. It is derived from silence instead, by `isGhosted` in `packages/core`.
 | ✅ MVP   | Board view: one lane per stage, derived from `stage_history`, with the longest wait first                                                                                                      |
 | ✅ MVP   | Create an application: one form across company, job and application                                                                                                                            |
 | ✅ MVP   | Change stage from a card. The move appends to the history and never overwrites it                                                                                                              |
-| 📋 MVP   | Drag to change stage (dnd-kit). The select-and-submit control came first because it works with no pointer and no JavaScript                                                                    |
+| ✅ MVP   | Drag to change stage (dnd-kit), by pointer or by keyboard. The select-and-submit control stays: it is the path that needs neither a pointer nor JavaScript                                     |
 | 📋 MVP   | Manual create: paste a JD link or body; AI extracts company, title, key skills, region, language requirement                                                                                   |
 | 📋 MVP   | Record which résumé version each application used                                                                                                                                              |
 | 📋 MVP   | Interview records: round, time, notes                                                                                                                                                          |
