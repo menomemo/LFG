@@ -22,6 +22,7 @@ import {
   type CreateApplicationState,
 } from '@/app/create-application-state';
 import {createClient} from '@/lib/supabase/server';
+import {currentUser} from '@/lib/supabase/user';
 import type {Database} from '@lfg/database';
 import type {SupabaseClient} from '@supabase/supabase-js';
 
@@ -213,9 +214,7 @@ export async function createApplication(
   }
 
   const supabase = await createClient();
-  const {
-    data: {user},
-  } = await supabase.auth.getUser();
+  const user = await currentUser();
   if (!user) {
     redirect('/login');
   }
@@ -267,10 +266,12 @@ export async function createApplication(
  * (docs/data-model.md). Whether the move is allowed at all is decided by
  * `appendStageEvent` in `packages/core`.
  *
- * @returns `null` on success, or why the move was refused.
+ * @returns `null` on success, or why the move was refused. The board shows
+ *   that reason on the card; {@link submitMoveApplication} is the same call
+ *   for the form that submits without JavaScript, where there is nowhere to
+ *   show it.
  */
 export async function moveApplication(
-  _previous: string | null,
   formData: FormData,
 ): Promise<string | null> {
   const id = readField(formData, 'id').trim();
@@ -337,4 +338,17 @@ export async function moveApplication(
 
   revalidatePath('/');
   return null;
+}
+
+/**
+ * Moves an application from a form posted without JavaScript.
+ *
+ * Identical work, no answer. A `<form action={…}>` that Next.js has to
+ * encode for a browser with no JavaScript cannot carry a return value back,
+ * so a refusal here shows up as the page re-rendering with the card where it
+ * already was — which is the truth, just a quiet one. The board uses
+ * {@link moveApplication} directly and shows the reason.
+ */
+export async function submitMoveApplication(formData: FormData): Promise<void> {
+  await moveApplication(formData);
 }
