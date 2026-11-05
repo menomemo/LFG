@@ -310,3 +310,83 @@ select
   a.user_id, a.id, 1, now() - interval '1 day'
 from public.applications a
 where a.job_id = 'd0000000-0000-4000-8000-000000000001';
+
+-- ---------------------------------------------------------------------------
+-- Contacts
+--
+-- One attached to a tracked company, one deliberately not: the Tokyo agency
+-- recruiter is most of the Japanese funnel and belongs to no company we
+-- research, which is the case a non-null-only foreign key would have made
+-- unrepresentable.
+-- ---------------------------------------------------------------------------
+insert into public.contacts
+  (id, user_id, company_id, role_type, name, profile_url, source,
+   last_touch_at, sequence_step)
+values
+  ('c1000000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'a0000000-0000-4000-8000-000000000001',
+   'engineer', 'Priya Raman',
+   'https://linkedin.com/in/priya-raman-example',
+   'author of the Monzo engineering blog post on ledger sharding',
+   now() - interval '6 days', 1),
+  ('c1000000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   'a0000000-0000-4000-8000-000000000003',
+   'hiring_manager', 'Sato Kenji', null,
+   'named as the hiring manager in the job description',
+   null, 0),
+  ('c1000000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   null,
+   'recruiter', 'Tokyo agency recruiter', null,
+   'introduced by a former colleague',
+   now() - interval '2 days', 2),
+  ('d1000000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'b0000000-0000-4000-8000-000000000001',
+   'recruiter', 'Bob Contact', null,
+   'replied to a post', null, 0);
+
+-- ---------------------------------------------------------------------------
+-- Signals
+--
+-- One of each severity, and both halves of the provenance pair populated,
+-- because the columns are NOT NULL and a rumour is not a signal.
+-- ---------------------------------------------------------------------------
+insert into public.signals
+  (id, user_id, company_id, type, severity, payload, observed_at,
+   source_url, generated_by)
+values
+  ('e1000000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'a0000000-0000-4000-8000-000000000001',
+   'funding', 'info',
+   jsonb_build_object('round', 'Series I', 'headline', 'Monzo raises again'),
+   now() - interval '10 days',
+   'https://example.test/news/monzo-series-i',
+   'signal-scanner@0.1.0'),
+  ('e1000000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   'a0000000-0000-4000-8000-000000000004',
+   'headcount_change', 'warning',
+   jsonb_build_object('open_roles_before', 48, 'open_roles_after', 31),
+   now() - interval '4 days',
+   'https://boards.greenhouse.io/wise',
+   'signal-scanner@0.1.0'),
+  ('e1000000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   'a0000000-0000-4000-8000-000000000002',
+   'hiring_freeze', 'critical',
+   jsonb_build_object('scope', 'EMEA engineering', 'reported_by', 'press'),
+   now() - interval '1 day',
+   'https://example.test/news/stripe-emea-freeze',
+   'signal-scanner@0.1.0'),
+  ('f1000000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'b0000000-0000-4000-8000-000000000001',
+   'news', 'info',
+   jsonb_build_object('headline', 'ACME Bob opens a depot'),
+   now() - interval '3 days',
+   'https://example.test/news/acme-bob-depot',
+   'signal-scanner@0.1.0');
