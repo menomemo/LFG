@@ -6,3 +6,7 @@ coverage/
 .expo/
 .turbo/
 package-lock.json
+
+# Generated: must stay byte-identical to what npm run db:types produces,
+# because CI regenerates it and fails on any difference.
+supabase/database.types.ts

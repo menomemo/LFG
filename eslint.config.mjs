@@ -219,9 +219,28 @@ export default tseslint.config(
   {
     files: ['**/*.mjs', '**/*.js', '**/*.config.ts'],
     ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      /* Spread disableTypeChecked's own languageOptions first: naming this key
+         at all replaces it, which silently turns the type-aware project
+         service back on for files that are in no tsconfig. */
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      /* Build and tooling scripts run in Node. Declared here rather than by
+         adding the `globals` package, which would be a dependency for three
+         lines (docs/code-standards.md). */
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
     rules: {
       ...tseslint.configs.disableTypeChecked.rules,
       '@typescript-eslint/naming-convention': 'off',
+      /* A command-line script that cannot print is not a script. The rule
+         still applies everywhere else, which is where it matters: no personal
+         data in logs (SECURITY.md). */
+      'no-console': 'off',
     },
   },
 );

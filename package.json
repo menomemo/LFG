@@ -30,7 +30,7 @@
     "db:start": "supabase start",
     "db:stop": "supabase stop",
     "db:reset": "supabase db reset",
-    "db:types": "supabase gen types typescript --local > supabase/database.types.ts"
+    "db:types": "node scripts/gen-db-types.mjs"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.0",
