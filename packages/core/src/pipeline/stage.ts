@@ -236,3 +236,52 @@ export function parseStageHistory(value: unknown): readonly StageEvent[] {
     return {stage, at: parsed};
   });
 }
+
+/**
+ * When the application first entered a given stage.
+ *
+ * This is how `applied_at` is answered. There is deliberately no `applied_at`
+ * column: the history already holds the fact, and a column holding it twice
+ * would eventually disagree with the array every conversion rate is computed
+ * from (docs/data-model.md).
+ *
+ * First, not last, on purpose. Someone who applies again after a rejection
+ * appends a second `applied` entry, and the date the application campaign
+ * began is the earlier one — time-to-offer measured from the second would
+ * quietly shorten.
+ *
+ * @param history The application's stage history, in any order.
+ * @param stage The stage to look for.
+ * @returns The earliest timestamp at which the application entered `stage`,
+ *   or `null` if it never did. `null` means it did not happen, which is a
+ *   different thing from happening at an unknown time.
+ */
+export function firstEnteredStageAt(
+  history: readonly StageEvent[],
+  stage: ApplicationStage,
+): Date | null {
+  let earliest: Date | null = null;
+  for (const event of history) {
+    if (event.stage !== stage) {
+      continue;
+    }
+    if (earliest === null || event.at.getTime() < earliest.getTime()) {
+      earliest = event.at;
+    }
+  }
+  return earliest;
+}
+
+/**
+ * When the application was applied to.
+ *
+ * Named for the fact rather than for the mechanism, because this is the value
+ * the UI and the metrics ask for.
+ *
+ * @param history The application's stage history, in any order.
+ * @returns The timestamp, or `null` for an application that was never
+ *   applied to — a saved role that is still only a candidate.
+ */
+export function appliedAt(history: readonly StageEvent[]): Date | null {
+  return firstEnteredStageAt(history, 'applied');
+}

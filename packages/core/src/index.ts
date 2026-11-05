@@ -19,6 +19,8 @@ export {
   currentStage,
   enteredCurrentStageAt,
   daysInCurrentStage,
+  firstEnteredStageAt,
+  appliedAt,
   isGhosted,
   parseStageHistory,
 } from './pipeline/stage';
