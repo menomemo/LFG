@@ -15,8 +15,9 @@ function required(name: string): string {
       `Missing environment variable ${name}. ` +
         'Locally: copy .env.example to .env.local and fill it in from ' +
         '`npx supabase status -o env` (docs/development.md). ' +
-        'On Vercel: Project → Settings → Environment Variables, then redeploy ' +
-        '— variables added after a build do not reach it (docs/deployment.md).',
+        'On Netlify: Project configuration → Environment variables, then ' +
+        'redeploy — a variable added after a build does not reach the ' +
+        'running site (docs/deployment.md).',
     );
   }
   return value;
