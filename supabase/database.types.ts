@@ -73,6 +73,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"contacts": {
+                  Row: {
+                    "company_id": string | null,"created_at": string,"id": string,"last_touch_at": string | null,"name": string,"profile_url": string | null,"role_type": Database["public"]['Enums']["contact_role"],"sequence_step": number,"source": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "company_id"?: string | null,"created_at"?: string,"id"?: string,"last_touch_at"?: string | null,"name": string,"profile_url"?: string | null,"role_type": Database["public"]['Enums']["contact_role"],"sequence_step"?: number,"source": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "company_id"?: string | null,"created_at"?: string,"id"?: string,"last_touch_at"?: string | null,"name"?: string,"profile_url"?: string | null,"role_type"?: Database["public"]['Enums']["contact_role"],"sequence_step"?: number,"source"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "contacts_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"interviews": {
                   Row: {
                     "application_id": string,"created_at": string,"feedback": string | null,"followup_sent_at": string | null,"id": string,"notes": string | null,"round": number,"scheduled_at": string,"updated_at": string,"user_id": string
@@ -127,6 +147,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"signals": {
+                  Row: {
+                    "company_id": string,"created_at": string,"generated_by": string,"id": string,"observed_at": string,"payload": NonNullable<Json>,"severity": Database["public"]['Enums']["signal_severity"],"source_url": string,"type": Database["public"]['Enums']["signal_type"],"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "company_id": string,"created_at"?: string,"generated_by": string,"id"?: string,"observed_at": string,"payload": NonNullable<Json>,"severity": Database["public"]['Enums']["signal_severity"],"source_url": string,"type": Database["public"]['Enums']["signal_type"],"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "company_id"?: string,"created_at"?: string,"generated_by"?: string,"id"?: string,"observed_at"?: string,"payload"?: NonNullable<Json>,"severity"?: Database["public"]['Enums']["signal_severity"],"source_url"?: string,"type"?: Database["public"]['Enums']["signal_type"],"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "signals_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
+                  ]
                 }
           }
           Views: {
@@ -136,7 +176,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Enums: {
-            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","effort_tier": "a"|"b"|"c","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","resume_profile": "uk_ie_cv"|"eu_cv"|"jp_rirekisho"|"jp_shokumu_keirekisho"|"jp_english_cv"|"de_lebenslauf","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
+            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","contact_role": "engineer"|"hiring_manager"|"alumni"|"recruiter"|"author"|"other","effort_tier": "a"|"b"|"c","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","resume_profile": "uk_ie_cv"|"eu_cv"|"jp_rirekisho"|"jp_shokumu_keirekisho"|"jp_english_cv"|"de_lebenslauf","signal_severity": "info"|"warning"|"critical","signal_type": "funding"|"layoff"|"hiring_freeze"|"headcount_change"|"leadership_change"|"launch"|"news"|"other","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -256,7 +296,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"effort_tier": ["a", "b", "c"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"resume_profile": ["uk_ie_cv", "eu_cv", "jp_rirekisho", "jp_shokumu_keirekisho", "jp_english_cv", "de_lebenslauf"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
+            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"contact_role": ["engineer", "hiring_manager", "alumni", "recruiter", "author", "other"],"effort_tier": ["a", "b", "c"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"resume_profile": ["uk_ie_cv", "eu_cv", "jp_rirekisho", "jp_shokumu_keirekisho", "jp_english_cv", "de_lebenslauf"],"signal_severity": ["info", "warning", "critical"],"signal_type": ["funding", "layoff", "hiring_freeze", "headcount_change", "leadership_change", "launch", "news", "other"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
           }
         }
 } as const
