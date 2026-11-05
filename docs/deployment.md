@@ -44,7 +44,7 @@ manage:
 
 ### 1. Push the repository
 
-Vercel deploys from GitHub, so the code has to be there first.
+Netlify deploys from GitHub, so the code has to be there first.
 
 ```bash
 git push -u origin main
@@ -122,7 +122,7 @@ version comes from the root `.nvmrc`.
 > failure usually surfaces somewhere misleading — a missing dependency, or the
 > `prepare` script erroring on husky.
 
-Then **Site configuration → Environment variables**, before the first build:
+Then **Project configuration → Environment variables**, before the first build:
 
 | Name                        | Value                                    |                                                                                                                                                                                                        |
 | --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -181,8 +181,8 @@ Schema changes are not automatic and should not be. The sequence is: write the m
 test it locally with `npm run db:reset`, commit it, then `npx supabase db push --remote`.
 Code deploys on push; the database changes when you say so.
 
-**Rolling back.** Vercel keeps every previous deployment — _Deployments → ⋯ → Promote to
-Production_ puts an older one back in seconds. Migrations do not roll back that way, which
+**Rolling back.** Netlify keeps every previous deploy — _Deploys → the one you want →
+Publish deploy_ puts it back in seconds. Migrations do not roll back that way, which
 is the asymmetry to design around: a migration that drops a column cannot be undone by
 redeploying the old code. This is why [code-standards.md](code-standards.md) requires a
 written rollback plan in the pull request for any destructive migration.
@@ -192,13 +192,14 @@ an incident is not a procedure.
 
 ## If it breaks
 
-| Symptom                                     | Cause                                                                                                                                                                                 |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Missing environment variable SUPABASE_URL` | Set in Vercel but not redeployed — variables added after a build do not reach it                                                                                                      |
-| Build fails resolving `@lfg/database`       | `supabase/database.types.ts` sits outside `apps/web`, reached by a path alias. Check that Vercel's _Include files outside the Root Directory_ is on; it is the default for a monorepo |
-| Sign-in says invalid credentials            | The account was created without _Auto Confirm User_, so it is waiting on an email                                                                                                     |
-| The list is empty when it should not be     | Expected on a new project. If it is empty for an account that has rows, RLS is refusing them — check `user_id` on those rows                                                          |
-| Page loads locally, 500 in production       | Read the Vercel function logs, not the browser. The error is server-side                                                                                                              |
+| Symptom                                                     | Cause                                                                                                                                                                  |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Missing environment variable SUPABASE_URL`                 | Set in Netlify but not redeployed — a variable added after a build does not reach the running site                                                                     |
+| Build fails resolving `@lfg/database`                       | `supabase/database.types.ts` sits outside `apps/web`, reached by a path alias. Check that the base directory is empty, so install and build run at the repository root |
+| Sign-in says invalid credentials                            | The account was created without _Auto Confirm User_, so it is waiting on an email                                                                                      |
+| Every path returns 401, with a page titled _Login Redirect_ | Netlify visitor access, not our code — the request never reaches the app. _Project configuration → General → Visitor access → Project visibility_, set **Public**      |
+| The list is empty when it should not be                     | Expected on a new project. If it is empty for an account that has rows, RLS is refusing them — check `user_id` on those rows                                           |
+| Page loads locally, 500 in production                       | Read the Netlify logs (_Deploys → the deploy → Functions_), not the browser. The error is server-side                                                                  |
 
 ## Not set up yet
 
