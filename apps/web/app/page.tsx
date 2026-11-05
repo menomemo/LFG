@@ -4,6 +4,8 @@ import {
   currentStage,
   daysInCurrentStage,
   isGhosted,
+  formatLanguageRequirement,
+  parseLanguageRequirement,
   parseStageHistory,
 } from '@lfg/core';
 
@@ -28,9 +30,25 @@ export default async function BoardPage() {
     redirect('/login');
   }
 
+  /* Company, title and region are read through the job rather than copied
+     onto the application, so there is one place for each of them to be wrong
+     (supabase/migrations/20261105093000). The nested select is one round trip:
+     PostgREST resolves the foreign keys server-side, and row-level security
+     applies to every table it touches, not just the outermost one. */
   const {data, error} = await supabase
     .from('applications')
-    .select('id, company_name, role_title, region, stage_history')
+    .select(
+      `id,
+       stage_history,
+       jobs!inner (
+         title,
+         region,
+         work_mode,
+         visa_sponsorship,
+         language_required,
+         companies!inner ( name )
+       )`,
+    )
     .order('created_at', {ascending: false});
 
   if (error) {
@@ -43,11 +61,16 @@ export default async function BoardPage() {
 
   const applications = data.map(row => {
     const history = parseStageHistory(row.stage_history);
+    const requirement = parseLanguageRequirement(row.jobs.language_required);
     return {
       id: row.id,
-      company: row.company_name,
-      role: row.role_title,
-      region: row.region,
+      company: row.jobs.companies.name,
+      role: row.jobs.title,
+      region: row.jobs.region,
+      workMode: row.jobs.work_mode,
+      sponsorship: row.jobs.visa_sponsorship,
+      language:
+        requirement === null ? null : formatLanguageRequirement(requirement),
       stage: currentStage(history),
       days: daysInCurrentStage(history, now),
       ghosted: isGhosted(history, now),
@@ -86,6 +109,13 @@ export default async function BoardPage() {
               <div className="row">
                 <span className="role">
                   {application.role} · {application.region.toUpperCase()}
+                  {application.workMode === null
+                    ? ''
+                    : ` · ${application.workMode}`}
+                  {application.sponsorship === 'yes' ? ' · sponsors' : ''}
+                  {application.language === null
+                    ? ''
+                    : ` · ${application.language}`}
                 </span>
                 <span className={application.ghosted ? 'meta ghost' : 'meta'}>
                   {application.days === null
