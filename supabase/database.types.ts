@@ -35,17 +35,57 @@ export type Database = {
           Tables: {
             "applications": {
                   Row: {
-                    "company_name": string,"created_at": string,"id": string,"region": Database["public"]['Enums']["region"],"role_title": string,"stage_history": NonNullable<Json>,"updated_at": string,"user_id": string
+                    "created_at": string,"id": string,"job_id": string,"stage_history": NonNullable<Json>,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "company_name": string,"created_at"?: string,"id"?: string,"region": Database["public"]['Enums']["region"],"role_title": string,"stage_history"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
+                    "created_at"?: string,"id"?: string,"job_id": string,"stage_history"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "company_name"?: string,"created_at"?: string,"id"?: string,"region"?: Database["public"]['Enums']["region"],"role_title"?: string,"stage_history"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"job_id"?: string,"stage_history"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "applications_job_id_fkey"
+      columns: ["job_id"]
+isOneToOne: false
+      referencedRelation: "jobs"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"companies": {
+                  Row: {
+                    "ats_slug": string | null,"ats_type": Database["public"]['Enums']["ats_type"] | null,"created_at": string,"domain": string | null,"hq_country": string | null,"id": string,"name": string,"regions": (Database["public"]['Enums']["region"])[],"research_at": string | null,"research_generated_by": string | null,"research_json": Json | null,"sector": string | null,"size": Database["public"]['Enums']["company_size"] | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "ats_slug"?: string | null,"ats_type"?: Database["public"]['Enums']["ats_type"] | null,"created_at"?: string,"domain"?: string | null,"hq_country"?: string | null,"id"?: string,"name": string,"regions"?: (Database["public"]['Enums']["region"])[],"research_at"?: string | null,"research_generated_by"?: string | null,"research_json"?: Json | null,"sector"?: string | null,"size"?: Database["public"]['Enums']["company_size"] | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "ats_slug"?: string | null,"ats_type"?: Database["public"]['Enums']["ats_type"] | null,"created_at"?: string,"domain"?: string | null,"hq_country"?: string | null,"id"?: string,"name"?: string,"regions"?: (Database["public"]['Enums']["region"])[],"research_at"?: string | null,"research_generated_by"?: string | null,"research_json"?: Json | null,"sector"?: string | null,"size"?: Database["public"]['Enums']["company_size"] | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
+                  ]
+                },"jobs": {
+                  Row: {
+                    "company_id": string,"created_at": string,"id": string,"jd_text": string | null,"language_required": Json | null,"posted_at": string | null,"region": Database["public"]['Enums']["region"],"source_url": string | null,"title": string,"updated_at": string,"user_id": string,"visa_sponsorship": Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source": string | null,"work_mode": Database["public"]['Enums']["work_mode"] | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "company_id": string,"created_at"?: string,"id"?: string,"jd_text"?: string | null,"language_required"?: Json | null,"posted_at"?: string | null,"region": Database["public"]['Enums']["region"],"source_url"?: string | null,"title": string,"updated_at"?: string,"user_id": string,"visa_sponsorship"?: Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source"?: string | null,"work_mode"?: Database["public"]['Enums']["work_mode"] | null
+                  }
+                  Update: {
+                    "company_id"?: string,"created_at"?: string,"id"?: string,"jd_text"?: string | null,"language_required"?: Json | null,"posted_at"?: string | null,"region"?: Database["public"]['Enums']["region"],"source_url"?: string | null,"title"?: string,"updated_at"?: string,"user_id"?: string,"visa_sponsorship"?: Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source"?: string | null,"work_mode"?: Database["public"]['Enums']["work_mode"] | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "jobs_company_id_fkey"
+      columns: ["company_id"]
+isOneToOne: false
+      referencedRelation: "companies"
+      referencedColumns: ["id"]
+    }
                   ]
                 }
           }
@@ -56,7 +96,7 @@ export type Database = {
             [_ in never]: never
           }
           Enums: {
-            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","region": "uk"|"ie"|"ee"|"jp"|"de"|"other"
+            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -176,7 +216,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"region": ["uk", "ie", "ee", "jp", "de", "other"]
+            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
           }
         }
 } as const
