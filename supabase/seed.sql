@@ -390,3 +390,83 @@ values
    now() - interval '3 days',
    'https://example.test/news/acme-bob-depot',
    'signal-scanner@0.1.0');
+
+-- ---------------------------------------------------------------------------
+-- Competencies
+--
+-- Two axes, as docs/product-spec.md says to start: coding and system design.
+-- Level descriptions are behaviours rather than adjectives, which is the
+-- content rule the NOT NULL columns only half enforce.
+-- ---------------------------------------------------------------------------
+insert into public.competencies
+  (id, user_id, axis, sub_skill, level_junior, level_mid, level_senior)
+values
+  ('11100000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'coding', 'data structures and algorithms',
+   'Can implement a correct solution to a well-specified problem and say what it costs',
+   'Chooses a structure from the access pattern and justifies it against two alternatives',
+   'Recognises when the standard answer is wrong for this workload and can show why'),
+  ('11100000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   'coding', 'testing',
+   'Writes tests that fail before the fix and pass after it',
+   'Picks the layer a behaviour should be tested at and keeps the suite fast',
+   'Designs code so the expensive failure modes are the cheap ones to test'),
+  ('11100000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   'system_design', 'caching and degradation',
+   'Can add a cache and say what happens when it is cold',
+   'Can design and ship a service with caching and a documented degradation path',
+   'Can say which guarantee is being traded away and what the business cost of that is'),
+  -- Deliberately left with no evidence: the radar must read this as unknown
+  -- rather than as zero.
+  ('11100000-0000-4000-8000-000000000004',
+   '11111111-1111-1111-1111-111111111111',
+   'system_design', 'data modelling',
+   'Can normalise a schema and explain why a column was not added',
+   'Derives what can be derived and justifies what is stored',
+   'Designs for the migration that has not been needed yet'),
+  ('22200000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'debugging', 'reading unfamiliar code',
+   'Can find where a value comes from',
+   'Can bisect a failure to a change',
+   'Can rule out whole subsystems from the shape of the symptom');
+
+-- ---------------------------------------------------------------------------
+-- Evidence
+--
+-- One of each interesting shape: traceable to a row in another table,
+-- traceable to nothing, and scored by a model.
+-- ---------------------------------------------------------------------------
+insert into public.evidence
+  (id, user_id, competency_id, source_type, source_id, score, weight,
+   observed_at, generated_by)
+values
+  -- Real interview feedback, pointing at the seeded interview record. The
+  -- heaviest source, and a human wrote the score.
+  ('11110000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   '11100000-0000-4000-8000-000000000003',
+   'interview_feedback', 'a1000000-0000-4000-8000-000000000001',
+   0.7, 1.0, now() - interval '3 days', null),
+  -- A mock interview. Scored against a rubric by a model, so it carries
+  -- provenance -- the constraint refuses it otherwise.
+  ('11110000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   '11100000-0000-4000-8000-000000000003',
+   'mock_interview', null,
+   0.55, 0.6, now() - interval '20 days', 'mock-interviewer@0.1.0'),
+  -- A self-assessment: the lightest source, and the one with no row anywhere
+  -- to point at, which is why source_id is nullable (ADR-0008).
+  ('11110000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   '11100000-0000-4000-8000-000000000001',
+   'self_assessment', null,
+   0.8, 0.1, now() - interval '60 days', null),
+  ('22220000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   '22200000-0000-4000-8000-000000000001',
+   'project', null,
+   0.6, 0.5, now() - interval '5 days', null);
