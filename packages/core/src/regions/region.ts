@@ -60,3 +60,35 @@ export function assertExhaustive(value: never): never {
       'without every switch over it being updated.',
   );
 }
+
+/**
+ * The market's name, for a label a person reads.
+ *
+ * A closed `switch` rather than a lookup table, so that adding a market does
+ * not compile until it has been named. That is the same mechanism ADR-0004
+ * relies on everywhere else: a new region should make the compiler ask every
+ * question the playbook has to answer, and "what do we call it" is the
+ * cheapest of them.
+ *
+ * @param region The market.
+ * @returns Its name in English. Documentation is English, and so is this
+ *   (CLAUDE.md); a localised board is a Phase 5 concern.
+ */
+export function regionLabel(region: Region): string {
+  switch (region) {
+    case 'uk':
+      return 'United Kingdom';
+    case 'ie':
+      return 'Ireland';
+    case 'ee':
+      return 'Estonia';
+    case 'jp':
+      return 'Japan';
+    case 'de':
+      return 'Germany';
+    case 'other':
+      return 'Elsewhere';
+    default:
+      return assertExhaustive(region);
+  }
+}

@@ -1,0 +1,208 @@
+/**
+ * Turning a filled-in form into the three rows an application needs.
+ *
+ * An application points at a job, and a job points at a company
+ * (supabase/migrations/20261105093000), so adding one role to the board is
+ * three inserts. The person doing it should not have to know that, which
+ * means something has to take one form and produce all three — including the
+ * parts the database will refuse if they are missing, such as the provenance
+ * that a confirmed sponsorship answer has to carry.
+ *
+ * That translation is a rule, so it lives here and not in the surface. The
+ * web form is only the first caller: the JD parser arrives next in Phase 1
+ * and must produce exactly the same shape from a pasted advert, down to
+ * saying where its sponsorship answer came from.
+ */
+
+import {normaliseDomain} from '../companies/domain';
+import {isRegion, REGIONS, type Region} from '../regions/region';
+import {
+  isSponsorship,
+  isWorkMode,
+  SPONSORSHIP_VALUES,
+  WORK_MODES,
+  type Sponsorship,
+  type WorkMode,
+} from '../jobs/job';
+import {accept, reject, type Validated} from '../validation';
+import {
+  isApplicationStage,
+  APPLICATION_STAGES,
+  type ApplicationStage,
+} from './stage';
+
+/**
+ * The source recorded for a sponsorship answer a person gave themselves.
+ *
+ * `jobs.visa_sponsorship_source` is `NOT NULL` whenever the answer is not
+ * `unknown`, and the constraint exists because a value read from the UK's
+ * register of licensed sponsors and a value someone inferred from an advert
+ * are not the same fact. This is the honest label for the second kind. When
+ * the register ingest lands in Phase 2 it will write its own.
+ */
+export const SELF_REPORTED = 'self-reported';
+
+/**
+ * A create form, as a browser hands it over.
+ *
+ * Every field is a string, including the ones that will become enums, because
+ * that is what a form body contains. Empty means the field was left blank,
+ * which for an optional field is information and not an error.
+ */
+export interface ApplicationDraftFields {
+  readonly company: string;
+  readonly domain: string;
+  readonly role: string;
+  readonly region: string;
+  readonly workMode: string;
+  readonly sponsorship: string;
+  readonly sourceUrl: string;
+  readonly stage: string;
+}
+
+/** The company row an application needs, found or created. */
+export interface CompanyDraft {
+  readonly name: string;
+  /** The deduplication key, or `null` when the person did not give one. */
+  readonly domain: string | null;
+  /** The market this role is in, which the company is now known to hire in. */
+  readonly region: Region;
+}
+
+/** The job row an application points at. */
+export interface JobDraft {
+  readonly title: string;
+  readonly region: Region;
+  readonly workMode: WorkMode | null;
+  readonly sponsorship: Sponsorship;
+  /** `null` exactly when the answer is `unknown`, as the table requires. */
+  readonly sponsorshipSource: string | null;
+  readonly sourceUrl: string | null;
+}
+
+/** Everything one submitted form says, in the shape the three tables want. */
+export interface ApplicationDraft {
+  readonly company: CompanyDraft;
+  readonly job: JobDraft;
+  /** The stage the application starts in. */
+  readonly stage: ApplicationStage;
+}
+
+/* Accepts what a person can reasonably paste as a job advert's address.
+   Narrow on purpose: `jobs.source_url` is the key the JD parser caches on and
+   the unique index that stops the same posting being paid for twice. */
+const HTTP_URL = /^https?:\/\/[^\s/]+\.[^\s/]+(?:\/\S*)?$/;
+
+function list(values: readonly string[]): string {
+  return values.join(', ');
+}
+
+/**
+ * Parses a submitted create form.
+ *
+ * Nothing here coerces. A region that is not a region is refused rather than
+ * defaulted, because a default would silently file a Tokyo role under the
+ * British playbook — the wrong résumé template, the wrong visa question and a
+ * concentration metric that no longer describes the search (ADR-0004).
+ *
+ * Blank optional fields are the exception, and they become `null` rather than
+ * a guess: an unstated work mode is unknown, not onsite.
+ *
+ * @param fields The raw form values.
+ * @returns The three rows to write, or every reason the form was refused.
+ */
+export function parseApplicationDraft(
+  fields: ApplicationDraftFields,
+): Validated<ApplicationDraft> {
+  const problems: string[] = [];
+
+  const name = fields.company.trim();
+  if (name === '') {
+    problems.push('A company name is required.');
+  }
+
+  const title = fields.role.trim();
+  if (title === '') {
+    problems.push('A role title is required.');
+  }
+
+  const rawRegion = fields.region.trim();
+  const region = isRegion(rawRegion) ? rawRegion : null;
+  if (region === null) {
+    problems.push(`Region must be one of ${list(REGIONS)}.`);
+  }
+
+  /* Blank is the honest answer when nobody has established a domain; a
+     non-empty value that is not a domain is a mistake worth saying out loud,
+     because silently dropping it is what gives one employer two rows. */
+  const rawDomain = fields.domain.trim();
+  const domain = rawDomain === '' ? null : normaliseDomain(rawDomain);
+  if (rawDomain !== '' && domain === null) {
+    problems.push(
+      `"${rawDomain}" is not a domain. Give the company's website, such as ` +
+        'stripe.com, or leave it blank.',
+    );
+  }
+
+  let workMode: WorkMode | null = null;
+  const rawWorkMode = fields.workMode.trim();
+  if (rawWorkMode !== '') {
+    if (isWorkMode(rawWorkMode)) {
+      workMode = rawWorkMode;
+    } else {
+      problems.push(`Work mode must be one of ${list(WORK_MODES)}, or blank.`);
+    }
+  }
+
+  /* Unlike the others, a blank sponsorship answer has a meaning the schema
+     already names: `unknown`, which is a claim about our knowledge and not
+     about the employer. */
+  const rawSponsorship = fields.sponsorship.trim();
+  const sponsorship: Sponsorship | null =
+    rawSponsorship === ''
+      ? 'unknown'
+      : isSponsorship(rawSponsorship)
+        ? rawSponsorship
+        : null;
+  if (sponsorship === null) {
+    problems.push(`Sponsorship must be one of ${list(SPONSORSHIP_VALUES)}.`);
+  }
+
+  const rawSourceUrl = fields.sourceUrl.trim();
+  const sourceUrl = rawSourceUrl === '' ? null : rawSourceUrl;
+  if (sourceUrl !== null && !HTTP_URL.test(sourceUrl)) {
+    problems.push('The job advert link must be an http or https address.');
+  }
+
+  const rawStage = fields.stage.trim();
+  const stage: ApplicationStage | null =
+    rawStage === '' ? 'saved' : isApplicationStage(rawStage) ? rawStage : null;
+  if (stage === null) {
+    problems.push(`Stage must be one of ${list(APPLICATION_STAGES)}.`);
+  }
+
+  if (problems.length > 0) {
+    return reject(problems);
+  }
+
+  /* Not reachable: each of these three being null pushed a problem above, and
+     problems have already returned. Narrowing anyway, because the alternative
+     is a non-null assertion, which core does not get to make
+     (docs/code-standards.md). */
+  if (region === null || sponsorship === null || stage === null) {
+    return reject(['The form could not be read.']);
+  }
+
+  return accept({
+    company: {name, domain, region},
+    job: {
+      title,
+      region,
+      workMode,
+      sponsorship,
+      sponsorshipSource: sponsorship === 'unknown' ? null : SELF_REPORTED,
+      sourceUrl,
+    },
+    stage,
+  });
+}

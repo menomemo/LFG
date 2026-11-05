@@ -6,7 +6,12 @@
  * database client and no clock — those arrive as arguments (ADR-0003).
  */
 
-export {REGIONS, isRegion, assertExhaustive} from './regions/region';
+export {
+  REGIONS,
+  isRegion,
+  regionLabel,
+  assertExhaustive,
+} from './regions/region';
 export type {Region} from './regions/region';
 
 export {herfindahlIndex, shareByCategory} from './portfolio/concentration';
@@ -25,6 +30,43 @@ export {
   parseStageHistory,
 } from './pipeline/stage';
 export type {ApplicationStage, StageEvent} from './pipeline/stage';
+
+export {
+  movesFrom,
+  appendStageEvent,
+  serialiseStageHistory,
+} from './pipeline/transition';
+export type {StoredStageEvent} from './pipeline/transition';
+
+export {
+  BOARD_LANES,
+  summariseStage,
+  longestWaitingFirst,
+  buildLanes,
+  summariseBoard,
+} from './pipeline/board';
+export type {StageSummary, BoardLane, BoardTotals} from './pipeline/board';
+
+export {SELF_REPORTED, parseApplicationDraft} from './pipeline/draft';
+export type {
+  ApplicationDraftFields,
+  ApplicationDraft,
+  CompanyDraft,
+  JobDraft,
+} from './pipeline/draft';
+
+export {
+  WORK_MODES,
+  SPONSORSHIP_VALUES,
+  isWorkMode,
+  isSponsorship,
+} from './jobs/job';
+export type {WorkMode, Sponsorship} from './jobs/job';
+
+export {normaliseDomain} from './companies/domain';
+
+export {accept, reject} from './validation';
+export type {Validated, Accepted, Rejected} from './validation';
 
 export {
   parseLanguageRequirement,

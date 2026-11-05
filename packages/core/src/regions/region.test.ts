@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {REGIONS, assertExhaustive, isRegion} from './region';
+import {REGIONS, assertExhaustive, isRegion, regionLabel} from './region';
 import type {Region} from './region';
 
 describe('REGIONS', () => {
@@ -70,5 +70,19 @@ describe('assertExhaustive', () => {
       'lebenslauf',
       'no-playbook',
     ]);
+  });
+});
+
+describe('regionLabel', () => {
+  it.each([...REGIONS])('names %s', region => {
+    expect(regionLabel(region).length).toBeGreaterThan(0);
+  });
+
+  it('gives every market a distinct name', () => {
+    expect(new Set(REGIONS.map(regionLabel)).size).toBe(REGIONS.length);
+  });
+
+  it('names the escape hatch without pretending it is a market', () => {
+    expect(regionLabel('other')).toBe('Elsewhere');
   });
 });
