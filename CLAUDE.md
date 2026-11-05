@@ -25,9 +25,12 @@ records where the project actually is, and it is more current than this section.
 
 - **Phase 1 · Foundation.** Iteration zero is done: npm workspace, strict TypeScript,
   Google-style lint and format, the ADR-0003 boundary rules, commitlint, CI, and
-  `@lfg/core` with its first tested modules. No user-facing code yet.
-- Next: the walking skeleton — one table with RLS and its isolation test, one `core`
-  function, one page, deployed. No features.
+  `@lfg/core` with its first tested modules.
+- The walking skeleton is done and **deployed**: one table with RLS and its isolation
+  suite, `core` deriving what is shown, one page, live on Netlify against production
+  Supabase. Every push to `main` goes live on its own. It is read-only — nothing can be
+  added through the UI yet.
+- Next: the rest of the schema, then the board — creating and moving an application.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.
@@ -39,7 +42,7 @@ records where the project actually is, and it is more current than this section.
 **Every time a module is finished, update [docs/progress.md](docs/progress.md) in the same
 pull request** — the Gantt chart, the status table, the "Right now" block and the date. The
 protocol is at the bottom of that file. The point is that the whole picture stays visible:
-which of the 24 tracked items are done, which phase we are in, and which gate is still
+which of the 29 tracked items are done, which phase we are in, and which gate is still
 open. A module is finished when its gate-relevant behaviour works and is tested, not when
 it compiles.
 
