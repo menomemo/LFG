@@ -145,3 +145,141 @@ button {
   font-size: 13px;
   margin: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   The board
+   --------------------------------------------------------------------------- */
+
+main.board {
+  max-width: 1200px;
+}
+
+select {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--fg);
+}
+
+/* The create form, folded away until it is wanted. */
+.create {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 12px 16px;
+  margin: 0 0 24px;
+}
+
+.create summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.create form {
+  display: block;
+  max-width: none;
+  margin-top: 16px;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.fields label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.fields .wide {
+  grid-column: 1 / -1;
+}
+
+.create button[type='submit'] {
+  margin-top: 16px;
+}
+
+/* Lanes scroll sideways rather than wrapping: a board that reflows loses the
+   left-to-right reading of a pipeline. */
+.lanes {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+}
+
+.lane {
+  flex: 0 0 220px;
+}
+
+.lane-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 10px;
+}
+
+.lane-name {
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.lane-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cards {
+  gap: 8px;
+}
+
+.cards li {
+  padding: 10px 12px;
+}
+
+.cards p {
+  margin: 0 0 2px;
+}
+
+.cards .co {
+  font-size: 14px;
+}
+
+/* A select and a button on one line, against the global form grid. */
+.move {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: none;
+  margin-top: 10px;
+}
+
+.move select,
+.move button {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.move select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.move .error {
+  flex: 1 1 100%;
+  font-size: 12px;
+}
