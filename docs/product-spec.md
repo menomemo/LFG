@@ -3,7 +3,7 @@
 |                   |                             |
 | ----------------- | --------------------------- |
 | **Status**        | Draft — Phase 1 in progress |
-| **Last reviewed** | 2026-11-04                  |
+| **Last reviewed** | 2026-11-05                  |
 
 What each module does and in what order it gets built. Structure is in
 [architecture.md](architecture.md); schema is in [data-model.md](data-model.md); phase
@@ -25,7 +25,10 @@ it. It is derived from silence instead, by `isGhosted` in `packages/core`.
 
 | Scope    | Item                                                                                                                                                                                           |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 📋 MVP   | Board view, drag to change stage (dnd-kit)                                                                                                                                                     |
+| ✅ MVP   | Board view: one lane per stage, derived from `stage_history`, with the longest wait first                                                                                                      |
+| ✅ MVP   | Create an application: one form across company, job and application                                                                                                                            |
+| ✅ MVP   | Change stage from a card. The move appends to the history and never overwrites it                                                                                                              |
+| 📋 MVP   | Drag to change stage (dnd-kit). The select-and-submit control came first because it works with no pointer and no JavaScript                                                                    |
 | 📋 MVP   | Manual create: paste a JD link or body; AI extracts company, title, key skills, region, language requirement                                                                                   |
 | 📋 MVP   | Record which résumé version each application used                                                                                                                                              |
 | 📋 MVP   | Interview records: round, time, notes                                                                                                                                                          |

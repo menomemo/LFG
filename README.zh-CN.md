@@ -149,8 +149,9 @@ npm run db:start && npm run dev -w @lfg/web
 ```
 
 然后打开 http://localhost:3000，用 `alice@lfg.test` / `lfg-dev-password` 登录——这是
-seed 进去的本地测试账号。你会看到一个只读的投递列表，四条。这就是 walking skeleton：
-它存在的意义是证明整条架构跑得通，而不是现在就有用。
+seed 进去的本地测试账号。你会看到投递看板：四条 seed 进去的投递，按 stage history 推导
+出的泳道排列；一个表单可以新增第五条；每张卡片上都有一个控件可以推进它的阶段。产品的其余
+部分还在后面。
 
 `npm run check` 跑 format、lint、types、tests，和 CI 跑的是同样四项、同样顺序。
 `npm run test:db` 对本地数据库跑 row-level security 隔离测试。完整的环境搭建、全部命令，

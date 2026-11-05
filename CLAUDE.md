@@ -26,11 +26,12 @@ records where the project actually is, and it is more current than this section.
 - **Phase 1 · Foundation.** Iteration zero is done: npm workspace, strict TypeScript,
   Google-style lint and format, the ADR-0003 boundary rules, commitlint, CI, and
   `@lfg/core` with its first tested modules.
-- The walking skeleton is done and **deployed**: one table with RLS and its isolation
-  suite, `core` deriving what is shown, one page, live on Netlify against production
-  Supabase. Every push to `main` goes live on its own. It is read-only — nothing can be
-  added through the UI yet.
-- Next: the rest of the schema, then the board — creating and moving an application.
+- The walking skeleton is done and **deployed**: `core` deriving what is shown, live on
+  Netlify against production Supabase. Every push to `main` goes live on its own.
+- The schema is complete — fifteen tables, RLS and a 55-test isolation suite — and the
+  **application board** is usable: an application is created from one form and moved
+  between stages through the UI, with every stage change appended to `stage_history`.
+- Next: parsing a pasted job advert into that form, then insight capture.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.
