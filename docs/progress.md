@@ -1,10 +1,10 @@
 # Progress
 
-|                                                                                            |                                                                                          |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| **Updated**                                                                                | 2026-11-05                                                                               |
-| **Phase**                                                                                  | 1 of 5 — Foundation                                                                      |
-| **Next**                                                                                   | `llm_usage`, the last table, then the board that lets you create and move an application |
+|                                                                                            |                                                                          |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| **Updated**                                                                                | 2026-11-05                                                               |
+| **Phase**                                                                                  | 1 of 5 — Foundation                                                      |
+| **Next**                                                                                   | The application board: creating and moving an application through the UI |
 | Where the project actually is, against the whole picture. This document is updated **every |
 | time a module is finished** — see [Update protocol](#update-protocol). It is the only      |
 | document that tracks state rather than intent, which is why it is separate from            |
@@ -12,16 +12,18 @@
 
 ## Right now
 
-|                                                                                                                                                         |                                                                                                                                                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Done**                                                                                                                                                | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app), every push to `main` going live automatically |
-| **In progress**                                                                                                                                         | Supabase schema: fourteen tables done with policies and a 51-test isolation suite; `llm_usage` remains                                                                                            |
-| **Not done**                                                                                                                                            | **Adding anything through the UI.** The deployed page is read-only; a row exists only if SQL put it there                                                                                         |
-| **Blocked on a decision**                                                                                                                               | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                            |
-| **Phase 1 gate**                                                                                                                                        | Not started: four consecutive weeks with every application in the system                                                                                                                          |
-| Progress through the whole plan: **4 of 29 tracked items complete.** Three of the four are                                                              |
-| infrastructure and the fourth puts that read-only list on the internet, so the count of things that help                                                |
-| anyone find a job is still zero — which is the honest reading. The figure read 25 until 2026-11-05, when the items were counted rather than remembered. |
+|                                                                                                    |                                                                                                                                                                                                                                      |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Done**                                                                                           | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app) · the full Supabase schema, fifteen tables with RLS and a 55-test isolation suite |
+| **In progress**                                                                                    | The application board. The schema it writes to is finished; nothing writes to it yet                                                                                                                                                 |
+| **Not done**                                                                                       | **Adding anything through the UI.** The deployed page is read-only; a row exists only if SQL put it there                                                                                                                            |
+| **Blocked on a decision**                                                                          | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                                                               |
+| **Phase 1 gate**                                                                                   | Not started: four consecutive weeks with every application in the system                                                                                                                                                             |
+| Progress through the whole plan: **5 of 29 tracked items complete.** The fifth is the schema the   |
+| rest of the product is written against — fifteen tables, every one RLS-enabled in the migration    |
+| that created it. It is still infrastructure: the count of things that help anyone find a job stays |
+| zero until the board can create an application, which is the next item and the first one a user    |
+| would notice.                                                                                      |
 
 ## Gantt
 
@@ -42,8 +44,8 @@ gantt
   section Phase 1 · Foundation
   Walking skeleton             :done,   p1a, 2026-11-04, 1d
   Deploy the skeleton          :done,   p1a2, after p1a, 1d
-  Supabase schema and RLS      :active, p1b, after p1a2, 4d
-  Application board            :        p1c, after p1b, 5d
+  Supabase schema and RLS      :done,   p1b, after p1a2, 4d
+  Application board            :active, p1c, after p1b, 5d
   JD parsing and manual create :        p1d, after p1c, 3d
   Insight capture              :        p1e, after p1d, 3d
   Plugin followup-writer       :        p1f, after p1e, 3d
@@ -93,7 +95,7 @@ Status key: ✅ done · 🚧 in progress · 📋 planned · ⛔ blocked
 | 0     | Iteration zero                | ✅     | 2026-11-04 · workspace, lint, CI, `@lfg/core` with 36 tests                                                                 |
 | 1     | Walking skeleton              | ✅     | 2026-11-04 · sign-in → RLS-protected query → `core` derivation → rendered page, locally                                     |
 | 1     | Deploy the skeleton           | ✅     | 2026-11-05 · live on Netlify against production Supabase. Anonymous request redirects to sign-in; 30s from merge to serving |
-| 1     | Supabase schema and RLS       | 🚧     | Fourteen tables done: policies, cross-tenant checks on every parent, 51-test isolation suite. `llm_usage` remains           |
+| 1     | Supabase schema and RLS       | ✅     | 2026-11-05 · fifteen tables, four policies each, cross-tenant checks on every parent, 55-test isolation suite               |
 | 1     | Application board             | 📋     |                                                                                                                             |
 | 1     | JD parsing and manual create  | 📋     |                                                                                                                             |
 | 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                                                                                  |
