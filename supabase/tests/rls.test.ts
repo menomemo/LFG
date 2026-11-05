@@ -40,6 +40,19 @@ const anonClient = (): Client =>
     auth: {persistSession: false, autoRefreshToken: false},
   });
 
+/**
+ * An ISO timestamp a minute in the past.
+ *
+ * `signals.observed_at` carries a check constraint against `created_at`,
+ * which the database fills from its own clock
+ * (supabase/migrations/20261105140000). Reading this process's clock instead
+ * turns that constraint into a race between two clocks a few milliseconds
+ * apart, and the test loses it whenever the database container's clock lags
+ * the host's. Something observed a minute ago is also what a real signal
+ * looks like: nothing is recorded in the same instant it happened.
+ */
+const aMinuteAgo = (): string => new Date(Date.now() - 60_000).toISOString();
+
 async function signIn(email: string): Promise<Client> {
   const client = anonClient();
   const {error} = await client.auth.signInWithPassword({
@@ -640,7 +653,7 @@ describe('writing: the company tables', () => {
       type: 'news',
       severity: 'info',
       payload: {headline: 'Smuggled'},
-      observed_at: new Date().toISOString(),
+      observed_at: aMinuteAgo(),
       source_url: 'https://example.test/smuggled',
       generated_by: 'test',
     });
@@ -664,7 +677,7 @@ describe('writing: the company tables', () => {
         type: 'news',
         severity: 'info',
         payload: {headline: 'Permitted'},
-        observed_at: new Date().toISOString(),
+        observed_at: aMinuteAgo(),
         source_url: 'https://example.test/permitted',
         generated_by: 'test',
       })
@@ -698,7 +711,7 @@ describe('writing: the competency tables', () => {
       source_type: 'self_assessment',
       score: 1,
       weight: 0.1,
-      observed_at: new Date().toISOString(),
+      observed_at: aMinuteAgo(),
     });
     expect(error).not.toBeNull();
     expect(error!.message).toMatch(/row-level security/i);
@@ -735,7 +748,7 @@ describe('writing: the competency tables', () => {
         source_id: bobInterviewId,
         score: 1,
         weight: 1,
-        observed_at: new Date().toISOString(),
+        observed_at: aMinuteAgo(),
       })
       .select()
       .single();
@@ -762,7 +775,7 @@ describe('writing: the competency tables', () => {
       source_type: 'mock_interview',
       score: 0.9,
       weight: 0.6,
-      observed_at: new Date().toISOString(),
+      observed_at: aMinuteAgo(),
     });
     expect(error).not.toBeNull();
     expect(error!.message).toMatch(/evidence_model_scored_has_provenance/);
@@ -777,7 +790,7 @@ describe('writing: the competency tables', () => {
         source_type: 'mock_interview',
         score: 0.9,
         weight: 0.6,
-        observed_at: new Date().toISOString(),
+        observed_at: aMinuteAgo(),
         generated_by: 'mock-interviewer@0.1.0',
       })
       .select()
