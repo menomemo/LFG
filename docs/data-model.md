@@ -1,10 +1,10 @@
 # Data model
 
-|                     |                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| **Status**          | `applications`, `companies`, `jobs`, `resume_versions` and `interviews` implemented; the other ten are still draft |
-| **Last reviewed**   | 2026-11-05                                                                                                         |
-| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                                              |
+|                     |                                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Status**          | Seven tables implemented: `applications`, `companies`, `jobs`, `resume_versions`, `interviews`, `contacts`, `signals`. The other eight are still draft |
+| **Last reviewed**   | 2026-11-05                                                                                                                                             |
+| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                                                                                  |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
 `evidence` is what makes the competency radar possible, because it is where practice,
@@ -34,23 +34,23 @@ These are enforced in the schema, not by discipline.
 
 ## Tables
 
-| Table             | Key fields                                                                                                                                                  | Related to                    |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
-| `companies`       | `name`, `domain`, `ats_type`, `ats_slug`, `sector`, `size`, `hq_country`, `regions`, `research_json`, `research_at`                                         | `jobs`, `contacts`, `signals` |
-| `jobs`            | `company_id`, `title`, `jd_text`, `jd_embedding`, `skill_vector`, `source_url`, `posted_at`, `region`, `work_mode`, `visa_sponsorship`, `language_required` | `applications`                |
-| `applications`    | `job_id`, `tier`, `stage_history`, `resume_version_id`, `next_action_at`                                                                                    | `contacts`, `interviews`      |
-| `interviews`      | `application_id`, `round`, `scheduled_at`, `notes`, `feedback`, `followup_sent_at`                                                                          | `evidence`                    |
-| `resume_versions` | `base_json`, `tailored_json`, `diff`, `pdf_url`, `region_profile`, `locale`, `generated_by`                                                                 | `applications`                |
-| `contacts`        | `company_id`, `role_type`, `name`, `profile_url`, `source`, `last_touch_at`, `sequence_step`                                                                | `applications`                |
-| `competencies`    | `axis`, `sub_skill`, `level_junior`, `level_mid`, `level_senior`                                                                                            | `evidence`, `cards`           |
-| `evidence`        | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at`                                                                               | `competencies`                |
-| `cards`           | `competency_id`, `front`, `back`, `fsrs_state`, `due_at`                                                                                                    | `review_logs`                 |
-| `review_logs`     | `card_id`, `rating`, `reviewed_at`                                                                                                                          | `cards`                       |
-| `stories`         | `title`, `star_json`, `competency_ids`                                                                                                                      | `interviews`                  |
-| `insights`        | `raw_text`, `source_url`, `summary`, `sales_dims`, `embedding`, `cluster_id`                                                                                | `drills`, `evidence`          |
-| `drills`          | `insight_id`, `scenario`, `attempts`, `last_score`                                                                                                          | `evidence`                    |
-| `signals`         | `company_id`, `type`, `payload`, `observed_at`, `severity`                                                                                                  | `companies`                   |
-| `llm_usage`       | `user_id`, `task`, `model`, `tokens_in`, `tokens_out`, `cost`, `created_at`                                                                                 | cost control                  |
+| Table             | Key fields                                                                                                                                                  | Related to                                        |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `companies`       | `name`, `domain`, `ats_type`, `ats_slug`, `sector`, `size`, `hq_country`, `regions`, `research_json`, `research_at`                                         | `jobs`, `contacts`, `signals`                     |
+| `jobs`            | `company_id`, `title`, `jd_text`, `jd_embedding`, `skill_vector`, `source_url`, `posted_at`, `region`, `work_mode`, `visa_sponsorship`, `language_required` | `applications`                                    |
+| `applications`    | `job_id`, `tier`, `stage_history`, `resume_version_id`, `next_action_at`                                                                                    | `contacts`, `interviews`                          |
+| `interviews`      | `application_id`, `round`, `scheduled_at`, `notes`, `feedback`, `followup_sent_at`                                                                          | `evidence`                                        |
+| `resume_versions` | `base_json`, `tailored_json`, `diff`, `pdf_url`, `region_profile`, `locale`, `generated_by`                                                                 | `applications`                                    |
+| `contacts`        | `company_id`, `role_type`, `name`, `profile_url`, `source`, `last_touch_at`, `sequence_step`                                                                | `companies`, and applications through the company |
+| `competencies`    | `axis`, `sub_skill`, `level_junior`, `level_mid`, `level_senior`                                                                                            | `evidence`, `cards`                               |
+| `evidence`        | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at`                                                                               | `competencies`                                    |
+| `cards`           | `competency_id`, `front`, `back`, `fsrs_state`, `due_at`                                                                                                    | `review_logs`                                     |
+| `review_logs`     | `card_id`, `rating`, `reviewed_at`                                                                                                                          | `cards`                                           |
+| `stories`         | `title`, `star_json`, `competency_ids`                                                                                                                      | `interviews`                                      |
+| `insights`        | `raw_text`, `source_url`, `summary`, `sales_dims`, `embedding`, `cluster_id`                                                                                | `drills`, `evidence`                              |
+| `drills`          | `insight_id`, `scenario`, `attempts`, `last_score`                                                                                                          | `evidence`                                        |
+| `signals`         | `company_id`, `type`, `payload`, `observed_at`, `severity`, `source_url`, `generated_by`                                                                    | `companies`                                       |
+| `llm_usage`       | `user_id`, `task`, `model`, `tokens_in`, `tokens_out`, `cost`, `created_at`                                                                                 | cost control                                      |
 
 ## Notes on the fields that carry weight
 
@@ -111,6 +111,24 @@ check that the _parent_ row belongs to the same user, not merely that the new ro
 Without that a user could own a row pointing at someone else's company or job, and the
 reference itself leaks: it proves that row exists, and any join from it reads across the
 tenant boundary. The isolation suite tests all three of those attacks.
+
+**`contacts.company_id` is nullable**, and null is the normal case for part of the
+search rather than a gap: an agency recruiter is most of the Japanese funnel and belongs
+to no company we research. That nullability is also why the contacts policies have a
+branch the others do not — a plain `exists` check on the parent would refuse the
+legitimate unattached contact, which is a bug that looks like security. The isolation
+suite tests both halves.
+
+**Contacts reach applications through the company**, not through a column of their own.
+One person is worth talking to about every role at their employer, so a `contacts`
+column pointing at a single application would be wrong the second time you apply there,
+and a join table would be a table with nothing in it but two foreign keys.
+
+**`signals.source_url` and `signals.generated_by` are both `NOT NULL`.** Every row is
+written by `signal-scanner` reading a public source, and a signal nobody can check is a
+rumour. For a derived headcount change the link is the ATS board the counts were read
+from. `observed_at` is when the thing happened and `created_at` is when we found out;
+the gap between them is how late the scanner is running.
 
 **`insights.cluster_id`** — assigned by embedding-similarity clustering. The same lesson
 learned three times should reinforce one insight, not create three.
