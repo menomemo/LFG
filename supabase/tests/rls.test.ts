@@ -22,6 +22,7 @@ const ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const PASSWORD = 'lfg-dev-password';
 const ALICE = 'alice@lfg.test';
 const BOB = 'bob@lfg.test';
+const ALICE_ID = '11111111-1111-1111-1111-111111111111';
 const BOB_ID = '22222222-2222-2222-2222-222222222222';
 
 if (URL === undefined || ANON_KEY === undefined) {
@@ -53,21 +54,48 @@ async function signIn(email: string): Promise<Client> {
 
 let alice: Client;
 let bob: Client;
-let bobRowId: string;
+let bobApplicationId: string;
+let bobCompanyId: string;
+let bobJobId: string;
+let aliceJobId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
   bob = await signIn(BOB);
 
-  const {data, error} = await bob
+  const bobCompany = await bob
+    .from('companies')
+    .select('id')
+    .eq('name', 'ACME Bob Ltd')
+    .single();
+  if (bobCompany.error) {
+    throw new Error(`Seed missing Bob's company: ${bobCompany.error.message}`);
+  }
+  bobCompanyId = bobCompany.data.id;
+
+  const bobJob = await bob.from('jobs').select('id').limit(1).single();
+  if (bobJob.error) {
+    throw new Error(`Seed missing Bob's job: ${bobJob.error.message}`);
+  }
+  bobJobId = bobJob.data.id;
+
+  const bobApplication = await bob
     .from('applications')
     .select('id')
-    .eq('company_name', 'ACME Bob Ltd')
+    .limit(1)
     .single();
-  if (error) {
-    throw new Error(`Seed missing Bob's row: ${error.message}`);
+  if (bobApplication.error) {
+    throw new Error(
+      `Seed missing Bob's application: ${bobApplication.error.message}`,
+    );
   }
-  bobRowId = data.id;
+  bobApplicationId = bobApplication.data.id;
+
+  const aliceJob = await alice.from('jobs').select('id').limit(1).single();
+  if (aliceJob.error) {
+    throw new Error(`Seed missing Alice's job: ${aliceJob.error.message}`);
+  }
+  aliceJobId = aliceJob.data.id;
 });
 
 describe('reading', () => {
@@ -81,81 +109,84 @@ describe('reading', () => {
     }
   });
 
-  it('never shows Alice a row belonging to Bob', async () => {
-    const {data} = await alice.from('applications').select('company_name');
-    const names = (data ?? []).map(row => row.company_name);
-    expect(names).not.toContain('ACME Bob Ltd');
-  });
-
-  it("hides Bob's row from Alice even when she asks for it by id", async () => {
-    const {data, error} = await alice
-      .from('applications')
-      .select('*')
-      .eq('id', bobRowId);
+  it('never shows Alice a company belonging to Bob', async () => {
+    const {data, error} = await alice.from('companies').select('name');
+    /* Asserting on the error matters more than it looks. The earlier version
+       of this test queried a column that had been dropped, so the request
+       failed, `data` came back null, and `expect([]).not.toContain(...)`
+       passed while proving nothing. A test that cannot fail is worse than no
+       test: it occupies the space where a real one would be. */
     expect(error).toBeNull();
-    expect(data).toStrictEqual([]);
+    expect(data).not.toBeNull();
+    expect(data!.length).toBeGreaterThan(0);
+    expect(data!.map(row => row.name)).not.toContain('ACME Bob Ltd');
   });
 
-  it('returns nothing at all to an anonymous caller', async () => {
-    const {data, error} = await anonClient().from('applications').select('*');
+  it("hides Bob's rows from Alice even when she asks for them by id", async () => {
+    for (const [table, id] of [
+      ['applications', bobApplicationId],
+      ['companies', bobCompanyId],
+      ['jobs', bobJobId],
+    ] as const) {
+      const {data, error} = await alice.from(table).select('*').eq('id', id);
+      expect(error).toBeNull();
+      expect(data).toStrictEqual([]);
+    }
+  });
+
+  it('returns nothing at all to an anonymous caller, from any table', async () => {
+    const anon = anonClient();
+    for (const table of ['applications', 'companies', 'jobs'] as const) {
+      const {data, error} = await anon.from(table).select('*');
+      expect(error).toBeNull();
+      expect(data).toStrictEqual([]);
+    }
+  });
+
+  it('shows Bob only his own company', async () => {
+    const {data, error} = await bob.from('companies').select('name');
     expect(error).toBeNull();
-    expect(data).toStrictEqual([]);
-  });
-
-  it('shows Bob only his own row', async () => {
-    const {data} = await bob.from('applications').select('company_name');
-    expect((data ?? []).map(r => r.company_name)).toStrictEqual([
-      'ACME Bob Ltd',
-    ]);
+    expect(data!.map(r => r.name)).toStrictEqual(['ACME Bob Ltd']);
   });
 });
 
 describe('writing', () => {
   it('refuses an insert that assigns a row to another user', async () => {
-    const {error} = await alice.from('applications').insert({
+    const {error} = await alice.from('companies').insert({
       user_id: BOB_ID,
-      company_name: 'Smuggled',
-      role_title: 'Engineer',
+      name: 'Smuggled',
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  /* The foreign keys opened a second way in, and it is subtler than owning
+     the wrong row: own the row, but point it at someone else's. The reference
+     itself then leaks -- it proves that company or that job exists, and any
+     join from it reads across the tenant boundary. The policies check the
+     parent's owner for exactly this; these two tests are what prove they do. */
+  it("refuses Alice a job attached to Bob's company", async () => {
+    const {error} = await alice.from('jobs').insert({
+      user_id: ALICE_ID,
+      company_id: bobCompanyId,
+      title: 'Trojan Engineer',
       region: 'uk',
     });
     expect(error).not.toBeNull();
     expect(error!.message).toMatch(/row-level security/i);
   });
 
-  it("silently affects nothing when Alice updates Bob's row", async () => {
-    const {data, error} = await alice
-      .from('applications')
-      .update({company_name: 'Taken over'})
-      .eq('id', bobRowId)
-      .select();
-    expect(error).toBeNull();
-    expect(data).toStrictEqual([]);
-
-    const {data: stillBobs} = await bob
-      .from('applications')
-      .select('company_name')
-      .eq('id', bobRowId)
-      .single();
-    expect(stillBobs!.company_name).toBe('ACME Bob Ltd');
+  it("refuses Alice an application attached to Bob's job", async () => {
+    const {error} = await alice.from('applications').insert({
+      user_id: ALICE_ID,
+      job_id: bobJobId,
+      stage_history: [],
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
   });
 
-  it("affects nothing when Alice deletes Bob's row", async () => {
-    const {data, error} = await alice
-      .from('applications')
-      .delete()
-      .eq('id', bobRowId)
-      .select();
-    expect(error).toBeNull();
-    expect(data).toStrictEqual([]);
-
-    const {count} = await bob
-      .from('applications')
-      .select('*', {count: 'exact', head: true})
-      .eq('id', bobRowId);
-    expect(count).toBe(1);
-  });
-
-  it('refuses to let Alice hand her own row to Bob', async () => {
+  it("refuses Alice repointing her own application at Bob's job", async () => {
     const {data: mine} = await alice
       .from('applications')
       .select('id')
@@ -164,6 +195,75 @@ describe('writing', () => {
 
     const {error} = await alice
       .from('applications')
+      .update({job_id: bobJobId})
+      .eq('id', mine!.id);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts the same write when everything belongs to Alice', async () => {
+    const {data, error} = await alice
+      .from('applications')
+      .insert({user_id: ALICE_ID, job_id: aliceJobId, stage_history: []})
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+
+    /* Reverse check: the policies reject what they should and permit what
+       they should. A rule that refuses everything also passes every test
+       above. */
+    await alice.from('applications').delete().eq('id', data!.id);
+  });
+
+  it("silently affects nothing when Alice updates Bob's row", async () => {
+    const {data, error} = await alice
+      .from('companies')
+      .update({name: 'Taken over'})
+      .eq('id', bobCompanyId)
+      .select();
+    expect(error).toBeNull();
+    expect(data).toStrictEqual([]);
+
+    const {data: stillBobs} = await bob
+      .from('companies')
+      .select('name')
+      .eq('id', bobCompanyId)
+      .single();
+    expect(stillBobs!.name).toBe('ACME Bob Ltd');
+  });
+
+  it("affects nothing when Alice deletes Bob's rows", async () => {
+    for (const [table, id] of [
+      ['applications', bobApplicationId],
+      ['companies', bobCompanyId],
+      ['jobs', bobJobId],
+    ] as const) {
+      const {data, error} = await alice
+        .from(table)
+        .delete()
+        .eq('id', id)
+        .select();
+      expect(error).toBeNull();
+      expect(data).toStrictEqual([]);
+
+      const {count} = await bob
+        .from(table)
+        .select('*', {count: 'exact', head: true})
+        .eq('id', id);
+      expect(count).toBe(1);
+    }
+  });
+
+  it('refuses to let Alice hand her own row to Bob', async () => {
+    const {data: mine} = await alice
+      .from('companies')
+      .select('id')
+      .limit(1)
+      .single();
+
+    const {error} = await alice
+      .from('companies')
       .update({user_id: BOB_ID})
       .eq('id', mine!.id);
     expect(error).not.toBeNull();
