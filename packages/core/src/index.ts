@@ -23,3 +23,9 @@ export {
   parseStageHistory,
 } from './pipeline/stage';
 export type {ApplicationStage, StageEvent} from './pipeline/stage';
+
+export {
+  parseLanguageRequirement,
+  formatLanguageRequirement,
+} from './regions/language';
+export type {LanguageRequirement} from './regions/language';
