@@ -4,20 +4,21 @@ How to find things, and the rules that keep these documents from rotting.
 
 ## Map
 
-| Document                               | Kind      | Answers                                            | Changes when                          |
-| -------------------------------------- | --------- | -------------------------------------------------- | ------------------------------------- |
-| [architecture.md](architecture.md)     | Design    | How the system is built and why                    | A structural decision lands           |
-| [progress.md](progress.md)             | State     | Where the project actually is, as a Gantt chart    | A module is finished                  |
-| [development.md](development.md)       | How-to    | Setup, commands, what enforces which standard      | The toolchain changes                 |
-| [deployment.md](deployment.md)         | How-to    | What runs where, and how to get it there           | The hosting setup changes             |
-| [product-spec.md](product-spec.md)     | Spec      | What each module does, in what order               | Scope of a module changes             |
-| [data-model.md](data-model.md)         | Reference | Tables, fields, relationships, conventions         | A migration lands                     |
-| [regions.md](regions.md)               | Playbook  | Per-market visas, channels, CV formats, etiquette  | A market is added or a rule changes   |
-| [roadmap.md](roadmap.md)               | Plan      | Phases, gates, what "done" means                   | A phase gate is passed or re-scoped   |
-| [code-standards.md](code-standards.md) | Standard  | Style, reviews, commits, tests                     | A convention is agreed or dropped     |
-| [launch.md](launch.md)                 | Plan      | Shipping, compliance, distribution, growth         | Launch scope or legal surface changes |
-| [learning-track.md](learning-track.md) | Plan      | The system-design and lifecycle learning goals     | A phase is finished and reflected on  |
-| [adr/](adr/README.md)                  | Record    | Why a specific decision was made, and what it cost | Never — superseded, not edited        |
+| Document                                 | Kind      | Answers                                                         | Changes when                          |
+| ---------------------------------------- | --------- | --------------------------------------------------------------- | ------------------------------------- |
+| [architecture.md](architecture.md)       | Design    | How the system is built and why                                 | A structural decision lands           |
+| [progress.md](progress.md)               | State     | Where the project actually is, as a Gantt chart                 | A module is finished                  |
+| [development.md](development.md)         | How-to    | Setup, commands, what enforces which standard                   | The toolchain changes                 |
+| [deployment.md](deployment.md)           | How-to    | What runs where, and how to get it there                        | The hosting setup changes             |
+| [product-spec.md](product-spec.md)       | Spec      | What each module does, in what order                            | Scope of a module changes             |
+| [data-model.md](data-model.md)           | Reference | Tables, fields, relationships, conventions                      | A migration lands                     |
+| [regions.md](regions.md)                 | Playbook  | Per-market visas, channels, CV formats, etiquette               | A market is added or a rule changes   |
+| [roadmap.md](roadmap.md)                 | Plan      | Phases, gates, what "done" means                                | A phase gate is passed or re-scoped   |
+| [code-standards.md](code-standards.md)   | Standard  | Style, reviews, commits, tests                                  | A convention is agreed or dropped     |
+| [launch.md](launch.md)                   | Plan      | Shipping, compliance, distribution, growth                      | Launch scope or legal surface changes |
+| [learning-track.md](learning-track.md)   | Plan      | The system-design and lifecycle learning goals                  | A phase is finished and reflected on  |
+| [engineering-log.md](engineering-log.md) | Record    | What went wrong, what was done about it, what to do differently | An incident is worth remembering      |
+| [adr/](adr/README.md)                    | Record    | Why a specific decision was made, and what it cost              | Never — superseded, not edited        |
 
 ## The split, in one line each
 
