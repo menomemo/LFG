@@ -2,9 +2,11 @@ import {describe, expect, it} from 'vitest';
 
 import {
   APPLICATION_STAGES,
+  appliedAt,
   currentStage,
   daysInCurrentStage,
   enteredCurrentStageAt,
+  firstEnteredStageAt,
   isApplicationStage,
   isGhosted,
   parseStageHistory,
@@ -248,5 +250,62 @@ describe('parseStageHistory', () => {
         {stage: 'nope', at: '2026-10-02T00:00:00Z'},
       ]),
     ).toThrow(/stage_history\[1\]/);
+  });
+});
+
+describe('firstEnteredStageAt', () => {
+  it('returns null for an empty history', () => {
+    expect(firstEnteredStageAt([], 'applied')).toBeNull();
+  });
+
+  it('returns null for a stage the application never entered', () => {
+    const history = [event('saved', '2026-10-01T00:00:00Z')];
+    expect(firstEnteredStageAt(history, 'offer')).toBeNull();
+  });
+
+  it('returns the timestamp of the matching entry', () => {
+    const history = [
+      event('saved', '2026-10-01T00:00:00Z'),
+      event('applied', '2026-10-03T00:00:00Z'),
+    ];
+    expect(firstEnteredStageAt(history, 'applied')).toStrictEqual(
+      at('2026-10-03T00:00:00Z'),
+    );
+  });
+
+  it('returns the earliest when a stage was entered twice', () => {
+    const history = [
+      event('applied', '2026-10-03T00:00:00Z'),
+      event('rejected', '2026-10-20T00:00:00Z'),
+      event('applied', '2027-01-05T00:00:00Z'),
+    ];
+    expect(firstEnteredStageAt(history, 'applied')).toStrictEqual(
+      at('2026-10-03T00:00:00Z'),
+    );
+  });
+
+  it('is independent of array order', () => {
+    const forwards = [
+      event('saved', '2026-10-01T00:00:00Z'),
+      event('applied', '2026-10-03T00:00:00Z'),
+    ];
+    expect(
+      firstEnteredStageAt([...forwards].reverse(), 'applied'),
+    ).toStrictEqual(firstEnteredStageAt(forwards, 'applied'));
+  });
+});
+
+describe('appliedAt', () => {
+  it('returns null for a saved role nobody applied to', () => {
+    expect(appliedAt([event('saved', '2026-10-01T00:00:00Z')])).toBeNull();
+  });
+
+  it('returns the first application date, not the most recent one', () => {
+    const history = [
+      event('applied', '2026-10-03T00:00:00Z'),
+      event('rejected', '2026-10-20T00:00:00Z'),
+      event('applied', '2027-01-05T00:00:00Z'),
+    ];
+    expect(appliedAt(history)).toStrictEqual(at('2026-10-03T00:00:00Z'));
   });
 });
