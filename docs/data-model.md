@@ -1,10 +1,10 @@
 # Data model
 
-|                     |                                                                                                                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Status**          | Nine tables implemented: `applications`, `companies`, `jobs`, `resume_versions`, `interviews`, `contacts`, `signals`, `competencies`, `evidence`. The other six are still draft |
-| **Last reviewed**   | 2026-11-05                                                                                                                                                                      |
-| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                                                                                                           |
+|                     |                                                                                              |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| **Status**          | Eleven tables implemented. `cards`, `review_logs`, `stories` and `llm_usage` are still draft |
+| **Last reviewed**   | 2026-11-05                                                                                   |
+| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                        |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
 `evidence` is what makes the competency radar possible, because it is where practice,
@@ -47,8 +47,8 @@ These are enforced in the schema, not by discipline.
 | `cards`           | `competency_id`, `front`, `back`, `fsrs_state`, `due_at`                                                                                                    | `review_logs`                                     |
 | `review_logs`     | `card_id`, `rating`, `reviewed_at`                                                                                                                          | `cards`                                           |
 | `stories`         | `title`, `star_json`, `competency_ids`                                                                                                                      | `interviews`                                      |
-| `insights`        | `raw_text`, `source_url`, `summary`, `sales_dims`, `embedding`, `cluster_id`                                                                                | `drills`, `evidence`                              |
-| `drills`          | `insight_id`, `scenario`, `attempts`, `last_score`                                                                                                          | `evidence`                                        |
+| `insights`        | `raw_text`, `source_url`, `summary`, `principle`, `generated_by`, `sales_dims`, `embedding`, `cluster_id`                                                   | `drills`, `evidence`                              |
+| `drills`          | `insight_id`, `scenario`, `generated_by`, `attempts`, `last_score`                                                                                          | `evidence`                                        |
 | `signals`         | `company_id`, `type`, `payload`, `observed_at`, `severity`, `source_url`, `generated_by`                                                                    | `companies`                                       |
 | `llm_usage`       | `user_id`, `task`, `model`, `tokens_in`, `tokens_out`, `cost`, `created_at`                                                                                 | cost control                                      |
 
@@ -143,7 +143,22 @@ from. `observed_at` is when the thing happened and `created_at` is when we found
 the gap between them is how late the scanner is running.
 
 **`insights.cluster_id`** — assigned by embedding-similarity clustering. The same lesson
-learned three times should reinforce one insight, not create three.
+learned three times should reinforce one insight, not create three. It is a bare `uuid`
+and not a foreign key, because whether clusters deserve a table of their own once they
+carry a canonical summary is still open below — creating that table before the clustering
+has run would decide it by accident.
+
+**Everything on `insights` except `raw_text` is nullable.** Capture has to be three
+seconds from a share sheet and has to work offline, so a row that is captured text and
+nothing else is a finished row as far as the user is concerned. `summary` and `principle`
+are the pipeline's two outputs and share one `generated_by`; a principle with no summary
+means the pipeline wrote its second output and not its first, which is refused rather than
+stored.
+
+**`drills.generated_by` is `NOT NULL` and its source link is the foreign key.** A drill is
+always generated from an insight and never typed, so the provenance pair is enforced
+rather than recorded. `last_score` is null until there has been an attempt: a drill nobody
+has tried is not a drill somebody failed.
 
 **`llm_usage`** — written on every model call, with no exceptions. The caching, tiering and
 capping described in [architecture.md](architecture.md#cost-control) cannot be tuned
