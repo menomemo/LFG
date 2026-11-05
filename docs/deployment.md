@@ -15,7 +15,7 @@ fourteen more tables and a board, and the first deployment becomes an investigat
 
 | Piece          | Host                          | Why                                                                                                                        |
 | -------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `apps/web`     | Vercel                        | Next.js is Vercel's own framework, so the build needs no configuration                                                     |
+| `apps/web`     | Netlify                       | A plain Next.js app, so the host is a configuration choice rather than a dependency. Vercel is the alternative; see step 5 |
 | Database, auth | Supabase Cloud                | Same Postgres, same RLS policies, same migrations as local ([ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)) |
 | Migrations     | Applied by `supabase db push` | The files in `supabase/migrations/` are the only way the schema ever changes                                               |
 
@@ -38,7 +38,7 @@ Two accounts, both free for this. Sign in to each with GitHub so there is one id
 manage:
 
 - [Supabase](https://supabase.com) — free tier includes two projects
-- [Vercel](https://vercel.com) — the Hobby plan covers a personal project
+- [Netlify](https://netlify.com) — the free plan covers a personal project
 
 ## Steps
 
@@ -92,17 +92,37 @@ Your production database now has your account and no applications. The page will
 empty state, which is correct — the seeded applications are local fixtures and must stay
 that way.
 
-### 5. Deploy to Vercel
+### 5. Deploy to Netlify
 
-**Add New → Project**, import the GitHub repository, then set:
+> [!NOTE]
+> Vercel was the first choice — it makes Next.js and would have been the
+> smoothest fit. Its fraud detection flagged the account during signup and the
+> recovery form had not cleared it a day later, so we moved rather than wait.
+> Nothing in the codebase changed to make that possible, which is the useful
+> part: `apps/web` is a plain Next.js app and `packages/core` depends on no
+> host, so switching cost a configuration file. The Vercel steps are kept at
+> the end of this section in case the account is ever unblocked.
 
-| Setting                 | Value             | Why                                                                                 |
-| ----------------------- | ----------------- | ----------------------------------------------------------------------------------- |
-| Root Directory          | `apps/web`        | The repository is a monorepo; this is the deployable app                            |
-| Framework Preset        | Next.js           | Detected automatically                                                              |
-| Build / Install command | leave as detected | Vercel runs the install at the repository root because it recognises npm workspaces |
+**Add new site → Import an existing project**, pick the GitHub repository, then
+set exactly two things:
 
-Then **Environment Variables**, before the first build:
+| Setting           | Value           | Why                                                                                                                                                                                                                                                                                  |
+| ----------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Base directory    | **leave empty** | Netlify installs dependencies and runs the build from here. This is an npm workspaces monorepo, so the lockfile and the workspace definitions are at the repository root; installing anywhere else cannot resolve them ([ADR-0006](adr/0006-use-npm-workspaces-for-the-monorepo.md)) |
+| Package directory | `apps/web`      | How Netlify finds the app. It can only be set in the UI, which is why it is not in `netlify.toml`                                                                                                                                                                                    |
+
+Everything else comes from [`apps/web/netlify.toml`](../apps/web/netlify.toml): the build
+command, the publish directory, and the decision not to pin the Next.js runtime. Node
+version comes from the root `.nvmrc`.
+
+> [!WARNING]
+> **Pointing the base directory at `apps/web` is the usual way this setup
+> fails.** It is the older advice and still widely repeated. npm then installs
+> inside a package that has no lockfile, workspace resolution breaks, and the
+> failure usually surfaces somewhere misleading — a missing dependency, or the
+> `prepare` script erroring on husky.
+
+Then **Site configuration → Environment variables**, before the first build:
 
 | Name                        | Value                                    |                                                                                                                                                                                                        |
 | --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -111,6 +131,34 @@ Then **Environment Variables**, before the first build:
 | `SUPABASE_SERVICE_ROLE_KEY` | **Do not set this**                      | It bypasses RLS entirely. Nothing in `apps/web` reads it, and a web app that can reach it is a web app that can leak every user's data ([ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)) |
 
 Deploy. Then open the URL and sign in with the account from step 4.
+
+**One compatibility risk, stated rather than hoped away.** Netlify's Next.js runtime
+documents support for 13.5 and later and says it tests every stable release, but does not
+name 16, which is what this project is on. The runtime is actively maintained — the version
+current at the time of writing shipped two days earlier — so this will probably be fine, and
+the first build is what settles it. If that build fails inside the runtime rather than in
+our code, the options in order are: pin Next to the latest 15.x, which costs nothing here
+because nothing uses a 16-only feature; or move to a host that runs a plain Node server,
+such as Render or Railway.
+
+<details>
+<summary>Vercel, if the account is ever unblocked</summary>
+
+**Add New → Project**, import the repository, then:
+
+| Setting                 | Value                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| Root Directory          | `apps/web`                                                                                      |
+| Framework Preset        | Next.js (detected)                                                                              |
+| Build / Install command | leave as detected — Vercel installs at the repository root because it recognises npm workspaces |
+
+Note that Vercel wants the app directory as its Root Directory while Netlify wants the
+repository root as its base. They are opposite settings for the same monorepo, which is
+worth knowing before copying one host's instructions into the other.
+
+Environment variables are the same three rules as above.
+
+</details>
 
 ### 6. Check what you actually deployed
 
