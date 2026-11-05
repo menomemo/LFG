@@ -1,10 +1,10 @@
 # Data model
 
-|                     |                                                                                              |
-| ------------------- | -------------------------------------------------------------------------------------------- |
-| **Status**          | Eleven tables implemented. `cards`, `review_logs`, `stories` and `llm_usage` are still draft |
-| **Last reviewed**   | 2026-11-05                                                                                   |
-| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                        |
+|                     |                                                                       |
+| ------------------- | --------------------------------------------------------------------- |
+| **Status**          | Fourteen tables implemented. `llm_usage` is the last one still draft  |
+| **Last reviewed**   | 2026-11-05                                                            |
+| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document. |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
 `evidence` is what makes the competency radar possible, because it is where practice,
@@ -44,7 +44,7 @@ These are enforced in the schema, not by discipline.
 | `contacts`        | `company_id`, `role_type`, `name`, `profile_url`, `source`, `last_touch_at`, `sequence_step`                                                                | `companies`, and applications through the company |
 | `competencies`    | `axis`, `sub_skill`, `level_junior`, `level_mid`, `level_senior`                                                                                            | `evidence`, `cards`                               |
 | `evidence`        | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at`, `generated_by`                                                               | `competencies`                                    |
-| `cards`           | `competency_id`, `front`, `back`, `fsrs_state`, `due_at`                                                                                                    | `review_logs`                                     |
+| `cards`           | `competency_id`, `insight_id`, `front`, `back`, `generated_by`, `approved_at`, `fsrs_state`, `due_at`                                                       | `review_logs`                                     |
 | `review_logs`     | `card_id`, `rating`, `reviewed_at`                                                                                                                          | `cards`                                           |
 | `stories`         | `title`, `star_json`, `competency_ids`                                                                                                                      | `interviews`                                      |
 | `insights`        | `raw_text`, `source_url`, `summary`, `principle`, `generated_by`, `sales_dims`, `embedding`, `cluster_id`                                                   | `drills`, `evidence`                              |
@@ -118,11 +118,22 @@ confirmed ones, so collapsing them would quietly inflate it.
 `parseLanguageRequirement`. A level rather than a boolean, because "JLPT N2 required" and
 "some Japanese appreciated" are different decisions about whether to apply at all.
 
-**Cross-tenant foreign keys** — the `jobs` and `applications` insert and update policies
-check that the _parent_ row belongs to the same user, not merely that the new row does.
-Without that a user could own a row pointing at someone else's company or job, and the
-reference itself leaks: it proves that row exists, and any join from it reads across the
-tenant boundary. The isolation suite tests all three of those attacks.
+**Cross-tenant foreign keys** — every insert and update policy on a table with a parent
+checks that the _parent_ row belongs to the same user, not merely that the new row does.
+Without that a user could own a row pointing at someone else's company, job, application,
+résumé version, competency, insight or card, and the reference itself leaks: it proves that
+row exists, and any join from it reads across the tenant boundary. The isolation suite
+tests every one of those attacks on insert and on update, and the permitted case alongside
+each, because a policy that refuses everything passes every negative test on its own.
+
+Three of those parents are **nullable** — `contacts.company_id`, `cards.insight_id` — or
+not a foreign key at all — `evidence.source_id`. A nullable parent needs a branch that
+permits null, and a plain `exists` check would refuse the legitimate unattached row, which
+is a bug that looks like security. `stories.competency_ids` is a fourth shape: references
+inside an array, which no foreign key can police, so its policies assert that no element
+is somebody else's. The suite's attack there is the mixed array — one of the user's own ids
+beside one of another tenant's — because a policy using an overlap operator passes the
+single-id test and lets that through.
 
 **`contacts.company_id` is nullable**, and null is the normal case for part of the
 search rather than a gap: an agency recruiter is most of the Japanese funnel and belongs
@@ -141,6 +152,25 @@ written by `signal-scanner` reading a public source, and a signal nobody can che
 rumour. For a derived headcount change the link is the ATS board the counts were read
 from. `observed_at` is when the thing happened and `created_at` is when we found out;
 the gap between them is how late the scanner is running.
+
+**`cards.approved_at`** — the product rule is that a model drafts and the user approves
+before a card enters the deck, so an unapproved card is a real state and the daily-queue
+index is partial on it. A card the user wrote themselves is approved by definition, which
+is what `cards_user_written_cards_are_approved` says: `generated_by` null means a human
+wrote it, and then `approved_at` must be set.
+
+**`stories.star_json` requires all four parts**, by constraint. Mocks score STAR
+completeness, and a story missing its result is the specific failure that scoring exists
+to catch — storing one and flagging it later would be doing the same work twice, badly.
+
+**`stories` points at no interview.** Stories are recommended before an interview from the
+company profile, which is a query and not a relationship; a column would have to be
+rewritten every time the same story is used again.
+
+**`review_logs` is append-only in intent.** FSRS optimisation reads the whole history, so
+nothing should rewrite a row. It carries all four policies because every table here does
+and because deleting your own data is a right rather than a bug — but taking the update
+policy away later would be a tightening, not a regression.
 
 **`insights.cluster_id`** — assigned by embedding-similarity clustering. The same lesson
 learned three times should reinforce one insight, not create three. It is a bare `uuid`
