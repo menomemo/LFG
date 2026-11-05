@@ -107,6 +107,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"drills": {
+                  Row: {
+                    "attempts": number,"created_at": string,"generated_by": string,"id": string,"insight_id": string,"last_score": number | null,"scenario": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "attempts"?: number,"created_at"?: string,"generated_by": string,"id"?: string,"insight_id": string,"last_score"?: number | null,"scenario": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "attempts"?: number,"created_at"?: string,"generated_by"?: string,"id"?: string,"insight_id"?: string,"last_score"?: number | null,"scenario"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "drills_insight_id_fkey"
+      columns: ["insight_id"]
+isOneToOne: false
+      referencedRelation: "insights"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"evidence": {
                   Row: {
                     "competency_id": string,"created_at": string,"generated_by": string | null,"id": string,"observed_at": string,"score": number,"source_id": string | null,"source_type": Database["public"]['Enums']["evidence_source"],"updated_at": string,"user_id": string,"weight": number
@@ -126,6 +146,20 @@ isOneToOne: false
       referencedRelation: "competencies"
       referencedColumns: ["id"]
     }
+                  ]
+                },"insights": {
+                  Row: {
+                    "cluster_id": string | null,"created_at": string,"generated_by": string | null,"id": string,"principle": string | null,"raw_text": string,"sales_dims": (Database["public"]['Enums']["sales_dimension"])[],"source_url": string | null,"summary": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cluster_id"?: string | null,"created_at"?: string,"generated_by"?: string | null,"id"?: string,"principle"?: string | null,"raw_text": string,"sales_dims"?: (Database["public"]['Enums']["sales_dimension"])[],"source_url"?: string | null,"summary"?: string | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "cluster_id"?: string | null,"created_at"?: string,"generated_by"?: string | null,"id"?: string,"principle"?: string | null,"raw_text"?: string,"sales_dims"?: (Database["public"]['Enums']["sales_dimension"])[],"source_url"?: string | null,"summary"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
                   ]
                 },"interviews": {
                   Row: {
@@ -210,7 +244,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Enums: {
-            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","competency_axis": "coding"|"system_design"|"ai_ml_engineering"|"debugging"|"collaboration"|"communication"|"product_sense"|"sales_influence","contact_role": "engineer"|"hiring_manager"|"alumni"|"recruiter"|"author"|"other","effort_tier": "a"|"b"|"c","evidence_source": "interview_feedback"|"mock_interview"|"flashcard"|"drill"|"insight_debrief"|"project"|"self_assessment","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","resume_profile": "uk_ie_cv"|"eu_cv"|"jp_rirekisho"|"jp_shokumu_keirekisho"|"jp_english_cv"|"de_lebenslauf","signal_severity": "info"|"warning"|"critical","signal_type": "funding"|"layoff"|"hiring_freeze"|"headcount_change"|"leadership_change"|"launch"|"news"|"other","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
+            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","competency_axis": "coding"|"system_design"|"ai_ml_engineering"|"debugging"|"collaboration"|"communication"|"product_sense"|"sales_influence","contact_role": "engineer"|"hiring_manager"|"alumni"|"recruiter"|"author"|"other","effort_tier": "a"|"b"|"c","evidence_source": "interview_feedback"|"mock_interview"|"flashcard"|"drill"|"insight_debrief"|"project"|"self_assessment","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","resume_profile": "uk_ie_cv"|"eu_cv"|"jp_rirekisho"|"jp_shokumu_keirekisho"|"jp_english_cv"|"de_lebenslauf","sales_dimension": "opening"|"discovery"|"storytelling"|"value_proposition"|"objections"|"trust"|"closing"|"following_up","signal_severity": "info"|"warning"|"critical","signal_type": "funding"|"layoff"|"hiring_freeze"|"headcount_change"|"leadership_change"|"launch"|"news"|"other","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -330,7 +364,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"competency_axis": ["coding", "system_design", "ai_ml_engineering", "debugging", "collaboration", "communication", "product_sense", "sales_influence"],"contact_role": ["engineer", "hiring_manager", "alumni", "recruiter", "author", "other"],"effort_tier": ["a", "b", "c"],"evidence_source": ["interview_feedback", "mock_interview", "flashcard", "drill", "insight_debrief", "project", "self_assessment"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"resume_profile": ["uk_ie_cv", "eu_cv", "jp_rirekisho", "jp_shokumu_keirekisho", "jp_english_cv", "de_lebenslauf"],"signal_severity": ["info", "warning", "critical"],"signal_type": ["funding", "layoff", "hiring_freeze", "headcount_change", "leadership_change", "launch", "news", "other"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
+            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"competency_axis": ["coding", "system_design", "ai_ml_engineering", "debugging", "collaboration", "communication", "product_sense", "sales_influence"],"contact_role": ["engineer", "hiring_manager", "alumni", "recruiter", "author", "other"],"effort_tier": ["a", "b", "c"],"evidence_source": ["interview_feedback", "mock_interview", "flashcard", "drill", "insight_debrief", "project", "self_assessment"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"resume_profile": ["uk_ie_cv", "eu_cv", "jp_rirekisho", "jp_shokumu_keirekisho", "jp_english_cv", "de_lebenslauf"],"sales_dimension": ["opening", "discovery", "storytelling", "value_proposition", "objections", "trust", "closing", "following_up"],"signal_severity": ["info", "warning", "critical"],"signal_type": ["funding", "layoff", "hiring_freeze", "headcount_change", "leadership_change", "launch", "news", "other"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
           }
         }
 } as const
