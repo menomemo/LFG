@@ -9,7 +9,7 @@ LFG想让求职不再是一场碰运气的数字游戏，而是一场由你掌�
 借助AI，快速完成针对不同岗位的定制化准备，不必再在投递数量和质量之间二选一。每一次投递都有迹可循：哪些岗位更有机会？哪些公司更青睐你？求职流程卡在了哪一步？LFG帮你看清趋势、发现机会、及时调整策略，把日常积累的职场经验变成面试时真正用得上的优势。
 
 [![Status: pre-alpha](https://img.shields.io/badge/status-pre--alpha-orange)](docs/roadmap.md)
-[![License: AGPL-3.0 proposed](https://img.shields.io/badge/license-AGPL--3.0%20%28proposed%29-blue)](docs/adr/0005-choose-a-license.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](docs/code-standards.md)
 [![Built in public](https://img.shields.io/badge/built%20in-public-8957e5)](docs/launch.md)
 
@@ -194,8 +194,9 @@ npm run check
 
 ## 许可
 
-尚未确定。[ADR-0005](docs/adr/0005-choose-a-license.md) 提议 AGPL-3.0；在该 ADR 被接受、
-`LICENSE` 文件提交之前，**未授予任何许可**，保留所有权利。
+[MIT](LICENSE)。先考虑过 AGPL-3.0 后否决了：它的 share-alike 条款是用来防别人拿走代码
+去做竞争性托管服务的，而现在这里还没有值得付出那份代价去保护的东西。理由记在
+[ADR-0005](docs/adr/0005-choose-a-license.md)。
 
 ## 致谢
 

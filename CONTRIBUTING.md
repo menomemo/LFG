@@ -100,7 +100,6 @@ Do not open a public issue for a vulnerability. See [SECURITY.md](SECURITY.md).
 
 ## Licence
 
-The licence is not yet decided — AGPL-3.0 is proposed in
-[ADR-0005](docs/adr/0005-choose-a-license.md). Until a `LICENSE` file exists, please do not
-submit code contributions; design feedback and issues are unaffected. If you have an
-opinion on the licence, ADR-0005 ends with the open questions and is a good place to argue.
+[MIT](LICENSE). By contributing you agree your contribution is licensed under it. The
+reasoning, including why AGPL-3.0 was considered and rejected, is in
+[ADR-0005](docs/adr/0005-choose-a-license.md).

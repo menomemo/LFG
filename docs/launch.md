@@ -136,9 +136,9 @@ Vanity metrics are easy to accumulate and teach nothing. These are the ones wort
 
 ## Open decisions
 
-| Decision                                                            | Blocks                          | Needed by                                                        |
-| ------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------- |
-| Licence, and public repository before or after launch               | Everything about distribution   | Before the first push ([ADR-0005](adr/0005-choose-a-license.md)) |
-| Product name as presented to users, and the handles to match        | Domain, store listing, accounts | Phase 4                                                          |
-| In-app purchase or web-only billing                                 | Mobile launch, pricing          | Before App Store submission                                      |
-| Whether a free tier is viable at all once cost per user is measured | Pricing                         | Phase 5                                                          |
+| Decision                                                            | Blocks                          | Needed by                                                                              |
+| ------------------------------------------------------------------- | ------------------------------- | -------------------------------------------------------------------------------------- |
+| Public repository before or after launch                            | Build-in-public timing          | Phase 4. The licence itself is settled: MIT ([ADR-0005](adr/0005-choose-a-license.md)) |
+| Product name as presented to users, and the handles to match        | Domain, store listing, accounts | Phase 4                                                                                |
+| In-app purchase or web-only billing                                 | Mobile launch, pricing          | Before App Store submission                                                            |
+| Whether a free tier is viable at all once cost per user is measured | Pricing                         | Phase 5                                                                                |

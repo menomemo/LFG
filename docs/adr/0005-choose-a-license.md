@@ -1,10 +1,10 @@
 # ADR-0005: Choose a licence
 
-|              |                                                       |
-| ------------ | ----------------------------------------------------- |
-| **Status**   | **Proposed** — needs a decision before the first push |
-| **Date**     | 2026-11-04                                            |
-| **Deciders** | @Yihong                                               |
+|              |            |
+| ------------ | ---------- |
+| **Status**   | Accepted   |
+| **Date**     | 2026-11-05 |
+| **Deciders** | @Yihong    |
 
 ## Context
 
@@ -28,12 +28,19 @@ content, the prompt library, the region playbook.
 
 ## Decision
 
-> Proposed: licence the repository under **AGPL-3.0**, keep the hosted service as the
-> commercial offering, and make the repository public at the start of Phase 5 rather than
-> before. Documentation under AGPL too, for simplicity, rather than splitting licences.
+> We will licence the repository, code and documentation alike, under the **MIT licence**.
 
-Not yet accepted. Until a `LICENSE` file is committed, the repository stays private and the
-README states that no licence is granted.
+AGPL-3.0 was proposed first and rejected on the decider's own reading of the project: there
+is nothing here worth defending from a competing host. AGPL's share-alike obligation buys
+protection against someone running a modified copy as a service, and that protection is
+only worth its costs when the code is the moat. Here it is not — the parts that would be
+hard to copy are the competency framework content, the prompt library and the region
+playbook, and none of them is a licence problem. Paying AGPL's costs (contributors whose
+employers forbid it, a CLA needed before any relicensing) to protect something that does
+not need protecting is a bad trade.
+
+MIT is also the licence that best serves the goals that are real today: being readable,
+being a portfolio artefact, and being easy for anyone to learn from.
 
 ## Alternatives considered
 
@@ -48,38 +55,41 @@ README states that no licence is granted.
 
 ## Consequences
 
-**If accepted as proposed:**
-
 **What this makes easier**
 
-- Public readability, so the project can serve as a portfolio piece and attract discussion
-- Reciprocity: a commercial host of a modified version must publish its modifications
-- Contributions arrive under known terms
+- Anyone can read, run, fork and learn from the project, which is most of its value today
+- No licence friction for contributors, whatever their employer's policy
+- Dependency compatibility stops being a question: MIT is compatible with essentially
+  everything
 
 **What this makes harder**
 
-- Contributors employed where AGPL is banned cannot participate
-- Relicensing later requires every contributor's agreement unless a CLA is in place from
-  the start
-- Enterprise adoption of a self-hosted copy is less likely, which may or may not matter
+- Nothing stops a better-resourced operator hosting this as a competing service, modified
+  or not, with no obligation to publish anything
+- If the hosted business ever becomes real, the licence cannot be the thing that defends
+  it. The defence has to be the hosted product itself — the data a user accumulates, the
+  operational quality, the content assets
 
 **What this commits us to**
 
-- Keeping third-party licence compatibility in mind for every dependency
-- A decision about a CLA before accepting the first external contribution
-- Scrubbing secrets from the entire git history before the repository goes public, not just
-  from the working tree
+- Scrubbing secrets from the entire git history before the repository goes public, not
+  just from the working tree
+- Accepting that the code is a commodity and the moat, if there is one, is elsewhere
+- Relicensing later would need every contributor's agreement, as with any licence. While
+  the project has one author this costs nothing; it starts costing the moment someone else
+  contributes
 
 **What to watch**
 
-- Whether contributions ever actually arrive. If they do not, the licence's contribution
-  trade-off was priced wrong and only its anti-hosting property mattered
-- Any plan to sell a self-hosted enterprise version, which would mean dual licensing and
-  therefore a CLA
+- Someone actually hosting a copy. The honest prediction is that nobody will before the
+  product is good enough to be worth copying, and by then this ADR can be superseded for
+  future versions — though already-published versions stay MIT forever
 
-## Open questions for the deciding conversation
+## Still open, and deliberately not decided here
 
-1. Does the repository go public before Phase 5, as a build-in-public asset, or at launch?
-2. Is the competency framework content and prompt library licensed with the code, or held
-   back as the thing that is genuinely hard to copy?
-3. Is a CLA worth the friction it adds at this stage?
+1. **When the repository goes public** — before Phase 5 as a build-in-public asset, or at
+   launch. The licence does not force this; a repository can be MIT and private.
+2. **Whether the content assets stay in this repository.** The competency framework and the
+   prompt library are the parts that are genuinely hard to reproduce. Keeping them here
+   means publishing them under MIT too. That is a question about where they live, not about
+   the licence, and it can wait until Phase 3 when the framework exists.

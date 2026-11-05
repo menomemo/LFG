@@ -248,13 +248,13 @@ personal use long before it goes near the App Store; the public web app comes fi
 
 ## 10. Open questions
 
-| Question                                                                                   | Blocks                        | Needed by                                                    |
-| ------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------ |
-| Can the runtime's UI plugin host the board and radar, or does the web app own all display? | Phase 1 surface split         | Start of Phase 1                                             |
-| iOS or Android first for the mobile capture path?                                          | Mobile MVP                    | Phase 1 capture work                                         |
-| Does AI Engineer need a ninth competency axis for model evaluation?                        | Competency framework content  | Phase 3                                                      |
-| Which licence, and does the repository go public before or after launch?                   | Everything about distribution | Before first push ([ADR-0005](adr/0005-choose-a-license.md)) |
-| Where do the first external users come from?                                               | Phase 5                       | Phase 4                                                      |
+| Question                                                                                   | Blocks                       | Needed by                                                                |
+| ------------------------------------------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------ |
+| Can the runtime's UI plugin host the board and radar, or does the web app own all display? | Phase 1 surface split        | Start of Phase 1                                                         |
+| iOS or Android first for the mobile capture path?                                          | Mobile MVP                   | Phase 1 capture work                                                     |
+| Does AI Engineer need a ninth competency axis for model evaluation?                        | Competency framework content | Phase 3                                                                  |
+| Does the repository go public before or after launch?                                      | Build-in-public timing       | Phase 4. Licence settled: MIT ([ADR-0005](adr/0005-choose-a-license.md)) |
+| Where do the first external users come from?                                               | Phase 5                      | Phase 4                                                                  |
 
 ## 11. Risks
 

@@ -20,7 +20,7 @@ being asked to defend a design out loud; see [../learning-track.md](../learning-
 | [0002](0002-use-supabase-as-the-primary-datastore.md)                    | Use Supabase as the primary datastore                        | Accepted |
 | [0003](0003-keep-business-logic-in-packages-core.md)                     | Keep business logic in `packages/core`                       | Accepted |
 | [0004](0004-treat-region-as-a-first-class-dimension.md)                  | Treat region as a first-class dimension                      | Accepted |
-| [0005](0005-choose-a-license.md)                                         | Choose a licence                                             | Proposed |
+| [0005](0005-choose-a-license.md)                                         | Choose a licence                                             | Accepted |
 | [0006](0006-use-npm-workspaces-for-the-monorepo.md)                      | Use npm workspaces for the monorepo                          | Accepted |
 | [0007](0007-enforce-google-typescript-style-with-eslint-and-prettier.md) | Enforce the Google TypeScript style with ESLint and Prettier | Accepted |
 

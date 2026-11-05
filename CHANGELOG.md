@@ -47,6 +47,13 @@ first release. Nothing is released yet, so everything lives under Unreleased.
 - [docs/progress.md](docs/progress.md): a Gantt chart and status table covering all five
   phases, updated whenever a module is finished
 
+### Added — licence
+
+- MIT `LICENSE` ([ADR-0005](docs/adr/0005-choose-a-license.md), now accepted). AGPL-3.0
+  was the standing proposal and was rejected: its protection is against a competing host,
+  and the project has nothing yet that is worth that protection's cost in contributor
+  friction
+
 ### Added — walking skeleton
 
 - `applications` table, created with row-level security enabled, four policies and

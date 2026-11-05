@@ -2,7 +2,7 @@
 
 |                                                                                            |                                                                                        |
 | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| **Updated**                                                                                | 2026-11-04                                                                             |
+| **Updated**                                                                                | 2026-11-05                                                                             |
 | **Phase**                                                                                  | 1 of 5 — Foundation                                                                    |
 | **Next**                                                                                   | Finish the schema: the remaining tables, each with its policies and isolation coverage |
 | Where the project actually is, against the whole picture. This document is updated **every |
@@ -12,13 +12,13 @@
 
 ## Right now
 
-|                                                                                           |                                                                                                                                                                             |
-| ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Done**                                                                                  | Documentation set · iteration zero · walking skeleton (browser → Next → RLS-protected Postgres → `core`, verified end to end locally)                                       |
-| **In progress**                                                                           | Supabase schema: `applications` exists with policies and an isolation suite; the remaining tables do not                                                                    |
-| **Not done**                                                                              | **Deployment.** The skeleton runs locally only — hosting needs accounts that are the author's to create                                                                     |
-| **Blocked on a decision**                                                                 | Licence ([ADR-0005](adr/0005-choose-a-license.md)) · can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions)) |
-| **Phase 1 gate**                                                                          | Not started: four consecutive weeks with every application in the system                                                                                                    |
+|                                                                                           |                                                                                                                                       |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Done**                                                                                  | Documentation set · iteration zero · walking skeleton (browser → Next → RLS-protected Postgres → `core`, verified end to end locally) |
+| **In progress**                                                                           | Supabase schema: `applications` exists with policies and an isolation suite; the remaining tables do not                              |
+| **Not done**                                                                              | **Deployment.** The skeleton runs locally only — hosting needs accounts that are the author's to create                               |
+| **Blocked on a decision**                                                                 | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                |
+| **Phase 1 gate**                                                                          | Not started: four consecutive weeks with every application in the system                                                              |
 | Progress through the whole plan: **3 of 25 tracked items complete.** Two of the three are |
 | infrastructure and the third renders a read-only list, so the count of things that help   |
 | anyone find a job is still zero — which is the honest reading.                            |

@@ -9,7 +9,7 @@ researches every company, tailors every résumé to its source evidence, and con
 things you learn along the way into interview reps you actually do.
 
 [![Status: pre-alpha](https://img.shields.io/badge/status-pre--alpha-orange)](docs/roadmap.md)
-[![License: AGPL-3.0 proposed](https://img.shields.io/badge/license-AGPL--3.0%20%28proposed%29-blue)](docs/adr/0005-choose-a-license.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](docs/code-standards.md)
 [![Built in public](https://img.shields.io/badge/built%20in-public-8957e5)](docs/launch.md)
 
@@ -226,9 +226,9 @@ project's data-handling commitments are in [`SECURITY.md`](SECURITY.md).
 
 ## License
 
-Not yet declared. AGPL-3.0 is proposed in
-[ADR-0005](docs/adr/0005-choose-a-license.md); until that ADR is accepted and a `LICENSE`
-file is committed, **no license is granted** and all rights are reserved.
+[MIT](LICENSE). AGPL-3.0 was considered first and rejected: its share-alike obligation
+protects against a competing host, and there is nothing here yet worth that protection's
+costs. The reasoning is in [ADR-0005](docs/adr/0005-choose-a-license.md).
 
 ## Acknowledgements
 
