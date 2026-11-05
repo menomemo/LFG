@@ -23,6 +23,7 @@ being asked to defend a design out loud; see [../learning-track.md](../learning-
 | [0005](0005-choose-a-license.md)                                         | Choose a licence                                             | Accepted |
 | [0006](0006-use-npm-workspaces-for-the-monorepo.md)                      | Use npm workspaces for the monorepo                          | Accepted |
 | [0007](0007-enforce-google-typescript-style-with-eslint-and-prettier.md) | Enforce the Google TypeScript style with ESLint and Prettier | Accepted |
+| [0008](0008-record-evidence-against-a-polymorphic-source.md)             | Record evidence against a polymorphic source                 | Accepted |
 
 ## Status lifecycle
 
