@@ -62,6 +62,8 @@ let aliceApplicationId: string;
 let aliceResumeVersionId: string;
 let bobResumeVersionId: string;
 let bobInterviewId: string;
+let bobContactId: string;
+let bobSignalId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
@@ -148,6 +150,18 @@ beforeAll(async () => {
     );
   }
   aliceResumeVersionId = aliceResumeVersion.data.id;
+
+  const bobContact = await bob.from('contacts').select('id').limit(1).single();
+  if (bobContact.error) {
+    throw new Error(`Seed missing Bob's contact: ${bobContact.error.message}`);
+  }
+  bobContactId = bobContact.data.id;
+
+  const bobSignal = await bob.from('signals').select('id').limit(1).single();
+  if (bobSignal.error) {
+    throw new Error(`Seed missing Bob's signal: ${bobSignal.error.message}`);
+  }
+  bobSignalId = bobSignal.data.id;
 });
 
 describe('reading', () => {
@@ -181,6 +195,8 @@ describe('reading', () => {
       ['jobs', bobJobId],
       ['resume_versions', bobResumeVersionId],
       ['interviews', bobInterviewId],
+      ['contacts', bobContactId],
+      ['signals', bobSignalId],
     ] as const) {
       const {data, error} = await alice.from(table).select('*').eq('id', id);
       expect(error).toBeNull();
@@ -196,6 +212,8 @@ describe('reading', () => {
       'jobs',
       'resume_versions',
       'interviews',
+      'contacts',
+      'signals',
     ] as const) {
       const {data, error} = await anon.from(table).select('*');
       expect(error).toBeNull();
@@ -300,6 +318,8 @@ describe('writing', () => {
       ['jobs', bobJobId],
       ['resume_versions', bobResumeVersionId],
       ['interviews', bobInterviewId],
+      ['contacts', bobContactId],
+      ['signals', bobSignalId],
     ] as const) {
       const {data, error} = await alice
         .from(table)
@@ -434,5 +454,113 @@ describe('writing: the pipeline tables', () => {
     expect(data).not.toBeNull();
     expect(data!.length).toBeGreaterThan(0);
     expect(data!.map(row => row.id)).not.toContain(bobInterviewId);
+  });
+});
+
+/* contacts.company_id is nullable, which gives its policies a branch the
+   others do not have: refuse somebody else's company, permit no company at
+   all. Both halves need a test, because a policy written as a plain exists()
+   passes every negative test here and quietly refuses the legitimate
+   unattached contact. */
+describe('writing: the company tables', () => {
+  it("refuses Alice a contact attached to Bob's company", async () => {
+    const {error} = await alice.from('contacts').insert({
+      user_id: ALICE_ID,
+      company_id: bobCompanyId,
+      role_type: 'recruiter',
+      name: 'Trojan Recruiter',
+      source: 'invented',
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice repointing her contact at Bob's company", async () => {
+    const {data: mine, error: readError} = await alice
+      .from('contacts')
+      .select('id')
+      .limit(1)
+      .single();
+    expect(readError).toBeNull();
+
+    const {error} = await alice
+      .from('contacts')
+      .update({company_id: bobCompanyId})
+      .eq('id', mine!.id);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts a contact attached to no company at all', async () => {
+    const {data, error} = await alice
+      .from('contacts')
+      .insert({
+        user_id: ALICE_ID,
+        company_id: null,
+        role_type: 'author',
+        name: 'Conference speaker',
+        source: 'spoke at a meetup',
+      })
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('contacts').delete().eq('id', data!.id);
+  });
+
+  it("refuses Alice a signal about Bob's company", async () => {
+    const {error} = await alice.from('signals').insert({
+      user_id: ALICE_ID,
+      company_id: bobCompanyId,
+      type: 'news',
+      severity: 'info',
+      payload: {headline: 'Smuggled'},
+      observed_at: new Date().toISOString(),
+      source_url: 'https://example.test/smuggled',
+      generated_by: 'test',
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts a signal about a company Alice owns', async () => {
+    const {data: mine, error: readError} = await alice
+      .from('companies')
+      .select('id')
+      .limit(1)
+      .single();
+    expect(readError).toBeNull();
+
+    const {data, error} = await alice
+      .from('signals')
+      .insert({
+        user_id: ALICE_ID,
+        company_id: mine!.id,
+        type: 'news',
+        severity: 'info',
+        payload: {headline: 'Permitted'},
+        observed_at: new Date().toISOString(),
+        source_url: 'https://example.test/permitted',
+        generated_by: 'test',
+      })
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('signals').delete().eq('id', data!.id);
+  });
+
+  it("never shows Alice Bob's contacts or signals", async () => {
+    const contacts = await alice.from('contacts').select('id, name');
+    expect(contacts.error).toBeNull();
+    expect(contacts.data).not.toBeNull();
+    expect(contacts.data!.length).toBeGreaterThan(0);
+    expect(contacts.data!.map(row => row.name)).not.toContain('Bob Contact');
+
+    const signals = await alice.from('signals').select('id');
+    expect(signals.error).toBeNull();
+    expect(signals.data).not.toBeNull();
+    expect(signals.data!.length).toBeGreaterThan(0);
+    expect(signals.data!.map(row => row.id)).not.toContain(bobSignalId);
   });
 });
