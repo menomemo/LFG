@@ -1,0 +1,25 @@
+# Netlify configuration for the web app.
+#
+# The base directory is deliberately NOT set here, and must stay unset in the
+# UI. Netlify installs dependencies and runs the build from the base
+# directory, and this is an npm workspaces monorepo: the lockfile and the
+# workspace definitions live at the repository root, so installing anywhere
+# else cannot resolve them. Pointing the base at apps/web is the older advice
+# and the usual way this setup fails.
+#
+# The app is identified instead by the Package directory setting, `apps/web`,
+# which can only be set in the Netlify UI.
+#
+# Every path below is relative to the base directory -- the repository root --
+# regardless of where this file sits.
+#
+# Node version comes from the root .nvmrc rather than being repeated here, so
+# that local development, CI and deployment cannot drift apart.
+
+[build]
+  command = "npm run build --workspace=@lfg/web"
+  publish = "apps/web/.next"
+
+# The Next.js runtime (the OpenNext adapter) is installed and updated by
+# Netlify automatically. It is deliberately not pinned here: pinning opts out
+# of the updates, and this project tracks current Next.
