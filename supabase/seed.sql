@@ -542,3 +542,118 @@ values
    '22222222-2222-2222-2222-222222222222',
    '22220000-0000-4000-8000-000000000002',
    'Bob''s drill.', 'roleplay-sparring@0.1.0', 0, null);
+
+-- ---------------------------------------------------------------------------
+-- Cards
+--
+-- One approved and due, one drafted by a model and not yet approved -- the
+-- second must stay out of the daily queue, which is why the queue index is
+-- partial. The third comes from an insight, which is the link cards.insight_id
+-- exists for.
+--
+-- fsrs_state is a plausible initial state rather than a real one: the real
+-- shape is ts-fsrs's to produce, and the database only guarantees that it is
+-- an object.
+-- ---------------------------------------------------------------------------
+insert into public.cards
+  (id, user_id, competency_id, insight_id, front, back, generated_by,
+   approved_at, fsrs_state, due_at)
+values
+  ('11140000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   '11100000-0000-4000-8000-000000000003', null,
+   'What does a documented degradation path contain?',
+   'What the service does when the cache is cold, when the dependency is '
+   'down, and who finds out.',
+   null, now() - interval '20 days',
+   jsonb_build_object('stability', 4.2, 'difficulty', 5.1, 'reps', 3,
+                      'lapses', 0, 'state', 'review'),
+   now() - interval '1 day'),
+  ('11140000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   '11100000-0000-4000-8000-000000000001', null,
+   'When is a hash map the wrong choice?',
+   'When ordering matters, when the keys are not hashable cheaply, or when '
+   'the working set does not fit in cache.',
+   'card-generator@0.1.0', null,
+   jsonb_build_object('stability', 0, 'difficulty', 0, 'reps', 0,
+                      'lapses', 0, 'state', 'new'),
+   now()),
+  ('11140000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   '11100000-0000-4000-8000-000000000003',
+   '11120000-0000-4000-8000-000000000001',
+   'How do you open a conversation with an interviewer?',
+   'With a question about how they do it today, not with what you built.',
+   'card-generator@0.1.0', now() - interval '5 days',
+   jsonb_build_object('stability', 1.1, 'difficulty', 6.0, 'reps', 1,
+                      'lapses', 0, 'state', 'learning'),
+   now() + interval '2 days'),
+  ('22240000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   '22200000-0000-4000-8000-000000000001', null,
+   'Bob''s question.', 'Bob''s answer.',
+   null, now() - interval '1 day',
+   jsonb_build_object('state', 'new'),
+   now());
+
+-- Review history. Three reviews of the card that is now due again.
+insert into public.review_logs (id, user_id, card_id, rating, reviewed_at)
+values
+  ('11150000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   '11140000-0000-4000-8000-000000000001', 'good',
+   now() - interval '18 days'),
+  ('11150000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   '11140000-0000-4000-8000-000000000001', 'hard',
+   now() - interval '11 days'),
+  ('11150000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   '11140000-0000-4000-8000-000000000001', 'good',
+   now() - interval '4 days'),
+  ('22250000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   '22240000-0000-4000-8000-000000000001', 'again',
+   now() - interval '1 day');
+
+-- ---------------------------------------------------------------------------
+-- Stories
+--
+-- The first evidences two sub-skills, which is why competency_ids is an array
+-- and why its policies have to check every element. The second evidences none
+-- yet, which is allowed: an untagged story is a story nobody has placed.
+-- ---------------------------------------------------------------------------
+insert into public.stories (id, user_id, title, star_json, competency_ids)
+values
+  ('11160000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'The reconciliation service that fell over at month end',
+   jsonb_build_object(
+     'situation', 'A nightly reconciliation job started missing its window '
+                  'as volume grew.',
+     'task', 'Get it back inside the window without a rewrite.',
+     'action', 'Batched the writes, added a cache with an explicit cold path, '
+               'and documented what happens when it is cold.',
+     'result', 'p99 fell from 800ms to 120ms and the job finished in a third '
+               'of the time.'
+   ),
+   array['11100000-0000-4000-8000-000000000003'::uuid,
+         '11100000-0000-4000-8000-000000000001'::uuid]),
+  ('11160000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   'The code review I handled badly',
+   jsonb_build_object(
+     'situation', 'A reviewer rejected an approach I had already built.',
+     'task', 'Decide whether to defend it or rework it.',
+     'action', 'Asked what failure they were protecting against, and reworked '
+               'it once I understood.',
+     'result', 'The rework was smaller than the argument would have been.'
+   ),
+   '{}'),
+  ('22260000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'Bob''s story',
+   jsonb_build_object('situation', 's', 'task', 't', 'action', 'a',
+                      'result', 'r'),
+   array['22200000-0000-4000-8000-000000000001'::uuid]);
