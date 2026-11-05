@@ -1,10 +1,10 @@
 # Data model
 
-|                     |                                                                       |
-| ------------------- | --------------------------------------------------------------------- |
-| **Status**          | `applications` implemented; the rest is still draft                   |
-| **Last reviewed**   | 2026-11-04                                                            |
-| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document. |
+|                     |                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------ |
+| **Status**          | `applications`, `companies` and `jobs` implemented; the other twelve are still draft |
+| **Last reviewed**   | 2026-11-04                                                                           |
+| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
 `evidence` is what makes the competency radar possible, because it is where practice,
@@ -81,6 +81,24 @@ same `base_json` renders differently per region; see [regions.md](regions.md).
 configuration, not constants in code, so they can be calibrated against real interview
 outcomes.
 
+**`companies.regions`** — a `region[]`, GIN-indexed. Which of our markets the company
+hires in, a different question from `hq_country`, where it is headquartered.
+
+**`jobs.visa_sponsorship`** — `yes` / `no` / `unknown`, with a database constraint that any
+confirmed value carries a source. A value read from the UK register of licensed sponsors
+and one inferred from an advert are not the same fact, and the coverage metric counts only
+confirmed ones, so collapsing them would quietly inflate it.
+
+**`jobs.language_required`** — `{language, level, evidence}`, parsed at the boundary by
+`parseLanguageRequirement`. A level rather than a boolean, because "JLPT N2 required" and
+"some Japanese appreciated" are different decisions about whether to apply at all.
+
+**Cross-tenant foreign keys** — the `jobs` and `applications` insert and update policies
+check that the _parent_ row belongs to the same user, not merely that the new row does.
+Without that a user could own a row pointing at someone else's company or job, and the
+reference itself leaks: it proves that row exists, and any join from it reads across the
+tenant boundary. The isolation suite tests all three of those attacks.
+
 **`insights.cluster_id`** — assigned by embedding-similarity clustering. The same lesson
 learned three times should reinforce one insight, not create three.
 
@@ -88,11 +106,21 @@ learned three times should reinforce one insight, not create three.
 capping described in [architecture.md](architecture.md#cost-control) cannot be tuned
 without it, so an unmetered call is a bug.
 
+## Settled
+
+Answered by the migrations that needed them, and kept here because each is the kind a
+future reader could reverse without knowing what it cost.
+
+| Question                                   | Answer                                                                                                                                                                                                                                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Array, or one row per company per region?  | **Array.** `research_json` is the expensive cached artefact and belongs to the company, not to a company-region pair. One row per region would copy it into every market the company hires in, giving it N places to go stale and N bills to generate. Multinationals hiring across several of our markets are the normal case |
+| Does `applications` keep its own `region`? | **No — read through the job.** The same reasoning that keeps the current stage out of a column: a fact stored twice eventually disagrees with itself, and every region-sliced metric in the risk dashboard reads this one                                                                                                      |
+| When do the vector columns arrive?         | **With the first migration that generates an embedding**, in Phase 2. pgvector needs a fixed dimension to build an index, the dimension follows from the model, and the model is still unchosen. Creating them now means guessing, or shipping unindexed columns that look finished                                            |
+
 ## Open schema questions
 
-| Question                                                                                                                       | Decide by                           |
-| ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
-| Does `companies.regions` need to be an array (multinationals hire in several of our markets) or is one row per region cleaner? | First migration                     |
-| Do insight clusters deserve their own table once they carry a canonical summary?                                               | Phase 1, when clustering first runs |
-| Which embedding model, and is one shared vector space right for both JDs and insights?                                         | Phase 1                             |
-| Is `competencies` user-scoped content or shared reference data with per-user overrides?                                        | Phase 3                             |
+| Question                                                                                | Decide by                           |
+| --------------------------------------------------------------------------------------- | ----------------------------------- |
+| Do insight clusters deserve their own table once they carry a canonical summary?        | Phase 1, when clustering first runs |
+| Which embedding model, and is one shared vector space right for both JDs and insights?  | Phase 1                             |
+| Is `competencies` user-scoped content or shared reference data with per-user overrides? | Phase 3                             |
