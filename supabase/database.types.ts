@@ -35,14 +35,14 @@ export type Database = {
           Tables: {
             "applications": {
                   Row: {
-                    "created_at": string,"id": string,"job_id": string,"stage_history": NonNullable<Json>,"updated_at": string,"user_id": string
+                    "created_at": string,"id": string,"job_id": string,"next_action_at": string | null,"resume_version_id": string | null,"stage_history": NonNullable<Json>,"tier": Database["public"]['Enums']["effort_tier"] | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"job_id": string,"stage_history"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
+                    "created_at"?: string,"id"?: string,"job_id": string,"next_action_at"?: string | null,"resume_version_id"?: string | null,"stage_history"?: NonNullable<Json>,"tier"?: Database["public"]['Enums']["effort_tier"] | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"job_id"?: string,"stage_history"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"job_id"?: string,"next_action_at"?: string | null,"resume_version_id"?: string | null,"stage_history"?: NonNullable<Json>,"tier"?: Database["public"]['Enums']["effort_tier"] | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
@@ -50,6 +50,12 @@ export type Database = {
       columns: ["job_id"]
 isOneToOne: false
       referencedRelation: "jobs"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "applications_resume_version_id_fkey"
+      columns: ["resume_version_id"]
+isOneToOne: false
+      referencedRelation: "resume_versions"
       referencedColumns: ["id"]
     }
                   ]
@@ -66,6 +72,26 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"interviews": {
+                  Row: {
+                    "application_id": string,"created_at": string,"feedback": string | null,"followup_sent_at": string | null,"id": string,"notes": string | null,"round": number,"scheduled_at": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "application_id": string,"created_at"?: string,"feedback"?: string | null,"followup_sent_at"?: string | null,"id"?: string,"notes"?: string | null,"round": number,"scheduled_at": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "application_id"?: string,"created_at"?: string,"feedback"?: string | null,"followup_sent_at"?: string | null,"id"?: string,"notes"?: string | null,"round"?: number,"scheduled_at"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "interviews_application_id_fkey"
+      columns: ["application_id"]
+isOneToOne: false
+      referencedRelation: "applications"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"jobs": {
                   Row: {
@@ -87,6 +113,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"resume_versions": {
+                  Row: {
+                    "base_json": NonNullable<Json>,"created_at": string,"diff": Json | null,"generated_by": string | null,"id": string,"locale": string,"pdf_url": string | null,"region_profile": Database["public"]['Enums']["resume_profile"],"tailored_json": Json | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "base_json": NonNullable<Json>,"created_at"?: string,"diff"?: Json | null,"generated_by"?: string | null,"id"?: string,"locale": string,"pdf_url"?: string | null,"region_profile": Database["public"]['Enums']["resume_profile"],"tailored_json"?: Json | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "base_json"?: NonNullable<Json>,"created_at"?: string,"diff"?: Json | null,"generated_by"?: string | null,"id"?: string,"locale"?: string,"pdf_url"?: string | null,"region_profile"?: Database["public"]['Enums']["resume_profile"],"tailored_json"?: Json | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -96,7 +136,7 @@ isOneToOne: false
             [_ in never]: never
           }
           Enums: {
-            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
+            "application_stage": "saved"|"applied"|"assessment"|"interview"|"offer"|"rejected"|"withdrawn","ats_type": "greenhouse"|"lever"|"ashby"|"workday"|"other","company_size": "1-10"|"11-50"|"51-200"|"201-500"|"501-1000"|"1001-5000"|"5000+","effort_tier": "a"|"b"|"c","region": "uk"|"ie"|"ee"|"jp"|"de"|"other","resume_profile": "uk_ie_cv"|"eu_cv"|"jp_rirekisho"|"jp_shokumu_keirekisho"|"jp_english_cv"|"de_lebenslauf","sponsorship": "yes"|"no"|"unknown","work_mode": "onsite"|"hybrid"|"remote"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -216,7 +256,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
+            "application_stage": ["saved", "applied", "assessment", "interview", "offer", "rejected", "withdrawn"],"ats_type": ["greenhouse", "lever", "ashby", "workday", "other"],"company_size": ["1-10", "11-50", "51-200", "201-500", "501-1000", "1001-5000", "5000+"],"effort_tier": ["a", "b", "c"],"region": ["uk", "ie", "ee", "jp", "de", "other"],"resume_profile": ["uk_ie_cv", "eu_cv", "jp_rirekisho", "jp_shokumu_keirekisho", "jp_english_cv", "de_lebenslauf"],"sponsorship": ["yes", "no", "unknown"],"work_mode": ["onsite", "hybrid", "remote"]
           }
         }
 } as const

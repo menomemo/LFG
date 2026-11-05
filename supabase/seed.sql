@@ -173,3 +173,140 @@ values
    jsonb_build_array(
      jsonb_build_object('stage', 'applied', 'at', to_jsonb(now() - interval '5 days'))
    ));
+
+-- ---------------------------------------------------------------------------
+-- Résumé versions
+--
+-- Two of Alice's, because one base_json rendering differently per market is
+-- the whole reason region_profile exists. The second is tailored, so it
+-- carries generated_by and a diff -- the constraints refuse a rewrite that
+-- has neither.
+-- ---------------------------------------------------------------------------
+insert into public.resume_versions
+  (id, user_id, base_json, tailored_json, diff,
+   region_profile, locale, generated_by, pdf_url)
+values
+  ('e0000000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   jsonb_build_object(
+     'basics', jsonb_build_object('name', 'Alice Example'),
+     'work', jsonb_build_array(
+       jsonb_build_object(
+         'name', 'University projects',
+         'highlights', jsonb_build_array(
+           jsonb_build_object('id', 'b1', 'text',
+             'Built a payments reconciliation service handling 2M rows a day'),
+           jsonb_build_object('id', 'b2', 'text',
+             'Cut p99 latency from 800ms to 120ms by batching writes')
+         )
+       )
+     )
+   ),
+   null, null, 'uk_ie_cv', 'en-GB', null, null),
+  ('e0000000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   jsonb_build_object(
+     'basics', jsonb_build_object('name', 'Alice Example'),
+     'work', jsonb_build_array(
+       jsonb_build_object(
+         'name', 'University projects',
+         'highlights', jsonb_build_array(
+           jsonb_build_object('id', 'b1', 'text',
+             'Built a payments reconciliation service handling 2M rows a day'),
+           jsonb_build_object('id', 'b2', 'text',
+             'Cut p99 latency from 800ms to 120ms by batching writes')
+         )
+       )
+     )
+   ),
+   jsonb_build_object(
+     'basics', jsonb_build_object('name', 'Alice Example'),
+     'work', jsonb_build_array(
+       jsonb_build_object(
+         'name', 'University projects',
+         'highlights', jsonb_build_array(
+           -- Reordered and re-emphasised, and each line still names the
+           -- bullet it came from. A line without source_bullet_id is a
+           -- fabricated fact, which is the failure this shape prevents.
+           jsonb_build_object('source_bullet_id', 'b2', 'text',
+             'Reduced p99 latency 85% on a high-throughput write path'),
+           jsonb_build_object('source_bullet_id', 'b1', 'text',
+             'Built a reconciliation service processing 2M records daily')
+         )
+       )
+     )
+   ),
+   jsonb_build_array(
+     jsonb_build_object('source_bullet_id', 'b2', 'change', 'reworded', 'accepted', true),
+     jsonb_build_object('source_bullet_id', 'b1', 'change', 'reworded', 'accepted', false)
+   ),
+   'jp_english_cv', 'en-GB', 'resume-tailor@0.1.0', null),
+  ('f0000000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   jsonb_build_object('basics', jsonb_build_object('name', 'Bob Example')),
+   null, null, 'de_lebenslauf', 'de-DE', null, null);
+
+-- Tier, the résumé that was sent, and the next thing to do. Updates rather
+-- than new inserts, so the pipeline fixtures above stay the one place the
+-- stage histories are written.
+update public.applications
+set tier = 'a',
+    resume_version_id = 'e0000000-0000-4000-8000-000000000001',
+    next_action_at = now() + interval '2 days'
+where job_id = 'c0000000-0000-4000-8000-000000000001';
+
+update public.applications
+set tier = 'c',
+    resume_version_id = 'e0000000-0000-4000-8000-000000000001'
+where job_id = 'c0000000-0000-4000-8000-000000000002';
+
+update public.applications
+set tier = 'b',
+    resume_version_id = 'e0000000-0000-4000-8000-000000000002',
+    next_action_at = now() + interval '1 day'
+where job_id = 'c0000000-0000-4000-8000-000000000003';
+
+-- The rejected one keeps a null tier on purpose: null is unknown, not C.
+
+update public.applications
+set tier = 'b',
+    resume_version_id = 'f0000000-0000-4000-8000-000000000001'
+where job_id = 'd0000000-0000-4000-8000-000000000001';
+
+-- ---------------------------------------------------------------------------
+-- Interviews
+--
+-- Alice has two rounds on the application that reached 'interview'. The first
+-- has a follow-up recorded, the second has not happened yet, which is what
+-- makes the 24-hour reminder rule testable.
+-- ---------------------------------------------------------------------------
+insert into public.interviews
+  (id, user_id, application_id, round, scheduled_at, notes, feedback,
+   followup_sent_at)
+select
+  'a1000000-0000-4000-8000-000000000001',
+  a.user_id, a.id, 1, now() - interval '3 days',
+  'Recruiter screen. Asked why Monzo specifically.',
+  'Positive, moving to technical.',
+  now() - interval '3 days' + interval '4 hours'
+from public.applications a
+where a.job_id = 'c0000000-0000-4000-8000-000000000001';
+
+insert into public.interviews
+  (id, user_id, application_id, round, scheduled_at, notes)
+select
+  'a1000000-0000-4000-8000-000000000002',
+  a.user_id, a.id, 2, now() + interval '4 days',
+  'Technical. System design, one hour.'
+from public.applications a
+where a.job_id = 'c0000000-0000-4000-8000-000000000001';
+
+-- Bob's interview exists for the same single reason as his application:
+-- Alice must never see it, and must not be able to attach anything to it.
+insert into public.interviews
+  (id, user_id, application_id, round, scheduled_at)
+select
+  'b1000000-0000-4000-8000-000000000001',
+  a.user_id, a.id, 1, now() - interval '1 day'
+from public.applications a
+where a.job_id = 'd0000000-0000-4000-8000-000000000001';
