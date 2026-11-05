@@ -227,6 +227,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"llm_usage": {
+                  Row: {
+                    "cost_usd": number,"created_at": string,"id": string,"model": string,"plugin": string,"task": string,"tokens_in": number,"tokens_out": number,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cost_usd": number,"created_at"?: string,"id"?: string,"model": string,"plugin": string,"task": string,"tokens_in": number,"tokens_out": number,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "cost_usd"?: number,"created_at"?: string,"id"?: string,"model"?: string,"plugin"?: string,"task"?: string,"tokens_in"?: number,"tokens_out"?: number,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"resume_versions": {
                   Row: {
                     "base_json": NonNullable<Json>,"created_at": string,"diff": Json | null,"generated_by": string | null,"id": string,"locale": string,"pdf_url": string | null,"region_profile": Database["public"]['Enums']["resume_profile"],"tailored_json": Json | null,"updated_at": string,"user_id": string
