@@ -657,3 +657,30 @@ values
    jsonb_build_object('situation', 's', 'task', 't', 'action', 'a',
                       'result', 'r'),
    array['22200000-0000-4000-8000-000000000001'::uuid]);
+
+-- ---------------------------------------------------------------------------
+-- Model usage
+--
+-- Two plugins, two tiers, and one call that produced nothing useful but still
+-- cost money -- which is the case the meter exists for.
+-- ---------------------------------------------------------------------------
+insert into public.llm_usage
+  (id, user_id, plugin, task, model, tokens_in, tokens_out, cost_usd,
+   created_at)
+values
+  ('11170000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'insight-tagger', 'tag sales dimensions', 'local/light-8b',
+   1420, 180, 0.000000, now() - interval '2 days'),
+  ('11170000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   'resume-tailor', 'rewrite bullets for jp_english_cv', 'remote/heavy',
+   8100, 2300, 0.062400, now() - interval '1 day'),
+  ('11170000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   'resume-tailor', 'rewrite bullets for jp_english_cv', 'remote/heavy',
+   8100, 40, 0.024900, now() - interval '1 day'),
+  ('22270000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   'insight-tagger', 'tag sales dimensions', 'local/light-8b',
+   900, 120, 0.000000, now() - interval '3 days');
