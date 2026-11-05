@@ -132,14 +132,12 @@ Then **Project configuration → Environment variables**, before the first build
 
 Deploy. Then open the URL and sign in with the account from step 4.
 
-**One compatibility risk, stated rather than hoped away.** Netlify's Next.js runtime
-documents support for 13.5 and later and says it tests every stable release, but does not
-name 16, which is what this project is on. The runtime is actively maintained — the version
-current at the time of writing shipped two days earlier — so this will probably be fine, and
-the first build is what settles it. If that build fails inside the runtime rather than in
-our code, the options in order are: pin Next to the latest 15.x, which costs nothing here
-because nothing uses a 16-only feature; or move to a host that runs a plain Node server,
-such as Render or Railway.
+**The compatibility risk, now settled.** Netlify's Next.js runtime documents support for
+13.5 and later and says it tests every stable release, but does not name 16, which is what
+this project is on. The first build is what settles it, and on 2026-11-05 it built and
+served correctly. The fallbacks stay recorded in case a future runtime release regresses:
+pin Next to the latest 15.x, which costs nothing here because nothing uses a 16-only
+feature; or move to a host that runs a plain Node server, such as Render or Railway.
 
 <details>
 <summary>Vercel, if the account is ever unblocked</summary>
