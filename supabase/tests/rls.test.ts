@@ -70,6 +70,10 @@ let aliceCompetencyId: string;
 let bobInsightId: string;
 let bobDrillId: string;
 let aliceInsightId: string;
+let bobCardId: string;
+let bobReviewLogId: string;
+let bobStoryId: string;
+let aliceCardId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
@@ -222,6 +226,36 @@ beforeAll(async () => {
     );
   }
   aliceInsightId = aliceInsight.data.id;
+
+  const bobCard = await bob.from('cards').select('id').limit(1).single();
+  if (bobCard.error) {
+    throw new Error(`Seed missing Bob card: ${bobCard.error.message}`);
+  }
+  bobCardId = bobCard.data.id;
+
+  const bobReviewLog = await bob
+    .from('review_logs')
+    .select('id')
+    .limit(1)
+    .single();
+  if (bobReviewLog.error) {
+    throw new Error(
+      `Seed missing Bob review log: ${bobReviewLog.error.message}`,
+    );
+  }
+  bobReviewLogId = bobReviewLog.data.id;
+
+  const bobStory = await bob.from('stories').select('id').limit(1).single();
+  if (bobStory.error) {
+    throw new Error(`Seed missing Bob story: ${bobStory.error.message}`);
+  }
+  bobStoryId = bobStory.data.id;
+
+  const aliceCard = await alice.from('cards').select('id').limit(1).single();
+  if (aliceCard.error) {
+    throw new Error(`Seed missing Alice card: ${aliceCard.error.message}`);
+  }
+  aliceCardId = aliceCard.data.id;
 });
 
 describe('reading', () => {
@@ -261,6 +295,9 @@ describe('reading', () => {
       ['evidence', bobEvidenceId],
       ['insights', bobInsightId],
       ['drills', bobDrillId],
+      ['cards', bobCardId],
+      ['review_logs', bobReviewLogId],
+      ['stories', bobStoryId],
     ] as const) {
       const {data, error} = await alice.from(table).select('*').eq('id', id);
       expect(error).toBeNull();
@@ -282,6 +319,9 @@ describe('reading', () => {
       'evidence',
       'insights',
       'drills',
+      'cards',
+      'review_logs',
+      'stories',
     ] as const) {
       const {data, error} = await anon.from(table).select('*');
       expect(error).toBeNull();
@@ -392,6 +432,9 @@ describe('writing', () => {
       ['evidence', bobEvidenceId],
       ['insights', bobInsightId],
       ['drills', bobDrillId],
+      ['cards', bobCardId],
+      ['review_logs', bobReviewLogId],
+      ['stories', bobStoryId],
     ] as const) {
       const {data, error} = await alice
         .from(table)
@@ -845,5 +888,186 @@ describe('writing: the insight tables', () => {
     expect(drills.data).not.toBeNull();
     expect(drills.data!.length).toBeGreaterThan(0);
     expect(drills.data!.map(row => row.id)).not.toContain(bobDrillId);
+  });
+});
+
+describe('writing: the practice tables', () => {
+  const newCard = {
+    front: 'Front',
+    back: 'Back',
+    fsrs_state: {state: 'new'},
+    due_at: new Date().toISOString(),
+    approved_at: new Date().toISOString(),
+  };
+
+  it("refuses Alice a card against Bob's competency", async () => {
+    const {error} = await alice.from('cards').insert({
+      ...newCard,
+      user_id: ALICE_ID,
+      competency_id: bobCompetencyId,
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice a card drawn from Bob's insight", async () => {
+    const {error} = await alice.from('cards').insert({
+      ...newCard,
+      user_id: ALICE_ID,
+      competency_id: aliceCompetencyId,
+      insight_id: bobInsightId,
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts a card drawn from no insight at all', async () => {
+    const {data, error} = await alice
+      .from('cards')
+      .insert({
+        ...newCard,
+        user_id: ALICE_ID,
+        competency_id: aliceCompetencyId,
+        insight_id: null,
+      })
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('cards').delete().eq('id', data!.id);
+  });
+
+  it('refuses a model-drafted card that was never approved', async () => {
+    /* Not RLS: the product rule that a model drafts and the user approves
+       before a card enters the deck. A card the user wrote is approved by
+       definition, and the constraint says exactly that. */
+    const {error} = await alice.from('cards').insert({
+      front: 'Front',
+      back: 'Back',
+      fsrs_state: {state: 'new'},
+      due_at: new Date().toISOString(),
+      user_id: ALICE_ID,
+      competency_id: aliceCompetencyId,
+      generated_by: null,
+      approved_at: null,
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/cards_user_written_cards_are_approved/);
+  });
+
+  it("refuses Alice a review log against Bob's card", async () => {
+    const {error} = await alice.from('review_logs').insert({
+      user_id: ALICE_ID,
+      card_id: bobCardId,
+      rating: 'good',
+      reviewed_at: new Date().toISOString(),
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts a review log against a card Alice owns', async () => {
+    const {data, error} = await alice
+      .from('review_logs')
+      .insert({
+        user_id: ALICE_ID,
+        card_id: aliceCardId,
+        rating: 'good',
+        reviewed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('review_logs').delete().eq('id', data!.id);
+  });
+
+  /* stories.competency_ids is a reference inside an array, which no foreign
+     key can police. The policy checks every element, so the attack worth
+     testing is the mixed array: one of the user's own ids alongside one of
+     somebody else's. A policy that only looked at the first element, or that
+     used an overlap operator, would pass a single-foreign-id test and let
+     this through. */
+  const star = {situation: 's', task: 't', action: 'a', result: 'r'};
+
+  it("refuses Alice a story tagged with Bob's competency", async () => {
+    const {error} = await alice.from('stories').insert({
+      user_id: ALICE_ID,
+      title: 'Smuggled',
+      star_json: star,
+      competency_ids: [bobCompetencyId],
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses an array mixing Alice's competency with Bob's", async () => {
+    const {error} = await alice.from('stories').insert({
+      user_id: ALICE_ID,
+      title: 'Mixed',
+      star_json: star,
+      competency_ids: [aliceCompetencyId, bobCompetencyId],
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice adding Bob's competency to an existing story", async () => {
+    const {data: mine, error: readError} = await alice
+      .from('stories')
+      .select('id')
+      .limit(1)
+      .single();
+    expect(readError).toBeNull();
+
+    const {error} = await alice
+      .from('stories')
+      .update({competency_ids: [aliceCompetencyId, bobCompetencyId]})
+      .eq('id', mine!.id);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts an array of only Alice’s competencies, and an empty one', async () => {
+    for (const competencyIds of [[aliceCompetencyId], []]) {
+      const {data, error} = await alice
+        .from('stories')
+        .insert({
+          user_id: ALICE_ID,
+          title: 'Permitted',
+          star_json: star,
+          competency_ids: competencyIds,
+        })
+        .select()
+        .single();
+      expect(error).toBeNull();
+      expect(data).not.toBeNull();
+      await alice.from('stories').delete().eq('id', data!.id);
+    }
+  });
+
+  it('refuses a STAR story with no result', async () => {
+    const {error} = await alice.from('stories').insert({
+      user_id: ALICE_ID,
+      title: 'Incomplete',
+      star_json: {situation: 's', task: 't', action: 'a'},
+      competency_ids: [],
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/stories_star_json_check/);
+  });
+
+  it("never shows Alice Bob's cards, reviews or stories", async () => {
+    for (const [table, id] of [
+      ['cards', bobCardId],
+      ['review_logs', bobReviewLogId],
+      ['stories', bobStoryId],
+    ] as const) {
+      const {data, error} = await alice.from(table).select('id');
+      expect(error).toBeNull();
+      expect(data).not.toBeNull();
+      expect(data!.length).toBeGreaterThan(0);
+      expect(data!.map(row => row.id)).not.toContain(id);
+    }
   });
 });
