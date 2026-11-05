@@ -470,3 +470,75 @@ values
    '22200000-0000-4000-8000-000000000001',
    'project', null,
    0.6, 0.5, now() - interval '5 days', null);
+
+-- ---------------------------------------------------------------------------
+-- Insights
+--
+-- Two of Alice's are processed and share a cluster, because the same lesson
+-- learned twice is supposed to reinforce one insight rather than make two.
+-- The third is raw text and nothing else: captured on a phone, not yet
+-- through the pipeline, and a perfectly valid row.
+-- ---------------------------------------------------------------------------
+insert into public.insights
+  (id, user_id, raw_text, source_url, summary, principle, generated_by,
+   sales_dims, cluster_id)
+values
+  ('11120000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   'Watched a sales call where the rep spent the first ten minutes asking '
+   'about the team''s current process and never pitched once.',
+   'https://example.test/talks/discovery-first',
+   'Asking about the current process earns the right to describe a better one.',
+   'Open with a question about how they do it today, not with what you built.',
+   'insight-tagger@0.1.0',
+   '{discovery,opening}',
+   '11129000-0000-4000-8000-000000000001'),
+  ('11120000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   'Interviewer asked what I would do differently and the honest answer '
+   'landed better than the polished one.',
+   null,
+   'Naming the trade-off you got wrong reads as judgement, not weakness.',
+   'Answer "what would you change" with the decision, not the outcome.',
+   'insight-tagger@0.1.0',
+   '{storytelling,trust}',
+   '11129000-0000-4000-8000-000000000001'),
+  -- Captured and not yet processed. summary, principle, generated_by and the
+  -- tags are all empty, which is the state the capture path has to allow.
+  ('11120000-0000-4000-8000-000000000003',
+   '11111111-1111-1111-1111-111111111111',
+   'Read something about anchoring in salary conversations - come back to '
+   'this before the Monzo final round.',
+   null, null, null, null, '{}', null),
+  ('22220000-0000-4000-8000-000000000002',
+   '22222222-2222-2222-2222-222222222222',
+   'Bob learned something and Alice must never see it.',
+   null,
+   'Bob''s summary.', 'Bob''s principle.', 'insight-tagger@0.1.0',
+   '{closing}', null);
+
+-- ---------------------------------------------------------------------------
+-- Drills
+--
+-- One attempted, one not. The unattempted one carries no score, because a
+-- drill nobody has tried is not a drill somebody failed.
+-- ---------------------------------------------------------------------------
+insert into public.drills
+  (id, user_id, insight_id, scenario, generated_by, attempts, last_score)
+values
+  ('11130000-0000-4000-8000-000000000001',
+   '11111111-1111-1111-1111-111111111111',
+   '11120000-0000-4000-8000-000000000001',
+   'The interviewer opens with "so, tell me why you applied". Spend your '
+   'first answer finding out what the team is struggling with.',
+   'roleplay-sparring@0.1.0', 3, 0.65),
+  ('11130000-0000-4000-8000-000000000002',
+   '11111111-1111-1111-1111-111111111111',
+   '11120000-0000-4000-8000-000000000002',
+   'You are asked what you would do differently on your biggest project. '
+   'Name the decision, not the outcome.',
+   'roleplay-sparring@0.1.0', 0, null),
+  ('22230000-0000-4000-8000-000000000001',
+   '22222222-2222-2222-2222-222222222222',
+   '22220000-0000-4000-8000-000000000002',
+   'Bob''s drill.', 'roleplay-sparring@0.1.0', 0, null);
