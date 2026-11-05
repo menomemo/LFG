@@ -1,10 +1,10 @@
 # Progress
 
-|                                                                                            |                                                                                       |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| **Updated**                                                                                | 2026-11-05                                                                            |
-| **Phase**                                                                                  | 1 of 5 — Foundation                                                                   |
-| **Next**                                                                                   | The remaining ten tables, then the board that lets you create and move an application |
+|                                                                                            |                                                                                         |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| **Updated**                                                                                | 2026-11-05                                                                              |
+| **Phase**                                                                                  | 1 of 5 — Foundation                                                                     |
+| **Next**                                                                                   | The remaining eight tables, then the board that lets you create and move an application |
 | Where the project actually is, against the whole picture. This document is updated **every |
 | time a module is finished** — see [Update protocol](#update-protocol). It is the only      |
 | document that tracks state rather than intent, which is why it is separate from            |
@@ -15,7 +15,7 @@
 |                                                                                                                                                         |                                                                                                                                                                                                   |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Done**                                                                                                                                                | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app), every push to `main` going live automatically |
-| **In progress**                                                                                                                                         | Supabase schema: `applications`, `companies`, `jobs`, `resume_versions` and `interviews` done with policies and a 20-test isolation suite; ten tables remain                                      |
+| **In progress**                                                                                                                                         | Supabase schema: seven tables done with policies and a 26-test isolation suite; eight remain                                                                                                      |
 | **Not done**                                                                                                                                            | **Adding anything through the UI.** The deployed page is read-only; a row exists only if SQL put it there                                                                                         |
 | **Blocked on a decision**                                                                                                                               | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                            |
 | **Phase 1 gate**                                                                                                                                        | Not started: four consecutive weeks with every application in the system                                                                                                                          |
@@ -93,7 +93,7 @@ Status key: ✅ done · 🚧 in progress · 📋 planned · ⛔ blocked
 | 0     | Iteration zero                | ✅     | 2026-11-04 · workspace, lint, CI, `@lfg/core` with 36 tests                                                                 |
 | 1     | Walking skeleton              | ✅     | 2026-11-04 · sign-in → RLS-protected query → `core` derivation → rendered page, locally                                     |
 | 1     | Deploy the skeleton           | ✅     | 2026-11-05 · live on Netlify against production Supabase. Anonymous request redirects to sign-in; 30s from merge to serving |
-| 1     | Supabase schema and RLS       | 🚧     | Five tables done: policies, cross-tenant foreign-key checks, 20-test isolation suite. Ten remain                            |
+| 1     | Supabase schema and RLS       | 🚧     | Seven tables done: policies, cross-tenant foreign-key checks, 26-test isolation suite. Eight remain                         |
 | 1     | Application board             | 📋     |                                                                                                                             |
 | 1     | JD parsing and manual create  | 📋     |                                                                                                                             |
 | 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                                                                                  |
