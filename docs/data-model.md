@@ -1,10 +1,10 @@
 # Data model
 
-|                     |                                                                                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Status**          | Seven tables implemented: `applications`, `companies`, `jobs`, `resume_versions`, `interviews`, `contacts`, `signals`. The other eight are still draft |
-| **Last reviewed**   | 2026-11-05                                                                                                                                             |
-| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                                                                                  |
+|                     |                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**          | Nine tables implemented: `applications`, `companies`, `jobs`, `resume_versions`, `interviews`, `contacts`, `signals`, `competencies`, `evidence`. The other six are still draft |
+| **Last reviewed**   | 2026-11-05                                                                                                                                                                      |
+| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document.                                                                                                           |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
 `evidence` is what makes the competency radar possible, because it is where practice,
@@ -43,7 +43,7 @@ These are enforced in the schema, not by discipline.
 | `resume_versions` | `base_json`, `tailored_json`, `diff`, `pdf_url`, `region_profile`, `locale`, `generated_by`                                                                 | `applications`                                    |
 | `contacts`        | `company_id`, `role_type`, `name`, `profile_url`, `source`, `last_touch_at`, `sequence_step`                                                                | `companies`, and applications through the company |
 | `competencies`    | `axis`, `sub_skill`, `level_junior`, `level_mid`, `level_senior`                                                                                            | `evidence`, `cards`                               |
-| `evidence`        | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at`                                                                               | `competencies`                                    |
+| `evidence`        | `competency_id`, `source_type`, `source_id`, `score`, `weight`, `observed_at`, `generated_by`                                                               | `competencies`                                    |
 | `cards`           | `competency_id`, `front`, `back`, `fsrs_state`, `due_at`                                                                                                    | `review_logs`                                     |
 | `review_logs`     | `card_id`, `rating`, `reviewed_at`                                                                                                                          | `cards`                                           |
 | `stories`         | `title`, `star_json`, `competency_ids`                                                                                                                      | `interviews`                                      |
@@ -93,6 +93,18 @@ same `base_json` renders differently per region; see [regions.md](regions.md).
 [product-spec.md](product-spec.md#module-4--competency-model-and-radar). Weights are
 configuration, not constants in code, so they can be calibrated against real interview
 outcomes.
+
+**`evidence.source_id` carries no foreign key**, and that is a decision rather than an
+omission — [ADR-0008](adr/0008-record-evidence-against-a-polymorphic-source.md) argues it.
+Evidence arrives from five tables and from two sources that have no row at all (a project,
+a self-assessment), so `source_type` is an enum and the source is resolved in
+`packages/core`. The cost is that a policy cannot check this one reference: the isolation
+suite therefore asserts what the hole can and cannot do, which is that the write is
+permitted and resolves to nothing.
+
+**`evidence.generated_by` is required for the source types a model scores**, by an
+explicit check constraint naming the ones it is not required for. Adding a model-scored
+source type fails loudly instead of quietly storing a number nobody can attribute.
 
 **`companies.regions`** — a `region[]`, GIN-indexed. Which of our markets the company
 hires in, a different question from `hq_country`, where it is headquartered.
