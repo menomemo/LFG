@@ -135,7 +135,7 @@ flowchart TB
 
 ## 如何开始
 
-Node 22.12 以上、npm 10 以上，别的不需要。
+Node 22.12 以上、npm 10 以上，以及一个正在运行的 Docker（本地数据库跑在容器里）。
 
 ```bash
 git clone git@github.com:menomemo/LFG.git
@@ -144,11 +144,17 @@ npm install
 npm run check
 ```
 
-`npm run check` 跑 format、lint、types、tests——和 CI 跑的是同样四项、同样顺序——
-在干净克隆上应该全绿。
+```bash
+npm run db:start && npm run dev -w @lfg/web
+```
 
-但现在还没有能看的东西：唯一的包是 `packages/core`，里面是业务规则，不渲染任何界面。
-完整的环境搭建、全部命令，以及"哪条规范由哪个工具强制"的对照表在
+然后打开 http://localhost:3000，用 `alice@lfg.test` / `lfg-dev-password` 登录——这是
+seed 进去的本地测试账号。你会看到一个只读的投递列表，四条。这就是 walking skeleton：
+它存在的意义是证明整条架构跑得通，而不是现在就有用。
+
+`npm run check` 跑 format、lint、types、tests，和 CI 跑的是同样四项、同样顺序。
+`npm run test:db` 对本地数据库跑 row-level security 隔离测试。完整的环境搭建、全部命令，
+以及"哪条规范由哪个工具强制"的对照表在
 [`docs/development.md`](docs/development.md)；项目实际走到哪一步在
 [`docs/progress.md`](docs/progress.md)。
 
@@ -159,6 +165,7 @@ npm run check
 | [docs/README.md](docs/README.md)                 | 全部文档的地图与维护规则                        |
 | [docs/progress.md](docs/progress.md)             | 项目实际进度，甘特图                            |
 | [docs/development.md](docs/development.md)       | 环境搭建、命令、哪条规范由哪个工具强制          |
+| [docs/deployment.md](docs/deployment.md)         | 什么跑在哪里，以及怎么部署上去                  |
 | [docs/architecture.md](docs/architecture.md)     | 系统怎么搭的，以及为什么这么搭                  |
 | [docs/product-spec.md](docs/product-spec.md)     | 每个模块做什么，MVP 与后续范围                  |
 | [docs/data-model.md](docs/data-model.md)         | 表、关键字段、关联、约定                        |

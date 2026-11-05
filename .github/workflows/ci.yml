@@ -116,3 +116,32 @@ jobs:
       - name: Stop Supabase
         if: always()
         run: npx supabase stop --no-backup
+
+  translations:
+    name: README translation drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The two READMEs drifted once: the English one gained the walking
+      # skeleton's setup steps and the Chinese one kept saying there was
+      # nothing to look at. Structure matched -- same headings, same tables,
+      # same links -- so only reading them caught it. This catches the cause
+      # instead: one changing without the other.
+      - name: README.zh-CN.md must change with README.md
+        run: |
+          changed=$(git diff --name-only \
+            '${{ github.event.pull_request.base.sha }}' \
+            '${{ github.event.pull_request.head.sha }}')
+          en=$(printf '%s\n' "$changed" | grep -cx 'README.md' || true)
+          zh=$(printf '%s\n' "$changed" | grep -cx 'README.zh-CN.md' || true)
+          if [ "$en" -gt 0 ] && [ "$zh" -eq 0 ]; then
+            echo "::error file=README.zh-CN.md::README.md changed but its translation did not. Update README.zh-CN.md in this pull request, or say in the description why it does not need updating."
+            exit 1
+          fi
+          echo "ok: en=$en zh=$zh"

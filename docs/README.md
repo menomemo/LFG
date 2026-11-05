@@ -47,7 +47,9 @@ sentence belongs in an ADR instead.
 5. **No aspirational present tense.** If it does not exist yet, mark it 📋 planned. The
    status key is `✅ shipped · 🚧 in progress · 📋 planned` everywhere.
 6. **English for everything** except [`../README.zh-CN.md`](../README.zh-CN.md), which is a
-   translation of the top-level README and must be updated with it.
+   translation of the top-level README and must be updated with it. CI fails a pull
+   request that changes one without the other, because the pair drifted once already and
+   a stale translation does not read as stale — it reads as true.
 
 ## Not here yet
 

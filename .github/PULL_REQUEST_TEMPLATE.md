@@ -30,4 +30,6 @@ has forgotten everything about this change — probably you.
 - [ ] Failures fail loudly rather than producing a confident wrong answer
 - [ ] Format, lint, types and tests pass locally
 - [ ] Documents this change makes wrong are fixed here
+- [ ] `README.zh-CN.md` updated if `README.md` changed — they are one document
+      in two languages, and a stale translation states things that are not true
 - [ ] If this decides something a future reader could reverse by accident, there is an ADR

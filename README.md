@@ -189,6 +189,7 @@ database. Setup in full, and the table of which standard is enforced by which to
 | [docs/README.md](docs/README.md)                 | Map of all documentation and how it's maintained         |
 | [docs/progress.md](docs/progress.md)             | Where the project actually is, as a Gantt chart          |
 | [docs/development.md](docs/development.md)       | Setup, commands, and what enforces which standard        |
+| [docs/deployment.md](docs/deployment.md)         | What runs where, and how to get it there                 |
 | [docs/architecture.md](docs/architecture.md)     | How the system is built, and why it is built that way    |
 | [docs/product-spec.md](docs/product-spec.md)     | What each module does, with MVP and later scope          |
 | [docs/data-model.md](docs/data-model.md)         | Tables, key fields, relationships, conventions           |
