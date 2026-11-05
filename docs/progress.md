@@ -1,10 +1,10 @@
 # Progress
 
-|                                                                                            |                                                          |
-| ------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| **Updated**                                                                                | 2026-11-05                                               |
-| **Phase**                                                                                  | 1 of 5 — Foundation                                      |
-| **Next**                                                                                   | JD parsing: filling the create form from a pasted advert |
+|                                                                                            |                                                           |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| **Updated**                                                                                | 2026-11-05                                                |
+| **Phase**                                                                                  | 1 of 5 — Foundation                                       |
+| **Next**                                                                                   | Finishing the board: an optimistic move and drag-to-stage |
 | Where the project actually is, against the whole picture. This document is updated **every |
 | time a module is finished** — see [Update protocol](#update-protocol). It is the only      |
 | document that tracks state rather than intent, which is why it is separate from            |
@@ -12,18 +12,18 @@
 
 ## Right now
 
-|                                                                                               |                                                                                                                                                                                                                                                                                                    |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Done**                                                                                      | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app) · the full Supabase schema, fifteen tables with RLS and a 55-test isolation suite · **the application board**, created and moved through the UI |
-| **In progress**                                                                               | JD parsing. The create form exists and is typed into by hand; the parser fills it from a pasted advert                                                                                                                                                                                             |
-| **Not done**                                                                                  | Dragging a card between lanes — a stage is chosen from a select and submitted. Nothing is extracted from a job advert yet                                                                                                                                                                          |
-| **Blocked on a decision**                                                                     | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                                                                                                                             |
-| **Phase 1 gate**                                                                              | Reachable for the first time, and not started: four consecutive weeks with every application in the system                                                                                                                                                                                         |
-| Progress through the whole plan: **6 of 29 tracked items complete.** The sixth is the first   |
-| one that is not infrastructure: an application can be added and moved without anyone writing  |
-| SQL, so the count of things that help somebody find a job is one rather than zero. It is also |
-| the item the Phase 1 gate depends on — four weeks of real use cannot start until there is     |
-| something to use — so the gate is now open to be attempted rather than waiting on a feature.  |
+|                                                                                            |                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Done**                                                                                   | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app) · the full Supabase schema, fifteen tables with RLS and a 55-test isolation suite |
+| **In progress**                                                                            | The application board again: the move is slow enough to notice, and a card cannot be dragged between lanes                                                                                                                           |
+| **Not done**                                                                               | Dragging a card between lanes — a stage is chosen from a select and submitted. Nothing is extracted from a job advert yet                                                                                                            |
+| **Blocked on a decision**                                                                  | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                                                               |
+| **Phase 1 gate**                                                                           | Reachable for the first time, and not started: four consecutive weeks with every application in the system                                                                                                                           |
+| Progress through the whole plan: **5 of 29 tracked items complete.** The board was marked  |
+| complete against what had been built rather than against how the item is defined:          |
+| [roadmap.md](roadmap.md) says "application board with drag-to-stage", and dragging a card  |
+| was not built. It is back to in progress until it is. The board is usable in the meantime, |
+| so the Phase 1 gate is still something that can be attempted.                              |
 
 ## Gantt
 
@@ -45,7 +45,7 @@ gantt
   Walking skeleton             :done,   p1a, 2026-11-04, 1d
   Deploy the skeleton          :done,   p1a2, after p1a, 1d
   Supabase schema and RLS      :done,   p1b, after p1a2, 4d
-  Application board            :done,   p1c, after p1b, 1d
+  Application board            :active, p1c, after p1b, 1d
   JD parsing and manual create :active, p1d, after p1c, 3d
   Insight capture              :        p1e, after p1d, 3d
   Plugin followup-writer       :        p1f, after p1e, 3d
@@ -89,37 +89,37 @@ gantt
 Every tracked item, so position is visible without reading the chart.
 Status key: ✅ done · 🚧 in progress · 📋 planned · ⛔ blocked
 
-| Phase | Item                          | Status | Notes                                                                                                                               |
-| ----- | ----------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 0     | Documentation set             | ✅     | 2026-11-04                                                                                                                          |
-| 0     | Iteration zero                | ✅     | 2026-11-04 · workspace, lint, CI, `@lfg/core` with 36 tests                                                                         |
-| 1     | Walking skeleton              | ✅     | 2026-11-04 · sign-in → RLS-protected query → `core` derivation → rendered page, locally                                             |
-| 1     | Deploy the skeleton           | ✅     | 2026-11-05 · live on Netlify against production Supabase. Anonymous request redirects to sign-in; 30s from merge to serving         |
-| 1     | Supabase schema and RLS       | ✅     | 2026-11-05 · fifteen tables, four policies each, cross-tenant checks on every parent, 55-test isolation suite                       |
-| 1     | Application board             | ✅     | 2026-11-05 · lanes derived from `stage_history`; one form creates company, job and application; a move appends and never overwrites |
-| 1     | JD parsing and manual create  | 🚧     | Manual create shipped with the board. What is left is extracting the fields from a pasted advert                                    |
-| 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                                                                                          |
-| 1     | `followup-writer` plugin      | 📋     | First plugin, with a regression test                                                                                                |
-| 2     | Company research agent        | 📋     |                                                                                                                                     |
-| 2     | Stack inference               | 📋     |                                                                                                                                     |
-| 2     | Résumé templates per region   | 📋     | UK/IE and Japan first                                                                                                               |
-| 2     | Résumé tailoring and diff     | 📋     |                                                                                                                                     |
-| 2     | Outreach drafting             | 📋     |                                                                                                                                     |
-| 2     | UK sponsor register ingest    | 📋     | The only market with an authoritative list                                                                                          |
-| 3     | Competency framework content  | 📋     | Two axes first, then the rest                                                                                                       |
-| 3     | Radar and evidence drill-down | 📋     |                                                                                                                                     |
-| 3     | FSRS cards and review queue   | 📋     |                                                                                                                                     |
-| 3     | Mock interviews with rubric   | 📋     |                                                                                                                                     |
-| 4     | Portfolio metrics             | 📋     | HHI already implemented in `core`                                                                                                   |
-| 4     | Signal scanning               | 📋     |                                                                                                                                     |
-| 4     | Weekly portfolio report       | 📋     |                                                                                                                                     |
-| 4     | Insight sparring              | 📋     |                                                                                                                                     |
-| 4     | Sankey funnel export          | 📋     | Also the distribution channel ([launch.md](launch.md#distribution))                                                                 |
-| 5     | Multi-tenant hardening        | 📋     |                                                                                                                                     |
-| 5     | Billing and quotas            | 📋     |                                                                                                                                     |
-| 5     | Legal, export, deletion       | 📋     | GDPR in four jurisdictions                                                                                                          |
-| 5     | Observability and runbook     | 📋     |                                                                                                                                     |
-| 5     | Mobile to App Store           | 📋     | Web goes public first                                                                                                               |
+| Phase | Item                          | Status | Notes                                                                                                                       |
+| ----- | ----------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Documentation set             | ✅     | 2026-11-04                                                                                                                  |
+| 0     | Iteration zero                | ✅     | 2026-11-04 · workspace, lint, CI, `@lfg/core` with 36 tests                                                                 |
+| 1     | Walking skeleton              | ✅     | 2026-11-04 · sign-in → RLS-protected query → `core` derivation → rendered page, locally                                     |
+| 1     | Deploy the skeleton           | ✅     | 2026-11-05 · live on Netlify against production Supabase. Anonymous request redirects to sign-in; 30s from merge to serving |
+| 1     | Supabase schema and RLS       | ✅     | 2026-11-05 · fifteen tables, four policies each, cross-tenant checks on every parent, 55-test isolation suite               |
+| 1     | Application board             | 🚧     | 2026-11-05 · lanes, create and stage changes ship; the item is defined with drag-to-stage, which does not                   |
+| 1     | JD parsing and manual create  | 🚧     | Manual create shipped with the board. What is left is extracting the fields from a pasted advert                            |
+| 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                                                                                  |
+| 1     | `followup-writer` plugin      | 📋     | First plugin, with a regression test                                                                                        |
+| 2     | Company research agent        | 📋     |                                                                                                                             |
+| 2     | Stack inference               | 📋     |                                                                                                                             |
+| 2     | Résumé templates per region   | 📋     | UK/IE and Japan first                                                                                                       |
+| 2     | Résumé tailoring and diff     | 📋     |                                                                                                                             |
+| 2     | Outreach drafting             | 📋     |                                                                                                                             |
+| 2     | UK sponsor register ingest    | 📋     | The only market with an authoritative list                                                                                  |
+| 3     | Competency framework content  | 📋     | Two axes first, then the rest                                                                                               |
+| 3     | Radar and evidence drill-down | 📋     |                                                                                                                             |
+| 3     | FSRS cards and review queue   | 📋     |                                                                                                                             |
+| 3     | Mock interviews with rubric   | 📋     |                                                                                                                             |
+| 4     | Portfolio metrics             | 📋     | HHI already implemented in `core`                                                                                           |
+| 4     | Signal scanning               | 📋     |                                                                                                                             |
+| 4     | Weekly portfolio report       | 📋     |                                                                                                                             |
+| 4     | Insight sparring              | 📋     |                                                                                                                             |
+| 4     | Sankey funnel export          | 📋     | Also the distribution channel ([launch.md](launch.md#distribution))                                                         |
+| 5     | Multi-tenant hardening        | 📋     |                                                                                                                             |
+| 5     | Billing and quotas            | 📋     |                                                                                                                             |
+| 5     | Legal, export, deletion       | 📋     | GDPR in four jurisdictions                                                                                                  |
+| 5     | Observability and runbook     | 📋     |                                                                                                                             |
+| 5     | Mobile to App Store           | 📋     | Web goes public first                                                                                                       |
 
 ## Gates
 
