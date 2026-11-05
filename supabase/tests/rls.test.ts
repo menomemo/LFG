@@ -74,6 +74,7 @@ let bobCardId: string;
 let bobReviewLogId: string;
 let bobStoryId: string;
 let aliceCardId: string;
+let bobUsageId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
@@ -256,6 +257,12 @@ beforeAll(async () => {
     throw new Error(`Seed missing Alice card: ${aliceCard.error.message}`);
   }
   aliceCardId = aliceCard.data.id;
+
+  const bobUsage = await bob.from('llm_usage').select('id').limit(1).single();
+  if (bobUsage.error) {
+    throw new Error(`Seed missing Bob usage: ${bobUsage.error.message}`);
+  }
+  bobUsageId = bobUsage.data.id;
 });
 
 describe('reading', () => {
@@ -298,6 +305,7 @@ describe('reading', () => {
       ['cards', bobCardId],
       ['review_logs', bobReviewLogId],
       ['stories', bobStoryId],
+      ['llm_usage', bobUsageId],
     ] as const) {
       const {data, error} = await alice.from(table).select('*').eq('id', id);
       expect(error).toBeNull();
@@ -322,6 +330,7 @@ describe('reading', () => {
       'cards',
       'review_logs',
       'stories',
+      'llm_usage',
     ] as const) {
       const {data, error} = await anon.from(table).select('*');
       expect(error).toBeNull();
@@ -435,6 +444,7 @@ describe('writing', () => {
       ['cards', bobCardId],
       ['review_logs', bobReviewLogId],
       ['stories', bobStoryId],
+      ['llm_usage', bobUsageId],
     ] as const) {
       const {data, error} = await alice
         .from(table)
@@ -1069,5 +1079,53 @@ describe('writing: the practice tables', () => {
       expect(data!.length).toBeGreaterThan(0);
       expect(data!.map(row => row.id)).not.toContain(id);
     }
+  });
+});
+
+describe('writing: the meter', () => {
+  const call = {
+    plugin: 'test-plugin',
+    task: 'a task',
+    model: 'test/model',
+    tokens_in: 10,
+    tokens_out: 5,
+    cost_usd: 0.000123,
+  };
+
+  it('refuses a usage row assigned to another user', async () => {
+    /* A meter one tenant can write into another's account is a meter that
+       cannot be billed from. */
+    const {error} = await alice
+      .from('llm_usage')
+      .insert({...call, user_id: BOB_ID});
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts a user recording their own call', async () => {
+    const {data, error} = await alice
+      .from('llm_usage')
+      .insert({...call, user_id: ALICE_ID})
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('llm_usage').delete().eq('id', data!.id);
+  });
+
+  it('refuses a negative cost', async () => {
+    const {error} = await alice
+      .from('llm_usage')
+      .insert({...call, user_id: ALICE_ID, cost_usd: -1});
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/llm_usage_cost_usd_check/);
+  });
+
+  it("never shows Alice Bob's usage", async () => {
+    const {data, error} = await alice.from('llm_usage').select('id');
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    expect(data!.length).toBeGreaterThan(0);
+    expect(data!.map(row => row.id)).not.toContain(bobUsageId);
   });
 });
