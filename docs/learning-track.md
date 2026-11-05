@@ -16,7 +16,7 @@ means to have actually learned it rather than to have shipped past it.
 
 ## How learning gets recorded
 
-Three mechanisms, all of them already part of the workflow — nothing extra to maintain:
+Four mechanisms, all of them already part of the workflow — nothing extra to maintain:
 
 1. **ADRs.** Every non-obvious decision gets one, including the alternatives and the
    consequences you accept. Writing the consequences section honestly is where most of the
@@ -24,6 +24,10 @@ Three mechanisms, all of them already part of the workflow — nothing extra to 
 2. **PR descriptions.** What changed, why, how verified, what was left out.
 3. **A phase retrospective**, appended to this document when a gate is passed: what the
    design got right, what it got wrong, and what you would do differently. Dated.
+4. **[engineering-log.md](engineering-log.md)**, which records incidents rather than
+   decisions: the signal that exposed each one, the mechanism behind it, and the rule that
+   replaces it. An ADR says what was chosen; the log says what that choice cost once it met
+   a real network, a real database and a real user.
 
 The test for "learned" is not "it works". It is: **could you defend the decision to a
 sceptical interviewer, including the cost?** That is also, not coincidentally, the format

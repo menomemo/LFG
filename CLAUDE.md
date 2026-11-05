@@ -67,19 +67,20 @@ unnecessary is struck, not left quietly planned.
 
 ## Documentation map
 
-| Need                             | Document                                         |
-| -------------------------------- | ------------------------------------------------ |
-| Structure and why it is that way | [docs/architecture.md](docs/architecture.md)     |
-| What a module should do          | [docs/product-spec.md](docs/product-spec.md)     |
-| Tables, fields, conventions      | [docs/data-model.md](docs/data-model.md)         |
-| Market rules, visas, CV formats  | [docs/regions.md](docs/regions.md)               |
-| Phases and gates                 | [docs/roadmap.md](docs/roadmap.md)               |
-| Where the project actually is    | [docs/progress.md](docs/progress.md)             |
-| Setup and commands               | [docs/development.md](docs/development.md)       |
-| Deploying, and what runs where   | [docs/deployment.md](docs/deployment.md)         |
-| Style, tests, commits, review    | [docs/code-standards.md](docs/code-standards.md) |
-| Why a decision was made          | [docs/adr/](docs/adr/README.md)                  |
-| Shipping, compliance, growth     | [docs/launch.md](docs/launch.md)                 |
+| Need                                | Document                                           |
+| ----------------------------------- | -------------------------------------------------- |
+| Structure and why it is that way    | [docs/architecture.md](docs/architecture.md)       |
+| What a module should do             | [docs/product-spec.md](docs/product-spec.md)       |
+| Tables, fields, conventions         | [docs/data-model.md](docs/data-model.md)           |
+| Market rules, visas, CV formats     | [docs/regions.md](docs/regions.md)                 |
+| Phases and gates                    | [docs/roadmap.md](docs/roadmap.md)                 |
+| Where the project actually is       | [docs/progress.md](docs/progress.md)               |
+| Setup and commands                  | [docs/development.md](docs/development.md)         |
+| Deploying, and what runs where      | [docs/deployment.md](docs/deployment.md)           |
+| Style, tests, commits, review       | [docs/code-standards.md](docs/code-standards.md)   |
+| Why a decision was made             | [docs/adr/](docs/adr/README.md)                    |
+| What went wrong, and what it taught | [docs/engineering-log.md](docs/engineering-log.md) |
+| Shipping, compliance, growth        | [docs/launch.md](docs/launch.md)                   |
 
 Documentation rules, including the ADR-versus-architecture split, are in
 [docs/README.md](docs/README.md).
