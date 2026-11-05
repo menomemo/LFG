@@ -9,9 +9,14 @@
 function required(name: string): string {
   const value = process.env[name];
   if (value === undefined || value === '') {
+    /* This is the first thing that breaks on a fresh deployment, so the
+       message says where to set it rather than only what is missing. */
     throw new Error(
-      `Missing environment variable ${name}. Copy .env.example to .env.local ` +
-        'and fill it in — see docs/development.md.',
+      `Missing environment variable ${name}. ` +
+        'Locally: copy .env.example to .env.local and fill it in from ' +
+        '`npx supabase status -o env` (docs/development.md). ' +
+        'On Vercel: Project → Settings → Environment Variables, then redeploy ' +
+        '— variables added after a build do not reach it (docs/deployment.md).',
     );
   }
   return value;

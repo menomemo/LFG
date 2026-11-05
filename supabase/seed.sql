@@ -1,4 +1,4 @@
--- Local development seed. Never runs against anything but a local stack.
+-- Local development seed. Refuses to run anywhere but a local stack.
 --
 -- Two users exist because one user cannot demonstrate tenant isolation. The
 -- RLS test in supabase/tests signs in as each and proves neither can see the
@@ -11,6 +11,40 @@
 -- The empty-string token columns are not decoration. GoTrue scans them into
 -- non-nullable Go strings, so leaving them NULL makes every sign-in fail with
 -- "Database error querying schema".
+-- ---------------------------------------------------------------------------
+-- Refuse to run against anything but a local stack.
+--
+-- This file creates accounts whose password is published in this repository.
+-- On a real database that is not a fixture, it is two working logins handed to
+-- anyone who has read the source.
+--
+-- `supabase db push` excludes seeds unless someone passes --include-seed, and
+-- `db reset` is local unless someone passes --linked. Both of those are one
+-- flag away, and this is a mistake that cannot be taken back once the database
+-- has real users -- so the file defends itself rather than trusting the
+-- command that invoked it.
+--
+-- The check: every local stack started by the Supabase CLI uses the same
+-- published JWT secret. A cloud project's secret is generated per project and
+-- will never match, so this fails closed everywhere that is not local.
+-- ---------------------------------------------------------------------------
+do $$
+begin
+  if coalesce(current_setting('app.settings.jwt_secret', true), '') <>
+     'super-secret-jwt-token-with-at-least-32-characters-long'
+  then
+    raise exception
+      using
+        message = 'Refusing to seed: this is not a local development database.',
+        detail  = 'supabase/seed.sql creates accounts with a password that is '
+                  'committed to the repository. Loading it anywhere real hands '
+                  'two working logins to anyone who can read the source.',
+        hint    = 'Seeds are for `supabase start` and `npm run db:reset` only. '
+                  'Never pass --include-seed to `db push`, and never run '
+                  '`db reset --linked` against a project you care about.';
+  end if;
+end $$;
+
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
   email_confirmed_at, created_at, updated_at,

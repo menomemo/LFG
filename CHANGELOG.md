@@ -47,6 +47,14 @@ first release. Nothing is released yet, so everything lives under Unreleased.
 - [docs/progress.md](docs/progress.md): a Gantt chart and status table covering all five
   phases, updated whenever a module is finished
 
+### Added — deployment
+
+- [docs/deployment.md](docs/deployment.md): what runs where, the ordered steps, and the
+  failure modes worth naming in advance
+- `supabase/seed.sql` refuses to run unless the database's JWT secret is the published
+  local default. The fixtures create accounts whose password is in this repository, and
+  `--include-seed` is one flag away from putting them on a real database
+
 ### Added — licence
 
 - MIT `LICENSE` ([ADR-0005](docs/adr/0005-choose-a-license.md), now accepted). AGPL-3.0

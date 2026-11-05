@@ -72,6 +72,7 @@ unnecessary is struck, not left quietly planned.
 | Phases and gates                 | [docs/roadmap.md](docs/roadmap.md)               |
 | Where the project actually is    | [docs/progress.md](docs/progress.md)             |
 | Setup and commands               | [docs/development.md](docs/development.md)       |
+| Deploying, and what runs where   | [docs/deployment.md](docs/deployment.md)         |
 | Style, tests, commits, review    | [docs/code-standards.md](docs/code-standards.md) |
 | Why a decision was made          | [docs/adr/](docs/adr/README.md)                  |
 | Shipping, compliance, growth     | [docs/launch.md](docs/launch.md)                 |

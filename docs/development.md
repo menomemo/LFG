@@ -164,14 +164,14 @@ and is sometimes right, but the commit will fail in CI.
 
 Honest list, so nothing here reads as working when it is not.
 
-| Missing                                                            | Lands with                                                 |
-| ------------------------------------------------------------------ | ---------------------------------------------------------- |
-| **Deployment and environments** — the skeleton runs locally only   | Needs hosting accounts; see [progress.md](progress.md)     |
-| The rest of the schema: everything except `applications`           | Phase 1                                                    |
-| Creating, editing or moving an application — the page is read-only | Phase 1, with the board                                    |
-| Agent runtime, plugin scaffolding, model backends                  | Phase 1, with `followup-writer`                            |
-| Coverage thresholds in CI                                          | When there is enough code for a threshold to mean anything |
-| Error tracking, uptime, cost dashboard                             | Phase 5 ([launch.md](launch.md))                           |
+| Missing                                                            | Lands with                                                              |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| **Deployment and environments** — the skeleton runs locally only   | Needs hosting accounts; the steps are in [deployment.md](deployment.md) |
+| The rest of the schema: everything except `applications`           | Phase 1                                                                 |
+| Creating, editing or moving an application — the page is read-only | Phase 1, with the board                                                 |
+| Agent runtime, plugin scaffolding, model backends                  | Phase 1, with `followup-writer`                                         |
+| Coverage thresholds in CI                                          | When there is enough code for a threshold to mean anything              |
+| Error tracking, uptime, cost dashboard                             | Phase 5 ([launch.md](launch.md))                                        |
 
 The walking skeleton is built and verified locally; deploying it is the one piece still
 outstanding, and it is deliberately next rather than later, so that deploying never becomes
