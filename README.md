@@ -173,8 +173,9 @@ npm run db:start && npm run dev -w @lfg/web
 ```
 
 Then open http://localhost:3000 and sign in as `alice@lfg.test` / `lfg-dev-password`, a
-seeded local account. You get a read-only list of four applications — the walking skeleton,
-which exists to prove the architecture runs rather than to be useful.
+seeded local account. You get the application board: four seeded applications in lanes
+derived from their stage history, a form that adds a fifth, and a control on each card that
+moves it. Everything else in the product is still ahead.
 
 `npm run check` runs format, lint, types and tests, the same four checks CI runs and in the
 same order. `npm run test:db` runs the row-level security isolation suite against the local
