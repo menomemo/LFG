@@ -67,6 +67,9 @@ let bobSignalId: string;
 let bobCompetencyId: string;
 let bobEvidenceId: string;
 let aliceCompetencyId: string;
+let bobInsightId: string;
+let bobDrillId: string;
+let aliceInsightId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
@@ -195,6 +198,30 @@ beforeAll(async () => {
     );
   }
   aliceCompetencyId = aliceCompetency.data.id;
+
+  const bobInsight = await bob.from('insights').select('id').limit(1).single();
+  if (bobInsight.error) {
+    throw new Error(`Seed missing Bob insight: ${bobInsight.error.message}`);
+  }
+  bobInsightId = bobInsight.data.id;
+
+  const bobDrill = await bob.from('drills').select('id').limit(1).single();
+  if (bobDrill.error) {
+    throw new Error(`Seed missing Bob drill: ${bobDrill.error.message}`);
+  }
+  bobDrillId = bobDrill.data.id;
+
+  const aliceInsight = await alice
+    .from('insights')
+    .select('id')
+    .limit(1)
+    .single();
+  if (aliceInsight.error) {
+    throw new Error(
+      `Seed missing Alice insight: ${aliceInsight.error.message}`,
+    );
+  }
+  aliceInsightId = aliceInsight.data.id;
 });
 
 describe('reading', () => {
@@ -232,6 +259,8 @@ describe('reading', () => {
       ['signals', bobSignalId],
       ['competencies', bobCompetencyId],
       ['evidence', bobEvidenceId],
+      ['insights', bobInsightId],
+      ['drills', bobDrillId],
     ] as const) {
       const {data, error} = await alice.from(table).select('*').eq('id', id);
       expect(error).toBeNull();
@@ -251,6 +280,8 @@ describe('reading', () => {
       'signals',
       'competencies',
       'evidence',
+      'insights',
+      'drills',
     ] as const) {
       const {data, error} = await anon.from(table).select('*');
       expect(error).toBeNull();
@@ -359,6 +390,8 @@ describe('writing', () => {
       ['signals', bobSignalId],
       ['competencies', bobCompetencyId],
       ['evidence', bobEvidenceId],
+      ['insights', bobInsightId],
+      ['drills', bobDrillId],
     ] as const) {
       const {data, error} = await alice
         .from(table)
@@ -715,5 +748,102 @@ describe('writing: the competency tables', () => {
     expect(evidence.data).not.toBeNull();
     expect(evidence.data!.length).toBeGreaterThan(0);
     expect(evidence.data!.map(row => row.id)).not.toContain(bobEvidenceId);
+  });
+});
+
+describe('writing: the insight tables', () => {
+  it("refuses Alice a drill generated from Bob's insight", async () => {
+    const {error} = await alice.from('drills').insert({
+      user_id: ALICE_ID,
+      insight_id: bobInsightId,
+      scenario: 'Smuggled',
+      generated_by: 'test',
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice repointing her drill at Bob's insight", async () => {
+    const {data: mine, error: readError} = await alice
+      .from('drills')
+      .select('id')
+      .limit(1)
+      .single();
+    expect(readError).toBeNull();
+
+    const {error} = await alice
+      .from('drills')
+      .update({insight_id: bobInsightId})
+      .eq('id', mine!.id);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts a drill generated from an insight Alice owns', async () => {
+    const {data, error} = await alice
+      .from('drills')
+      .insert({
+        user_id: ALICE_ID,
+        insight_id: aliceInsightId,
+        scenario: 'Permitted',
+        generated_by: 'test',
+      })
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('drills').delete().eq('id', data!.id);
+  });
+
+  it('accepts an insight that is nothing but captured text', async () => {
+    /* The capture path has to work in three seconds and offline, so the
+       unprocessed row is the normal one and not a degenerate case. */
+    const {data, error} = await alice
+      .from('insights')
+      .insert({user_id: ALICE_ID, raw_text: 'Captured on a train.'})
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    expect(data!.summary).toBeNull();
+    expect(data!.sales_dims).toStrictEqual([]);
+    await alice.from('insights').delete().eq('id', data!.id);
+  });
+
+  it('refuses a summary that cannot say which model wrote it', async () => {
+    const {error} = await alice.from('insights').insert({
+      user_id: ALICE_ID,
+      raw_text: 'Raw.',
+      summary: 'Unattributable.',
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/insights_summary_has_provenance/);
+  });
+
+  it('refuses a score on a drill nobody has attempted', async () => {
+    const {error} = await alice.from('drills').insert({
+      user_id: ALICE_ID,
+      insight_id: aliceInsightId,
+      scenario: 'Never attempted.',
+      generated_by: 'test',
+      attempts: 0,
+      last_score: 0,
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/drills_unattempted_has_no_score/);
+  });
+
+  it("never shows Alice Bob's insights or drills", async () => {
+    const insights = await alice.from('insights').select('id');
+    expect(insights.error).toBeNull();
+    expect(insights.data).not.toBeNull();
+    expect(insights.data!.length).toBeGreaterThan(0);
+    expect(insights.data!.map(row => row.id)).not.toContain(bobInsightId);
+
+    const drills = await alice.from('drills').select('id');
+    expect(drills.error).toBeNull();
+    expect(drills.data).not.toBeNull();
+    expect(drills.data!.length).toBeGreaterThan(0);
+    expect(drills.data!.map(row => row.id)).not.toContain(bobDrillId);
   });
 });
