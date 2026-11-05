@@ -64,6 +64,9 @@ let bobResumeVersionId: string;
 let bobInterviewId: string;
 let bobContactId: string;
 let bobSignalId: string;
+let bobCompetencyId: string;
+let bobEvidenceId: string;
+let aliceCompetencyId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
@@ -162,6 +165,36 @@ beforeAll(async () => {
     throw new Error(`Seed missing Bob's signal: ${bobSignal.error.message}`);
   }
   bobSignalId = bobSignal.data.id;
+
+  const bobCompetency = await bob
+    .from('competencies')
+    .select('id')
+    .limit(1)
+    .single();
+  if (bobCompetency.error) {
+    throw new Error(
+      `Seed missing Bob competency: ${bobCompetency.error.message}`,
+    );
+  }
+  bobCompetencyId = bobCompetency.data.id;
+
+  const bobEvidence = await bob.from('evidence').select('id').limit(1).single();
+  if (bobEvidence.error) {
+    throw new Error(`Seed missing Bob evidence: ${bobEvidence.error.message}`);
+  }
+  bobEvidenceId = bobEvidence.data.id;
+
+  const aliceCompetency = await alice
+    .from('competencies')
+    .select('id')
+    .limit(1)
+    .single();
+  if (aliceCompetency.error) {
+    throw new Error(
+      `Seed missing Alice competency: ${aliceCompetency.error.message}`,
+    );
+  }
+  aliceCompetencyId = aliceCompetency.data.id;
 });
 
 describe('reading', () => {
@@ -197,6 +230,8 @@ describe('reading', () => {
       ['interviews', bobInterviewId],
       ['contacts', bobContactId],
       ['signals', bobSignalId],
+      ['competencies', bobCompetencyId],
+      ['evidence', bobEvidenceId],
     ] as const) {
       const {data, error} = await alice.from(table).select('*').eq('id', id);
       expect(error).toBeNull();
@@ -214,6 +249,8 @@ describe('reading', () => {
       'interviews',
       'contacts',
       'signals',
+      'competencies',
+      'evidence',
     ] as const) {
       const {data, error} = await anon.from(table).select('*');
       expect(error).toBeNull();
@@ -320,6 +357,8 @@ describe('writing', () => {
       ['interviews', bobInterviewId],
       ['contacts', bobContactId],
       ['signals', bobSignalId],
+      ['competencies', bobCompetencyId],
+      ['evidence', bobEvidenceId],
     ] as const) {
       const {data, error} = await alice
         .from(table)
@@ -562,5 +601,119 @@ describe('writing: the company tables', () => {
     expect(signals.data).not.toBeNull();
     expect(signals.data!.length).toBeGreaterThan(0);
     expect(signals.data!.map(row => row.id)).not.toContain(bobSignalId);
+  });
+});
+
+describe('writing: the competency tables', () => {
+  it("refuses Alice evidence against Bob's competency", async () => {
+    const {error} = await alice.from('evidence').insert({
+      user_id: ALICE_ID,
+      competency_id: bobCompetencyId,
+      source_type: 'self_assessment',
+      score: 1,
+      weight: 0.1,
+      observed_at: new Date().toISOString(),
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice repointing her evidence at Bob's competency", async () => {
+    const {data: mine, error: readError} = await alice
+      .from('evidence')
+      .select('id')
+      .limit(1)
+      .single();
+    expect(readError).toBeNull();
+
+    const {error} = await alice
+      .from('evidence')
+      .update({competency_id: bobCompetencyId})
+      .eq('id', mine!.id);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  /* ADR-0008 declines a foreign key on source_id, so this is the one
+     reference in the schema a policy cannot check. The test states what that
+     actually costs rather than leaving it unstated: the write is permitted,
+     and it buys nothing, because resolving the source reads through RLS and
+     comes back empty. If that ever stops being true, this fails. */
+  it("lets Alice store Bob's interview id as a source, and it resolves to nothing", async () => {
+    const written = await alice
+      .from('evidence')
+      .insert({
+        user_id: ALICE_ID,
+        competency_id: aliceCompetencyId,
+        source_type: 'interview_feedback',
+        source_id: bobInterviewId,
+        score: 1,
+        weight: 1,
+        observed_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    expect(written.error).toBeNull();
+    expect(written.data).not.toBeNull();
+
+    const resolved = await alice
+      .from('interviews')
+      .select('*')
+      .eq('id', bobInterviewId);
+    expect(resolved.error).toBeNull();
+    expect(resolved.data).toStrictEqual([]);
+
+    await alice.from('evidence').delete().eq('id', written.data!.id);
+  });
+
+  it('refuses a model-scored row that cannot say which model scored it', async () => {
+    /* Not an RLS test: the provenance constraint. A mock interview score with
+       no generated_by is an unattributable number, and the radar is only
+       defensible if every score traces to something. */
+    const {error} = await alice.from('evidence').insert({
+      user_id: ALICE_ID,
+      competency_id: aliceCompetencyId,
+      source_type: 'mock_interview',
+      score: 0.9,
+      weight: 0.6,
+      observed_at: new Date().toISOString(),
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/evidence_model_scored_has_provenance/);
+  });
+
+  it('accepts the same row once it carries provenance', async () => {
+    const {data, error} = await alice
+      .from('evidence')
+      .insert({
+        user_id: ALICE_ID,
+        competency_id: aliceCompetencyId,
+        source_type: 'mock_interview',
+        score: 0.9,
+        weight: 0.6,
+        observed_at: new Date().toISOString(),
+        generated_by: 'mock-interviewer@0.1.0',
+      })
+      .select()
+      .single();
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    await alice.from('evidence').delete().eq('id', data!.id);
+  });
+
+  it("never shows Alice Bob's competencies or evidence", async () => {
+    const competencies = await alice
+      .from('competencies')
+      .select('id, axis, sub_skill');
+    expect(competencies.error).toBeNull();
+    expect(competencies.data).not.toBeNull();
+    expect(competencies.data!.length).toBeGreaterThan(0);
+    expect(competencies.data!.map(row => row.axis)).not.toContain('debugging');
+
+    const evidence = await alice.from('evidence').select('id');
+    expect(evidence.error).toBeNull();
+    expect(evidence.data).not.toBeNull();
+    expect(evidence.data!.length).toBeGreaterThan(0);
+    expect(evidence.data!.map(row => row.id)).not.toContain(bobEvidenceId);
   });
 });
