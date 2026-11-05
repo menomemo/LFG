@@ -1,10 +1,10 @@
 # Data model
 
-|                     |                                                                       |
-| ------------------- | --------------------------------------------------------------------- |
-| **Status**          | Fourteen tables implemented. `llm_usage` is the last one still draft  |
-| **Last reviewed**   | 2026-11-05                                                            |
-| **Source of truth** | `supabase/migrations/` once Phase 1 lands. Until then, this document. |
+|                     |                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Status**          | All fifteen tables implemented, each with RLS and policies in its creating migration                                        |
+| **Last reviewed**   | 2026-11-05                                                                                                                  |
+| **Source of truth** | `supabase/migrations/`, and `supabase/database.types.ts` for the shapes. This document is why the schema is the shape it is |
 
 One Postgres database (Supabase), pgvector for embeddings. `applications` is the hub;
 `evidence` is what makes the competency radar possible, because it is where practice,
@@ -50,7 +50,7 @@ These are enforced in the schema, not by discipline.
 | `insights`        | `raw_text`, `source_url`, `summary`, `principle`, `generated_by`, `sales_dims`, `embedding`, `cluster_id`                                                   | `drills`, `evidence`                              |
 | `drills`          | `insight_id`, `scenario`, `generated_by`, `attempts`, `last_score`                                                                                          | `evidence`                                        |
 | `signals`         | `company_id`, `type`, `payload`, `observed_at`, `severity`, `source_url`, `generated_by`                                                                    | `companies`                                       |
-| `llm_usage`       | `user_id`, `task`, `model`, `tokens_in`, `tokens_out`, `cost`, `created_at`                                                                                 | cost control                                      |
+| `llm_usage`       | `user_id`, `plugin`, `task`, `model`, `tokens_in`, `tokens_out`, `cost_usd`, `created_at`                                                                   | cost control                                      |
 
 ## Notes on the fields that carry weight
 
@@ -193,6 +193,14 @@ has tried is not a drill somebody failed.
 **`llm_usage`** — written on every model call, with no exceptions. The caching, tiering and
 capping described in [architecture.md](architecture.md#cost-control) cannot be tuned
 without it, so an unmetered call is a bug.
+
+`plugin` is its own column rather than a prefix on `task`, because the daily cap is
+declared per plugin and enforced by counting these rows, and parsing a plugin name back
+out of free text works right up until someone renames a task. `cost` is `cost_usd`: a bare
+cost cannot be summed across providers that bill in different currencies, and converting
+once at the boundary is cheaper than discovering that a dashboard has been adding euros to
+dollars. It is `numeric`, never `float` — this is money. The caps themselves are
+configuration and appear nowhere in the schema.
 
 ## Settled
 
