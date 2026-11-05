@@ -58,6 +58,10 @@ let bobApplicationId: string;
 let bobCompanyId: string;
 let bobJobId: string;
 let aliceJobId: string;
+let aliceApplicationId: string;
+let aliceResumeVersionId: string;
+let bobResumeVersionId: string;
+let bobInterviewId: string;
 
 beforeAll(async () => {
   alice = await signIn(ALICE);
@@ -96,6 +100,54 @@ beforeAll(async () => {
     throw new Error(`Seed missing Alice's job: ${aliceJob.error.message}`);
   }
   aliceJobId = aliceJob.data.id;
+
+  const bobResumeVersion = await bob
+    .from('resume_versions')
+    .select('id')
+    .limit(1)
+    .single();
+  if (bobResumeVersion.error) {
+    throw new Error(
+      `Seed missing Bob's resume version: ${bobResumeVersion.error.message}`,
+    );
+  }
+  bobResumeVersionId = bobResumeVersion.data.id;
+
+  const bobInterview = await bob
+    .from('interviews')
+    .select('id')
+    .limit(1)
+    .single();
+  if (bobInterview.error) {
+    throw new Error(
+      `Seed missing Bob's interview: ${bobInterview.error.message}`,
+    );
+  }
+  bobInterviewId = bobInterview.data.id;
+
+  const aliceApplication = await alice
+    .from('applications')
+    .select('id')
+    .limit(1)
+    .single();
+  if (aliceApplication.error) {
+    throw new Error(
+      `Seed missing Alice's application: ${aliceApplication.error.message}`,
+    );
+  }
+  aliceApplicationId = aliceApplication.data.id;
+
+  const aliceResumeVersion = await alice
+    .from('resume_versions')
+    .select('id')
+    .limit(1)
+    .single();
+  if (aliceResumeVersion.error) {
+    throw new Error(
+      `Seed missing Alice's resume version: ${aliceResumeVersion.error.message}`,
+    );
+  }
+  aliceResumeVersionId = aliceResumeVersion.data.id;
 });
 
 describe('reading', () => {
@@ -127,6 +179,8 @@ describe('reading', () => {
       ['applications', bobApplicationId],
       ['companies', bobCompanyId],
       ['jobs', bobJobId],
+      ['resume_versions', bobResumeVersionId],
+      ['interviews', bobInterviewId],
     ] as const) {
       const {data, error} = await alice.from(table).select('*').eq('id', id);
       expect(error).toBeNull();
@@ -136,7 +190,13 @@ describe('reading', () => {
 
   it('returns nothing at all to an anonymous caller, from any table', async () => {
     const anon = anonClient();
-    for (const table of ['applications', 'companies', 'jobs'] as const) {
+    for (const table of [
+      'applications',
+      'companies',
+      'jobs',
+      'resume_versions',
+      'interviews',
+    ] as const) {
       const {data, error} = await anon.from(table).select('*');
       expect(error).toBeNull();
       expect(data).toStrictEqual([]);
@@ -238,6 +298,8 @@ describe('writing', () => {
       ['applications', bobApplicationId],
       ['companies', bobCompanyId],
       ['jobs', bobJobId],
+      ['resume_versions', bobResumeVersionId],
+      ['interviews', bobInterviewId],
     ] as const) {
       const {data, error} = await alice
         .from(table)
@@ -268,5 +330,109 @@ describe('writing', () => {
       .eq('id', mine!.id);
     expect(error).not.toBeNull();
     expect(error!.message).toMatch(/row-level security/i);
+  });
+});
+
+/* Every foreign key added to the schema is another way to point at another
+   tenant, and owning the row while pointing it elsewhere is the subtle half.
+   These are the two the pipeline tables opened: an interview attached to
+   somebody else's application, and an application citing somebody else's
+   résumé version. */
+describe('writing: the pipeline tables', () => {
+  it("refuses Alice an interview attached to Bob's application", async () => {
+    const {error} = await alice.from('interviews').insert({
+      user_id: ALICE_ID,
+      application_id: bobApplicationId,
+      round: 1,
+      scheduled_at: new Date().toISOString(),
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice repointing her interview at Bob's application", async () => {
+    const {data: mine, error: readError} = await alice
+      .from('interviews')
+      .select('id')
+      .limit(1)
+      .single();
+    expect(readError).toBeNull();
+
+    const {error} = await alice
+      .from('interviews')
+      .update({application_id: bobApplicationId})
+      .eq('id', mine!.id);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice an application citing Bob's résumé version", async () => {
+    const {error} = await alice.from('applications').insert({
+      user_id: ALICE_ID,
+      job_id: aliceJobId,
+      stage_history: [],
+      resume_version_id: bobResumeVersionId,
+    });
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it("refuses Alice repointing her application at Bob's résumé version", async () => {
+    const {error} = await alice
+      .from('applications')
+      .update({resume_version_id: bobResumeVersionId})
+      .eq('id', aliceApplicationId);
+    expect(error).not.toBeNull();
+    expect(error!.message).toMatch(/row-level security/i);
+  });
+
+  it('accepts both writes when everything belongs to Alice', async () => {
+    /* The reverse check. A policy that refuses every write also passes every
+       test above, so each new parent check needs the permitted case too. */
+    const interview = await alice
+      .from('interviews')
+      .insert({
+        user_id: ALICE_ID,
+        application_id: aliceApplicationId,
+        round: 9,
+        scheduled_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    expect(interview.error).toBeNull();
+    expect(interview.data).not.toBeNull();
+    await alice.from('interviews').delete().eq('id', interview.data!.id);
+
+    const application = await alice
+      .from('applications')
+      .insert({
+        user_id: ALICE_ID,
+        job_id: aliceJobId,
+        stage_history: [],
+        resume_version_id: aliceResumeVersionId,
+      })
+      .select()
+      .single();
+    expect(application.error).toBeNull();
+    expect(application.data).not.toBeNull();
+    await alice.from('applications').delete().eq('id', application.data!.id);
+  });
+
+  it("never shows Alice Bob's résumé versions", async () => {
+    const {data, error} = await alice
+      .from('resume_versions')
+      .select('region_profile');
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    expect(data!.length).toBeGreaterThan(0);
+    expect(data!.map(row => row.region_profile)).not.toContain('de_lebenslauf');
+  });
+
+  it("never shows Alice Bob's interviews", async () => {
+    const {data, error} = await alice.from('interviews').select('id');
+    expect(error).toBeNull();
+    expect(data).not.toBeNull();
+    expect(data!.length).toBeGreaterThan(0);
+    expect(data!.map(row => row.id)).not.toContain(bobInterviewId);
   });
 });
