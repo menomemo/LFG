@@ -79,3 +79,16 @@ export {
   formatLanguageRequirement,
 } from './regions/language';
 export type {LanguageRequirement} from './regions/language';
+
+export {ADVERT_FIELDS, parseJobAdvert} from './jobs/advert';
+export type {
+  AdvertField,
+  JobAdvertExtraction,
+  ApplicationDraftFieldsFromAdvert,
+} from './jobs/advert';
+
+export {
+  jobAdvertPrompt,
+  JOB_ADVERT_TASK,
+  JOB_ADVERT_PROMPT_VERSION,
+} from './jobs/advert-prompt';
