@@ -13,9 +13,9 @@
  * here. The caller supplies bytes and a network connection.
  */
 
-import {REGIONS} from '../regions/region';
-import {SPONSORSHIP_VALUES, WORK_MODES} from './job';
-import {ADVERT_FIELDS} from './advert';
+import {REGIONS} from '../regions/region.ts';
+import {SPONSORSHIP_VALUES, WORK_MODES} from './job.ts';
+import {ADVERT_FIELDS} from './advert.ts';
 
 /**
  * Bump on every wording change, including one that looks cosmetic.

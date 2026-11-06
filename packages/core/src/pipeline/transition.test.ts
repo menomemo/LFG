@@ -1,8 +1,12 @@
 import {describe, expect, it} from 'vitest';
 
-import type {Validated} from '../validation';
-import {parseStageHistory, type StageEvent} from './stage';
-import {appendStageEvent, movesFrom, serialiseStageHistory} from './transition';
+import type {Validated} from '../validation.ts';
+import {parseStageHistory, type StageEvent} from './stage.ts';
+import {
+  appendStageEvent,
+  movesFrom,
+  serialiseStageHistory,
+} from './transition.ts';
 
 const at = (iso: string): Date => new Date(iso);
 

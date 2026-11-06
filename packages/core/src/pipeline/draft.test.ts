@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import type {Validated} from '../validation';
+import type {Validated} from '../validation.ts';
 import {
   parseApplicationDraft,
   parseApplicationEdit,
@@ -9,7 +9,7 @@ import {
   type ApplicationDraftFields,
   type ApplicationEdit,
   type ApplicationEditFields,
-} from './draft';
+} from './draft.ts';
 
 /** A form with every required field filled in and every optional one blank. */
 const FILLED: ApplicationDraftFields = {

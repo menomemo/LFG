@@ -27,10 +27,15 @@
  * `parseApplicationDraft`, which is the same validation a typed-in form gets.
  */
 
-import {normaliseDomain} from '../companies/domain';
-import {isRegion, REGIONS} from '../regions/region';
-import {isSponsorship, isWorkMode, SPONSORSHIP_VALUES, WORK_MODES} from './job';
-import {accept, reject, type Validated} from '../validation';
+import {normaliseDomain} from '../companies/domain.ts';
+import {isRegion, REGIONS} from '../regions/region.ts';
+import {
+  isSponsorship,
+  isWorkMode,
+  SPONSORSHIP_VALUES,
+  WORK_MODES,
+} from './job.ts';
+import {accept, reject, type Validated} from '../validation.ts';
 
 /**
  * The fields a model is asked to find, in the order the form shows them.

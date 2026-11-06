@@ -1,13 +1,13 @@
 import {describe, expect, it} from 'vitest';
 
-import type {Validated} from '../validation';
-import {parseApplicationDraft} from '../pipeline/draft';
+import type {Validated} from '../validation.ts';
+import {parseApplicationDraft} from '../pipeline/draft.ts';
 import {
   ADVERT_FIELDS,
   parseJobAdvert,
   type JobAdvertExtraction,
-} from './advert';
-import {jobAdvertPrompt, JOB_ADVERT_TASK} from './advert-prompt';
+} from './advert.ts';
+import {jobAdvertPrompt, JOB_ADVERT_TASK} from './advert-prompt.ts';
 
 /** A realistic advert, with a domain and a URL genuinely present in it. */
 const ADVERT = [

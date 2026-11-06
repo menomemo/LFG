@@ -12,7 +12,7 @@ import {
   parseStageHistory,
   type ApplicationStage,
   type StageEvent,
-} from './stage';
+} from './stage.ts';
 
 const at = (iso: string): Date => new Date(iso);
 
