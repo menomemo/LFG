@@ -87,14 +87,14 @@ isOneToOne: false
                   ]
                 },"companies": {
                   Row: {
-                    "ats_slug": string | null,"ats_type": Database["public"]['Enums']["ats_type"] | null,"created_at": string,"domain": string | null,"hq_country": string | null,"id": string,"name": string,"regions": (Database["public"]['Enums']["region"])[],"research_at": string | null,"research_generated_by": string | null,"research_json": Json | null,"sector": string | null,"size": Database["public"]['Enums']["company_size"] | null,"updated_at": string,"user_id": string
+                    "ats_slug": string | null,"ats_type": Database["public"]['Enums']["ats_type"] | null,"created_at": string,"domain": string | null,"hq_country": string | null,"id": string,"name": string,"notes": string | null,"regions": (Database["public"]['Enums']["region"])[],"research_at": string | null,"research_generated_by": string | null,"research_json": Json | null,"sector": string | null,"size": Database["public"]['Enums']["company_size"] | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "ats_slug"?: string | null,"ats_type"?: Database["public"]['Enums']["ats_type"] | null,"created_at"?: string,"domain"?: string | null,"hq_country"?: string | null,"id"?: string,"name": string,"regions"?: (Database["public"]['Enums']["region"])[],"research_at"?: string | null,"research_generated_by"?: string | null,"research_json"?: Json | null,"sector"?: string | null,"size"?: Database["public"]['Enums']["company_size"] | null,"updated_at"?: string,"user_id": string
+                    "ats_slug"?: string | null,"ats_type"?: Database["public"]['Enums']["ats_type"] | null,"created_at"?: string,"domain"?: string | null,"hq_country"?: string | null,"id"?: string,"name": string,"notes"?: string | null,"regions"?: (Database["public"]['Enums']["region"])[],"research_at"?: string | null,"research_generated_by"?: string | null,"research_json"?: Json | null,"sector"?: string | null,"size"?: Database["public"]['Enums']["company_size"] | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "ats_slug"?: string | null,"ats_type"?: Database["public"]['Enums']["ats_type"] | null,"created_at"?: string,"domain"?: string | null,"hq_country"?: string | null,"id"?: string,"name"?: string,"regions"?: (Database["public"]['Enums']["region"])[],"research_at"?: string | null,"research_generated_by"?: string | null,"research_json"?: Json | null,"sector"?: string | null,"size"?: Database["public"]['Enums']["company_size"] | null,"updated_at"?: string,"user_id"?: string
+                    "ats_slug"?: string | null,"ats_type"?: Database["public"]['Enums']["ats_type"] | null,"created_at"?: string,"domain"?: string | null,"hq_country"?: string | null,"id"?: string,"name"?: string,"notes"?: string | null,"regions"?: (Database["public"]['Enums']["region"])[],"research_at"?: string | null,"research_generated_by"?: string | null,"research_json"?: Json | null,"sector"?: string | null,"size"?: Database["public"]['Enums']["company_size"] | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
