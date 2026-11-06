@@ -20,6 +20,12 @@
   command = "npm run build --workspace=@lfg/web"
   publish = "apps/web/.next"
 
+  # Skip the build when nothing that reaches the served site changed. The
+  # script explains what is excluded and why, and warns that Netlify's exit
+  # codes are inverted: 0 cancels the build, 1 runs it. The path is relative
+  # to the base directory, which is the repository root.
+  ignore = "./scripts/netlify-ignore.sh"
+
 # The Next.js runtime (the OpenNext adapter) is installed and updated by
 # Netlify automatically. It is deliberately not pinned here: pinning opts out
 # of the updates, and this project tracks current Next.
