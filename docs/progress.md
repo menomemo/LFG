@@ -12,18 +12,18 @@
 
 ## Right now
 
-|                                                                                             |                                                                                                                                                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Done**                                                                                    | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app) · the full Supabase schema, fifteen tables with RLS and a 55-test isolation suite · **the application board**: created, dragged and moved through the UI |
-| **In progress**                                                                             | JD parsing. The create form exists and is typed into by hand; the parser fills it from a pasted advert                                                                                                                                                                                                      |
-| **Not done**                                                                                | Nothing is extracted from a job advert yet. Every field on the board is typed by a person                                                                                                                                                                                                                   |
-| **Blocked on a decision**                                                                   | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                                                                                                                                      |
-| **Phase 1 gate**                                                                            | Reachable for the first time, and not started: four consecutive weeks with every application in the system                                                                                                                                                                                                  |
-| Progress through the whole plan: **6 of 29 tracked items complete.** The sixth is the first |
-| that is not infrastructure: an application can be added, dragged between lanes and moved    |
-| without anyone writing SQL, so the count of things that help somebody find a job is one     |
-| rather than zero. It is also the item the Phase 1 gate depends on — four weeks of real use  |
-| cannot start until there is something to use, so the gate is now open to be attempted.      |
+|                                                                                        |                                                                                                                                                                                                                                                                                                                                                                       |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Done**                                                                               | Documentation set · iteration zero · walking skeleton · **deployed and serving** at [letsfreakingo.netlify.app](https://letsfreakingo.netlify.app) · the full Supabase schema, fifteen tables with RLS and a 55-test isolation suite · **the application board**: created, dragged and moved through the UI · **the detail view**, with notes and editable properties |
+| **In progress**                                                                        | JD parsing. The create form exists and is typed into by hand; the parser fills it from a pasted advert                                                                                                                                                                                                                                                                |
+| **Not done**                                                                           | Nothing is extracted from a job advert yet. Touch dragging is unverified on a real device, which is why the stage is also a property                                                                                                                                                                                                                                  |
+| **Blocked on a decision**                                                              | Can the agent runtime's UI plugin host the board and radar? ([architecture.md §10](architecture.md#10-open-questions))                                                                                                                                                                                                                                                |
+| **Phase 1 gate**                                                                       | Reachable for the first time, and not started: four consecutive weeks with every application in the system                                                                                                                                                                                                                                                            |
+| Progress through the whole plan: **7 of 30 tracked items complete.** The thirtieth is  |
+| new: the detail view was not on this chart until the author used the board and found   |
+| nowhere to put what they knew about an application. It jumped the queue ahead of JD    |
+| parsing, and [roadmap.md](roadmap.md) says why. The Phase 1 gate is four weeks of real |
+| use, and real use produces notes, so this is the item that gate was waiting on.        |
 
 ## Gantt
 
@@ -46,7 +46,8 @@ gantt
   Deploy the skeleton          :done,   p1a2, after p1a, 1d
   Supabase schema and RLS      :done,   p1b, after p1a2, 4d
   Application board            :done,   p1c, after p1b, 1d
-  JD parsing and manual create :active, p1d, after p1c, 3d
+  Application detail view      :done,   p1c2, after p1c, 1d
+  JD parsing and manual create :active, p1d, after p1c2, 3d
   Insight capture              :        p1e, after p1d, 3d
   Plugin followup-writer       :        p1f, after p1e, 3d
   GATE four weeks in the system :milestone, g1, after p1f, 0d
@@ -97,6 +98,7 @@ Status key: ✅ done · 🚧 in progress · 📋 planned · ⛔ blocked
 | 1     | Deploy the skeleton           | ✅     | 2026-11-05 · live on Netlify against production Supabase. Anonymous request redirects to sign-in; 30s from merge to serving                         |
 | 1     | Supabase schema and RLS       | ✅     | 2026-11-05 · fifteen tables, four policies each, cross-tenant checks on every parent, 55-test isolation suite                                       |
 | 1     | Application board             | ✅     | 2026-11-05 · lanes derived from `stage_history`, create in one form, drag or select to change stage, and the move applied before the server answers |
+| 1     | Application detail view       | ✅     | 2026-11-06 · a card opens into its properties; stored ones editable, derived ones read-only; notes, and the stage as the non-drag way to move       |
 | 1     | JD parsing and manual create  | 🚧     | Manual create shipped with the board. What is left is extracting the fields from a pasted advert                                                    |
 | 1     | Insight capture               | 📋     | Web paste box, then the mobile share sheet                                                                                                          |
 | 1     | `followup-writer` plugin      | 📋     | First plugin, with a regression test                                                                                                                |

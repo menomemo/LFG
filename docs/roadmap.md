@@ -24,12 +24,20 @@ and one real plugin end to end.
 - `packages/core` with the schema types, and the repository layout from
   [architecture.md](architecture.md#repository-layout)
 - Application board with drag-to-stage and append-only `stage_history`
+- Application detail view: properties, notes, and the stage as a property
 - Manual application creation with `jd-parser`
 - Insight capture: web paste box, then the mobile share sheet
 - `followup-writer` as the first plugin, with its regression test
 - `llm_usage` metering from the very first model call
 
 **Gate:** four consecutive weeks with every application in the system and no spreadsheet.
+
+**Reordered 2026-11-06.** The detail view was not in this list and `jd-parser` was next.
+The author used the board, found there was nowhere to put what they knew about an
+application, and asked for the detail view first. It jumps the queue because it serves the
+gate directly — four weeks of real use needs somewhere to put what real use produces — and
+because it is the only way to change a stage that does not involve dragging, which matters
+while touch dragging is unverified. `jd-parser` follows it.
 
 ### Phase 2 — Precision applying · weeks 4–6
 
