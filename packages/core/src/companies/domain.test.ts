@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {normaliseDomain} from './domain';
+import {normaliseDomain} from './domain.ts';
 
 describe('normaliseDomain', () => {
   it.each([

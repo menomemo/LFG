@@ -1,6 +1,11 @@
 import {describe, expect, it} from 'vitest';
 
-import {isSponsorship, isWorkMode, SPONSORSHIP_VALUES, WORK_MODES} from './job';
+import {
+  isSponsorship,
+  isWorkMode,
+  SPONSORSHIP_VALUES,
+  WORK_MODES,
+} from './job.ts';
 
 describe('isWorkMode', () => {
   it.each([...WORK_MODES])('accepts %s', mode => {

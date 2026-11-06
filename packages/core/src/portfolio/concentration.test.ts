@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {herfindahlIndex, shareByCategory} from './concentration';
+import {herfindahlIndex, shareByCategory} from './concentration.ts';
 
 const counts = (entries: Record<string, number>): ReadonlyMap<string, number> =>
   new Map(Object.entries(entries));

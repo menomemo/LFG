@@ -11,10 +11,10 @@ export {
   isRegion,
   regionLabel,
   assertExhaustive,
-} from './regions/region';
-export type {Region} from './regions/region';
+} from './regions/region.ts';
+export type {Region} from './regions/region.ts';
 
-export {herfindahlIndex, shareByCategory} from './portfolio/concentration';
+export {herfindahlIndex, shareByCategory} from './portfolio/concentration.ts';
 
 export {
   APPLICATION_STAGES,
@@ -28,15 +28,15 @@ export {
   appliedAt,
   isGhosted,
   parseStageHistory,
-} from './pipeline/stage';
-export type {ApplicationStage, StageEvent} from './pipeline/stage';
+} from './pipeline/stage.ts';
+export type {ApplicationStage, StageEvent} from './pipeline/stage.ts';
 
 export {
   movesFrom,
   appendStageEvent,
   serialiseStageHistory,
-} from './pipeline/transition';
-export type {StoredStageEvent} from './pipeline/transition';
+} from './pipeline/transition.ts';
+export type {StoredStageEvent} from './pipeline/transition.ts';
 
 export {
   BOARD_LANES,
@@ -44,14 +44,14 @@ export {
   longestWaitingFirst,
   buildLanes,
   summariseBoard,
-} from './pipeline/board';
-export type {StageSummary, BoardLane, BoardTotals} from './pipeline/board';
+} from './pipeline/board.ts';
+export type {StageSummary, BoardLane, BoardTotals} from './pipeline/board.ts';
 
 export {
   SELF_REPORTED,
   parseApplicationDraft,
   parseApplicationEdit,
-} from './pipeline/draft';
+} from './pipeline/draft.ts';
 export type {
   ApplicationDraftFields,
   ApplicationDraft,
@@ -59,36 +59,36 @@ export type {
   ApplicationEdit,
   CompanyDraft,
   JobDraft,
-} from './pipeline/draft';
+} from './pipeline/draft.ts';
 
 export {
   WORK_MODES,
   SPONSORSHIP_VALUES,
   isWorkMode,
   isSponsorship,
-} from './jobs/job';
-export type {WorkMode, Sponsorship} from './jobs/job';
+} from './jobs/job.ts';
+export type {WorkMode, Sponsorship} from './jobs/job.ts';
 
-export {normaliseDomain} from './companies/domain';
+export {normaliseDomain} from './companies/domain.ts';
 
-export {accept, reject} from './validation';
-export type {Validated, Accepted, Rejected} from './validation';
+export {accept, reject} from './validation.ts';
+export type {Validated, Accepted, Rejected} from './validation.ts';
 
 export {
   parseLanguageRequirement,
   formatLanguageRequirement,
-} from './regions/language';
-export type {LanguageRequirement} from './regions/language';
+} from './regions/language.ts';
+export type {LanguageRequirement} from './regions/language.ts';
 
-export {ADVERT_FIELDS, parseJobAdvert} from './jobs/advert';
+export {ADVERT_FIELDS, parseJobAdvert} from './jobs/advert.ts';
 export type {
   AdvertField,
   JobAdvertExtraction,
   ApplicationDraftFieldsFromAdvert,
-} from './jobs/advert';
+} from './jobs/advert.ts';
 
 export {
   jobAdvertPrompt,
   JOB_ADVERT_TASK,
   JOB_ADVERT_PROMPT_VERSION,
-} from './jobs/advert-prompt';
+} from './jobs/advert-prompt.ts';

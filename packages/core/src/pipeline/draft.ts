@@ -14,8 +14,8 @@
  * saying where its sponsorship answer came from.
  */
 
-import {normaliseDomain} from '../companies/domain';
-import {isRegion, REGIONS, type Region} from '../regions/region';
+import {normaliseDomain} from '../companies/domain.ts';
+import {isRegion, REGIONS, type Region} from '../regions/region.ts';
 import {
   isSponsorship,
   isWorkMode,
@@ -23,13 +23,13 @@ import {
   WORK_MODES,
   type Sponsorship,
   type WorkMode,
-} from '../jobs/job';
-import {accept, reject, type Validated} from '../validation';
+} from '../jobs/job.ts';
+import {accept, reject, type Validated} from '../validation.ts';
 import {
   isApplicationStage,
   APPLICATION_STAGES,
   type ApplicationStage,
-} from './stage';
+} from './stage.ts';
 
 /**
  * The source recorded for a sponsorship answer a person gave themselves.
