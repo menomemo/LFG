@@ -62,11 +62,23 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Types
-        run: deno check supabase/functions/**/index.ts
-
-      - name: Lint
-        run: deno lint supabase/functions
+      # Each function is checked from its own directory, which is where
+      # `supabase functions deploy` runs it from. That is not a detail: Deno
+      # discovers its config by walking up from the WORKING directory, not
+      # from the entry file, so checking from the repository root reads the
+      # Node workspace's package.json instead of the function's deno.json,
+      # switches to Node resolution and demands a node_modules the function
+      # has no reason to have. Checking it the way it is deployed is also
+      # the only way this job tells the truth.
+      - name: Types and lint
+        run: |
+          failed=0
+          for dir in supabase/functions/*/; do
+            [ -f "${dir}index.ts" ] || continue
+            echo "== ${dir}"
+            ( cd "${dir}" && deno check index.ts && deno lint . ) || failed=1
+          done
+          exit "${failed}"
 
   commits:
     name: Commit messages
