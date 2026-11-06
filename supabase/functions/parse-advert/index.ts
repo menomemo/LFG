@@ -15,7 +15,16 @@
  * failures a network boundary adds.
  */
 
+/* A bare specifier, resolved by the deno.json beside this file. Both the
+   deploy and the CI check run with this directory as the working directory,
+   which is what makes that config discoverable -- Deno looks upward from the
+   working directory, not from the entry file. Checked from the repository
+   root instead, Deno finds the Node workspace's package.json, switches to
+   Node resolution and asks for a node_modules this function has no reason to
+   have. The CI job documents the cd for that reason. */
 import {createClient} from '@supabase/supabase-js';
+
+import type {Database} from '../../database.types.ts';
 
 import {
   jobAdvertPrompt,
@@ -144,6 +153,27 @@ function readJson(text: string): unknown {
   }
 }
 
+/**
+ * A client carrying the caller's own access token.
+ *
+ * Typed with the generated schema, so a column that no longer exists is a
+ * type error here rather than a silent insert failure at two in the morning.
+ *
+ * `Db` is read off this function rather than off `createClient`, because
+ * `ReturnType<typeof createClient>` resolves with the generic defaults and
+ * not with the arguments actually passed -- which produces a client whose
+ * every table is `never`.
+ */
+function clientFor(authorization: string) {
+  return createClient<Database>(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {global: {headers: {Authorization: authorization}}},
+  );
+}
+
+type Db = ReturnType<typeof clientFor>;
+
 Deno.serve(async (request: Request): Promise<Response> => {
   if (request.method === 'OPTIONS') {
     return new Response('ok', {headers: CORS});
@@ -159,12 +189,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
   /* The caller's own token, not the service key: every row this function
      writes is written as the person, so RLS applies to it exactly as it
      applies to everything else they do. */
-  const authorization = request.headers.get('Authorization') ?? '';
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    {global: {headers: {Authorization: authorization}}},
-  );
+  const supabase = clientFor(request.headers.get('Authorization') ?? '');
 
   const {
     data: {user},
@@ -262,7 +287,7 @@ Deno.serve(async (request: Request): Promise<Response> => {
  * is measuring turns a cost record into an outage.
  */
 async function meter(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Db,
   userId: string,
   tokensIn: number,
   tokensOut: number,
@@ -281,7 +306,12 @@ async function meter(
     model: MODEL,
     tokens_in: tokensIn,
     tokens_out: tokensOut,
-    cost_usd: costUsd.toFixed(6),
+    /* Rounded here rather than left to the column. numeric(12,6) would
+       round it anyway, but doing it in the open means the number written and
+       the number the generated type promises are the same thing. A double is
+       exact enough at fractions of a cent; it would not be if this were ever
+       summed into a balance, and summing belongs in SQL over numeric. */
+    cost_usd: Number(costUsd.toFixed(6)),
   });
 
   if (error !== null) {
