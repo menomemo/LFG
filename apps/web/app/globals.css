@@ -487,3 +487,44 @@ select {
   line-height: 1.45;
   margin: 6px 8px 0;
 }
+
+/* The paste box, above the create form it fills in. Separated by a rule
+   rather than nested, because the two are different acts: one asks a model
+   for a guess, the other commits rows. */
+.paste {
+  display: block;
+  padding-bottom: 16px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.paste label {
+  display: block;
+  font-size: 13px;
+}
+
+.paste textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  resize: vertical;
+}
+
+.paste button {
+  margin-top: 10px;
+}
+
+/* Said about an extraction, not about a failure: which fields the advert did
+   not establish. Quieter than .error on purpose -- a blank field is the
+   honest outcome, not a problem the person caused. */
+.note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}

@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 
-import {REGIONS, assertExhaustive, isRegion, regionLabel} from './region';
-import type {Region} from './region';
+import {REGIONS, assertExhaustive, isRegion, regionLabel} from './region.ts';
+import type {Region} from './region.ts';
 
 describe('REGIONS', () => {
   it('contains the wave-one markets and the escape hatch', () => {

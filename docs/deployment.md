@@ -124,11 +124,12 @@ version comes from the root `.nvmrc`.
 
 Then **Project configuration → Environment variables**, before the first build:
 
-| Name                        | Value                                    |                                                                                                                                                                                                        |
-| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `SUPABASE_URL`              | Project Settings → API → Project URL     |                                                                                                                                                                                                        |
-| `SUPABASE_ANON_KEY`         | Project Settings → API → anon public key | Safe in a browser: it carries no permissions of its own, and RLS decides what it can read                                                                                                              |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Do not set this**                      | It bypasses RLS entirely. Nothing in `apps/web` reads it, and a web app that can reach it is a web app that can leak every user's data ([ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)) |
+| Name                        | Value                                    |                                                                                                                                                                                                                                                      |
+| --------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SUPABASE_URL`              | Project Settings → API → Project URL     |                                                                                                                                                                                                                                                      |
+| `SUPABASE_ANON_KEY`         | Project Settings → API → anon public key | Safe in a browser: it carries no permissions of its own, and RLS decides what it can read                                                                                                                                                            |
+| `SUPABASE_SERVICE_ROLE_KEY` | **Do not set this**                      | It bypasses RLS entirely. Nothing in `apps/web` reads it, and a web app that can reach it is a web app that can leak every user's data ([ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md))                                               |
+| `ANTHROPIC_API_KEY`         | **Do not set this either**               | It belongs in Supabase, with the function that uses it. Here it would be readable by every server component, and the web host would be billed for the seconds a model takes ([ADR-0009](adr/0009-run-model-calls-from-supabase-not-the-web-host.md)) |
 
 Deploy. Then open the URL and sign in with the account from step 4.
 
@@ -158,7 +159,46 @@ Environment variables are the same three rules as above.
 
 </details>
 
-### 6. Check what you actually deployed
+### 6. Deploy the advert parser
+
+Separate from the site on purpose. [ADR-0009](adr/0009-run-model-calls-from-supabase-not-the-web-host.md)
+keeps model calls out of the web host: a parse takes seconds rather than
+milliseconds, the web host bills execution time, and a provider key placed there is
+readable by every server component in the app.
+
+```bash
+npx supabase functions deploy parse-advert --project-ref <your-ref>
+```
+
+Then set its secrets, **in Supabase and not in Netlify**:
+
+```bash
+npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref <your-ref>
+```
+
+| Secret                 | Where                               | Notes                                                                                                                       |
+| ---------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `ANTHROPIC_API_KEY`    | Supabase → Edge Functions → Secrets | Required. Without it the function answers 503 rather than falling back to anything                                          |
+| `JD_PARSER_MODEL`      | same                                | Optional. Defaults to a small model; the name is recorded in `llm_usage.model` so a bill can be attributed to it            |
+| `JD_PARSER_DAILY_CAP`  | same                                | Optional, defaults to 40 parses per person per day. A runaway guard, not a budget — reaching it by hand is information      |
+| `JD_PARSER_USD_IN/OUT` | same                                | Optional. Price per million tokens, used to fill `llm_usage.cost_usd`. Wrong numbers make the meter lie, not the parse fail |
+| `WEB_ORIGIN`           | same                                | Optional, defaults to `*`. Set it to the site's origin once the URL is stable                                               |
+
+**Never set `ANTHROPIC_API_KEY` in Netlify.** Nothing in `apps/web` reads it, and a web
+surface that can reach it is a web surface that can leak it.
+
+Check it from the deployed site: paste an advert into the box above the create form. Then
+confirm the meter actually recorded the spend, because a parse that works and does not
+meter is the failure this design exists to prevent:
+
+```sql
+select plugin, task, model, tokens_in, tokens_out, cost_usd, created_at
+from llm_usage order by created_at desc limit 5;
+```
+
+A row should be there even if the parse failed — the spend happened either way.
+
+### 7. Check what you actually deployed
 
 Three things, in order — each one tells you something different:
 

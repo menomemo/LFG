@@ -5,6 +5,13 @@
     "lib": ["ES2022"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    // @lfg/core is consumed as TypeScript source rather than a build
+    // (see its package.json exports), and supabase/functions imports it
+    // from Deno, which requires an explicit extension on every relative
+    // import. So core writes them, and every workspace that reads core
+    // has to allow them. ADR-0009 names this as the cost of running
+    // model calls outside the web host.
+    "allowImportingTsExtensions": true,
 
     /* docs/code-standards.md: strict, plus the four flags named there. */
     "strict": true,

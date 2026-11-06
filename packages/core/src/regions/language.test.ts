@@ -1,6 +1,9 @@
 import {describe, expect, it} from 'vitest';
 
-import {formatLanguageRequirement, parseLanguageRequirement} from './language';
+import {
+  formatLanguageRequirement,
+  parseLanguageRequirement,
+} from './language.ts';
 
 describe('parseLanguageRequirement', () => {
   it.each([

@@ -21,7 +21,7 @@ import {
   isGhosted,
   type ApplicationStage,
   type StageEvent,
-} from './stage';
+} from './stage.ts';
 
 /**
  * The lanes of the board, left to right.

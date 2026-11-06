@@ -12,14 +12,14 @@
  * own (docs/product-spec.md, module 1).
  */
 
-import {accept, reject, type Validated} from '../validation';
+import {accept, reject, type Validated} from '../validation.ts';
 import {
   APPLICATION_STAGES,
   currentStage,
   enteredCurrentStageAt,
   type ApplicationStage,
   type StageEvent,
-} from './stage';
+} from './stage.ts';
 
 /**
  * A stage event in the shape Postgres stores it.

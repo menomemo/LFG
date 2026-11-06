@@ -35,7 +35,13 @@ records where the project actually is, and it is more current than this section.
   read-only, and there are two note fields. `applications.notes` belongs to the one
   application; `companies.notes` is the employer's and is shared by every application
   to that company, which the UI says out loud before the field is edited.
-- Next: parsing a pasted job advert into that form, then insight capture.
+- **JD parsing is built but not deployed.** The response contract and the versioned
+  prompt are in `packages/core`; the model call lives in the `parse-advert` Supabase
+  Edge Function, which holds the provider key and writes `llm_usage` before it
+  answers ([ADR-0009](docs/adr/0009-run-model-calls-from-supabase-not-the-web-host.md)).
+  Deploying it and setting the key are manual steps — see
+  [docs/deployment.md](docs/deployment.md).
+- Next: finishing that deployment, then insight capture.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.
@@ -56,16 +62,17 @@ unnecessary is struck, not left quietly planned.
 
 ## Commands
 
-| Command                                                                 | Does                                                                            |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `npm run check`                                                         | Format, lint, types, tests — what CI runs, in CI's order. Run before committing |
-| `npm run format:fix`                                                    | Prettier writes, Markdown included                                              |
-| `npm run lint`                                                          | ESLint, including the `packages/core` boundary rules                            |
-| `npm run typecheck`                                                     | `tsc --noEmit` across every workspace                                           |
-| `npm run test`                                                          | Vitest once; `test:watch` to watch                                              |
-| `npm run test:db`                                                       | Row-level security isolation, needs `npm run db:start` first                    |
-| `npm run db:reset`                                                      | Re-apply every migration and re-seed                                            |
-| `npm run db:types`                                                      | Regenerate the committed `supabase/database.types.ts` after a migration         |
+| Command                                                                 | Does                                                                                                                                    |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run check`                                                         | Format, lint, types, tests — what CI runs, in CI's order. Run before committing                                                         |
+| `npm run format:fix`                                                    | Prettier writes, Markdown included                                                                                                      |
+| `npm run lint`                                                          | ESLint, including the `packages/core` boundary rules                                                                                    |
+| `npm run typecheck`                                                     | `tsc --noEmit` across every workspace                                                                                                   |
+| `npm run test`                                                          | Vitest once; `test:watch` to watch                                                                                                      |
+| `npm run test:db`                                                       | Row-level security isolation, needs `npm run db:start` first                                                                            |
+| `npm run db:reset`                                                      | Re-apply every migration and re-seed                                                                                                    |
+| `npm run db:types`                                                      | Regenerate the committed `supabase/database.types.ts` after a migration                                                                 |
+| `deno check supabase/functions/**/index.ts`                             | Type-check the Edge Functions. `npm run lint` cannot: they are Deno, and `eslint.config.mjs` ignores them for that reason. CI runs this |
 | Setup, and the table of which standard is enforced by which tool, is in |
 | [docs/development.md](docs/development.md).                             |
 

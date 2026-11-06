@@ -46,6 +46,40 @@ jobs:
       - name: Tests
         run: npm run test
 
+  edge-functions:
+    name: Edge functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # The Node toolchain cannot check these files: they are Deno, they use
+    # Deno globals, and eslint.config.mjs ignores them for that reason. This
+    # job is what makes that ignore safe. Without it a broken Edge Function
+    # is found by `supabase functions deploy`, which is after review.
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      # Each function is checked from its own directory, which is where
+      # `supabase functions deploy` runs it from. That is not a detail: Deno
+      # discovers its config by walking up from the WORKING directory, not
+      # from the entry file, so checking from the repository root reads the
+      # Node workspace's package.json instead of the function's deno.json,
+      # switches to Node resolution and demands a node_modules the function
+      # has no reason to have. Checking it the way it is deployed is also
+      # the only way this job tells the truth.
+      - name: Types and lint
+        run: |
+          failed=0
+          for dir in supabase/functions/*/; do
+            [ -f "${dir}index.ts" ] || continue
+            echo "== ${dir}"
+            ( cd "${dir}" && deno check index.ts && deno lint . ) || failed=1
+          done
+          exit "${failed}"
+
   commits:
     name: Commit messages
     runs-on: ubuntu-latest

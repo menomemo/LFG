@@ -20,6 +20,9 @@
 #   - .github/ and LICENSE: never read at build time
 #   - supabase/migrations, tests, seed, config: SQL and local tooling, none of
 #     it imported by apps/web
+#   - supabase/functions: Deno, deployed by `supabase functions deploy` and
+#     never bundled into the site. A function importing packages/core does not
+#     make the reverse true, and core changing still builds, as it should
 #   - supabase/database.types.ts: types only, erased before any JavaScript is
 #     emitted, so the output is byte-identical. A type error in it is still
 #     caught by the required `Format, lint, types, tests` CI job, which cannot
@@ -47,6 +50,7 @@ git diff --quiet "${CACHED_COMMIT_REF}" "${COMMIT_REF}" -- . \
   ':(exclude)LICENSE' \
   ':(exclude)supabase/migrations' \
   ':(exclude)supabase/tests' \
+  ':(exclude)supabase/functions' \
   ':(exclude)supabase/seed.sql' \
   ':(exclude)supabase/config.toml' \
   ':(exclude)supabase/database.types.ts'

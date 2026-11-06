@@ -6,12 +6,12 @@ import {
   longestWaitingFirst,
   summariseBoard,
   summariseStage,
-} from './board';
+} from './board.ts';
 import {
   APPLICATION_STAGES,
   type ApplicationStage,
   type StageEvent,
-} from './stage';
+} from './stage.ts';
 
 const at = (iso: string): Date => new Date(iso);
 
