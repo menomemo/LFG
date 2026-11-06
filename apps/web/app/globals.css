@@ -297,31 +297,35 @@ select {
   border-radius: 6px;
 }
 
-/* The card stays in its lane while a copy of it follows the pointer, so the
-   board does not reflow under the hand that is dragging. */
-.cards li.dragging {
-  opacity: 0.35;
+/* The card being dragged is drawn by the overlay, so the one left in the
+   lane is invisible and holds the space. It is the gap, and it moves between
+   lanes while the drag happens, which is what makes the drop still. */
+.cards li.placeholder {
+  opacity: 0;
 }
+
+/* No `transition` rule on a card here, deliberately. dnd-kit animates a card
+   to its new place by measuring it in a layout effect and setting a
+   transform; a stylesheet transition on the same property means it measures a
+   rectangle that is still moving, re-derives from it, and measures again.
+   That is an infinite render loop, and it took the page down once. The
+   duration comes from the sortable hook, on the element. */
 
 .cards li.overlay {
   cursor: grabbing;
   box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
 }
 
-/* A lane needs a floor to drop onto when it is empty. */
+/* A lane needs a floor to aim at when it is empty. No outline and no dashed
+   box: the cards moving aside and the gap opening are the feedback, and a
+   border drawn around the destination was only ever standing in for movement
+   that was not happening. */
 .lane {
   min-height: 96px;
 }
 
-.lane.over .lane-head {
-  border-bottom-color: var(--accent);
-}
-
-.lane.over .cards {
-  outline: 2px dashed var(--line);
-  outline-offset: 6px;
-  border-radius: 10px;
-  min-height: 48px;
+.lane .cards {
+  min-height: 56px;
 }
 
 .signed-in {
