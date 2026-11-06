@@ -24,6 +24,7 @@ being asked to defend a design out loud; see [../learning-track.md](../learning-
 | [0006](0006-use-npm-workspaces-for-the-monorepo.md)                      | Use npm workspaces for the monorepo                          | Accepted |
 | [0007](0007-enforce-google-typescript-style-with-eslint-and-prettier.md) | Enforce the Google TypeScript style with ESLint and Prettier | Accepted |
 | [0008](0008-record-evidence-against-a-polymorphic-source.md)             | Record evidence against a polymorphic source                 | Accepted |
+| [0009](0009-run-model-calls-from-supabase-not-the-web-host.md)           | Run model calls from Supabase, not from the web host         | Proposed |
 
 ## Status lifecycle
 
