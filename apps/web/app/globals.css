@@ -477,3 +477,13 @@ select {
     padding: 16px;
   }
 }
+
+/* A property that belongs to the related row rather than to this one. The
+   consequence of editing shared state is said before the typing, not after:
+   see application-detail.tsx. */
+.shared-warning {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+  margin: 6px 8px 0;
+}

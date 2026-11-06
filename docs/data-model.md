@@ -36,7 +36,7 @@ These are enforced in the schema, not by discipline.
 
 | Table             | Key fields                                                                                                                                                  | Related to                                        |
 | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| `companies`       | `name`, `domain`, `ats_type`, `ats_slug`, `sector`, `size`, `hq_country`, `regions`, `research_json`, `research_at`                                         | `jobs`, `contacts`, `signals`                     |
+| `companies`       | `name`, `domain`, `ats_type`, `ats_slug`, `sector`, `size`, `hq_country`, `regions`, `research_json`, `research_at`, `notes`                                | `jobs`, `contacts`, `signals`                     |
 | `jobs`            | `company_id`, `title`, `jd_text`, `jd_embedding`, `skill_vector`, `source_url`, `posted_at`, `region`, `work_mode`, `visa_sponsorship`, `language_required` | `applications`                                    |
 | `applications`    | `job_id`, `tier`, `stage_history`, `resume_version_id`, `next_action_at`, `notes`                                                                           | `contacts`, `interviews`                          |
 | `interviews`      | `application_id`, `round`, `scheduled_at`, `notes`, `feedback`, `followup_sent_at`                                                                          | `evidence`                                        |
@@ -66,6 +66,20 @@ the history, and the history is what every metric is built on. The same reasonin
 timestamp of the first `applied` entry, read by `appliedAt` in `packages/core` — the first
 and not the last, because someone who applies again after a rejection appends a second
 entry, and a time-to-offer measured from that one quietly shortens.
+
+**`applications.notes` and `companies.notes`** — two columns because they hold two
+different facts. What was said on a call belongs to the application; what the employer
+sells and what to read before an interview belongs to the employer, and the second role at
+the same company should start with it already written. The detail view shows both, the
+company one labelled with the company's name and marked as shared, but nothing copies the
+company text onto an application: the same sentence in two rows is one sentence and one
+copy quietly going stale, with nothing to say which is which.
+
+Neither goes in **`companies.research_json`**, which sits on the same table and looks like
+the obvious home. That column carries `NOT NULL` provenance for agent-written content —
+`research_generated_by` and `research_at` are constrained to be present exactly when it
+is — and a paragraph a person typed has no model and no generation time. Human prose and
+agent output are different kinds of claim, so they get different columns.
 
 **`interviews.followup_sent_at`** — a timestamp, not the boolean this document first
 specified. The rule it serves is a follow-up within 24 hours of the interview, and a
