@@ -22,6 +22,14 @@ export default tseslint.config(
       '**/.next/**',
       '**/.expo/**',
       '**/.turbo/**',
+
+      /* Deno, not Node. This config models Node globals and resolves
+         through node_modules, so it cannot type-check `Deno.serve` and
+         would report every line of it as an error. Ignored deliberately
+         rather than by accident -- it was already outside the project
+         service, which meant `npm run lint` silently skipped it. The
+         `deno check` job in CI is what checks these files. */
+      'supabase/functions/**',
     ],
   },
 
