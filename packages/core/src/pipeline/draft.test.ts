@@ -3,9 +3,12 @@ import {describe, expect, it} from 'vitest';
 import type {Validated} from '../validation';
 import {
   parseApplicationDraft,
+  parseApplicationEdit,
   SELF_REPORTED,
   type ApplicationDraft,
   type ApplicationDraftFields,
+  type ApplicationEdit,
+  type ApplicationEditFields,
 } from './draft';
 
 /** A form with every required field filled in and every optional one blank. */
@@ -201,5 +204,158 @@ describe('parseApplicationDraft', () => {
       stage: '',
     });
     expect(problems(result)).toHaveLength(3);
+  });
+});
+
+const EDIT: ApplicationEditFields = {
+  region: 'uk',
+  workMode: '',
+  sponsorship: 'unknown',
+  sourceUrl: '',
+  notes: '',
+  nextActionAt: '',
+  recordedSponsorshipSource: '',
+};
+
+const edit = (
+  overrides: Partial<ApplicationEditFields>,
+): ApplicationEditFields => ({...EDIT, ...overrides});
+
+const edited = (result: Validated<ApplicationEdit>): ApplicationEdit => {
+  if (!result.ok) {
+    throw new Error(`Expected acceptance, got: ${result.problems.join(' ')}`);
+  }
+  return result.value;
+};
+
+const refused = (result: Validated<ApplicationEdit>): readonly string[] => {
+  if (result.ok) {
+    throw new Error('Expected a rejection.');
+  }
+  return result.problems;
+};
+
+describe('parseApplicationEdit', () => {
+  it('changes nothing it was not given', () => {
+    expect(edited(parseApplicationEdit(EDIT))).toEqual({
+      job: {
+        region: 'uk',
+        workMode: null,
+        sponsorship: 'unknown',
+        sponsorshipSource: null,
+        sourceUrl: null,
+      },
+      application: {notes: null, nextActionAt: null},
+    });
+  });
+
+  it('reads a blank note as none written, not as an empty one', () => {
+    expect(
+      edited(parseApplicationEdit(edit({notes: '   \n  '}))).application.notes,
+    ).toBeNull();
+  });
+
+  it('trims a note that was written', () => {
+    expect(
+      edited(parseApplicationEdit(edit({notes: '  ask about the on-call  '})))
+        .application.notes,
+    ).toBe('ask about the on-call');
+  });
+
+  it('keeps the source a confirmed sponsorship answer already had', () => {
+    const result = edited(
+      parseApplicationEdit(
+        edit({
+          sponsorship: 'yes',
+          recordedSponsorshipSource:
+            'UK register of licensed sponsors, checked 2026-11-04',
+        }),
+      ),
+    );
+    expect(result.job.sponsorshipSource).toBe(
+      'UK register of licensed sponsors, checked 2026-11-04',
+    );
+  });
+
+  it('marks a newly confirmed answer as self-reported', () => {
+    expect(
+      edited(parseApplicationEdit(edit({sponsorship: 'no'}))).job
+        .sponsorshipSource,
+    ).toBe(SELF_REPORTED);
+  });
+
+  it('drops the source when the answer goes back to unknown', () => {
+    const result = edited(
+      parseApplicationEdit(
+        edit({
+          sponsorship: 'unknown',
+          recordedSponsorshipSource: 'the recruiter said so',
+        }),
+      ),
+    );
+    expect(result.job.sponsorship).toBe('unknown');
+    expect(result.job.sponsorshipSource).toBeNull();
+  });
+
+  it('accepts a next action date from a date control', () => {
+    const result = edited(
+      parseApplicationEdit(edit({nextActionAt: '2026-11-20'})),
+    );
+    expect(result.application.nextActionAt?.toISOString()).toBe(
+      '2026-11-20T12:00:00.000Z',
+    );
+  });
+
+  it('puts that date at midday, so no timezone moves it to the day before', () => {
+    const at = edited(parseApplicationEdit(edit({nextActionAt: '2026-01-01'})))
+      .application.nextActionAt;
+    expect(at?.getUTCDate()).toBe(1);
+    expect(at?.getUTCHours()).toBe(12);
+  });
+
+  it('reads a blank next action as nothing scheduled', () => {
+    expect(
+      edited(parseApplicationEdit(EDIT)).application.nextActionAt,
+    ).toBeNull();
+  });
+
+  it.each([
+    ['a sentence', 'next tuesday'],
+    ['the wrong order', '20-11-2026'],
+    ['a date that is not one', '2026-13-45'],
+  ])('refuses %s as a next action date', (_label, value) => {
+    expect(refused(parseApplicationEdit(edit({nextActionAt: value})))).toEqual([
+      'The next action date must be a date, or blank.',
+    ]);
+  });
+
+  it('refuses an unknown region rather than defaulting to one', () => {
+    expect(refused(parseApplicationEdit(edit({region: 'fr'})))[0]).toContain(
+      'Region must be one of',
+    );
+  });
+
+  it.each([
+    ['an invented work mode', {workMode: 'wfh'}],
+    ['an invented sponsorship answer', {sponsorship: 'maybe'}],
+    ['a link that is not one', {sourceUrl: 'saw it on LinkedIn'}],
+  ])('refuses %s', (_label, overrides) => {
+    expect(refused(parseApplicationEdit(edit(overrides)))).toHaveLength(1);
+  });
+
+  it('reports every problem at once', () => {
+    expect(
+      refused(
+        parseApplicationEdit({
+          region: 'fr',
+          workMode: 'wfh',
+          sponsorship: 'maybe',
+          sourceUrl: 'nope',
+          notes: '',
+          nextActionAt: 'soon',
+          recordedSponsorshipSource: '',
+        }),
+      ),
+    ).toHaveLength(5);
   });
 });

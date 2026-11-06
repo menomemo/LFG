@@ -47,10 +47,16 @@ export {
 } from './pipeline/board';
 export type {StageSummary, BoardLane, BoardTotals} from './pipeline/board';
 
-export {SELF_REPORTED, parseApplicationDraft} from './pipeline/draft';
+export {
+  SELF_REPORTED,
+  parseApplicationDraft,
+  parseApplicationEdit,
+} from './pipeline/draft';
 export type {
   ApplicationDraftFields,
   ApplicationDraft,
+  ApplicationEditFields,
+  ApplicationEdit,
   CompanyDraft,
   JobDraft,
 } from './pipeline/draft';
