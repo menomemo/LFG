@@ -7,15 +7,29 @@ import {
   KeyboardSensor,
   PointerSensor,
   closestCorners,
-  useDraggable,
   useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragOverEvent,
   type DragStartEvent,
   type KeyboardCoordinateGetter,
+  type Over,
 } from '@dnd-kit/core';
-import {useEffect, useOptimistic, useState, useTransition} from 'react';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import type {AnimateLayoutChanges} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
+import {
+  useEffect,
+  useMemo,
+  useOptimistic,
+  useState,
+  useTransition,
+} from 'react';
 import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
@@ -60,6 +74,42 @@ interface PlacedCard extends BoardCard {
 
 /** The lane an application with no recorded history falls into. */
 const UNKNOWN_LANE = 'no history';
+
+/**
+ * Turns off dnd-kit's layout-change animation for a card.
+ *
+ * Not a preference. A card that changes lane mid-drag moves to a different
+ * sortable list, and dnd-kit animates that by measuring the card in a layout
+ * effect, deriving a transform from the difference and storing it in state —
+ * which re-renders, re-measures and never settles. It took the page down with
+ * "maximum update depth exceeded" every time a card was dragged out of a lane
+ * that had other cards in it.
+ *
+ * What this does not turn off is the part that matters: the cards displaced
+ * by the drag still slide, because that transform comes from the sorting
+ * strategy while the drag is happening, not from this.
+ */
+const noLayoutAnimation: AnimateLayoutChanges = () => false;
+
+/** Whether this person has asked their system for less animation. */
+function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(query.matches);
+
+    const onChange = (event: MediaQueryListEvent): void => {
+      setReduced(event.matches);
+    };
+    query.addEventListener('change', onChange);
+    return () => {
+      query.removeEventListener('change', onChange);
+    };
+  }, []);
+
+  return reduced;
+}
 
 /** An ISO date, because dates in this project are absolute (CLAUDE.md). */
 function isoDate(value: Date): string {
@@ -114,9 +164,13 @@ const laneByLane: KeyboardCoordinateGetter = (
   }
   event.preventDefault();
 
-  const lanes = [...context.droppableRects.values()].sort(
-    (a, b) => a.left - b.left,
-  );
+  /* Cards are droppables too now that lanes are sortable lists, and an arrow
+     key means "next lane" rather than "next card": within a lane the order is
+     derived from waiting time, so there is no position to step through. */
+  const lanes = [...context.droppableRects.entries()]
+    .filter(([id]) => isApplicationStage(id))
+    .map(([, rect]) => rect)
+    .sort((a, b) => a.left - b.left);
   const width = context.collisionRect?.width ?? 0;
   const centre = currentCoordinates.x + width / 2;
 
@@ -209,6 +263,19 @@ export function Board({
     {},
   );
   const [activeId, setActiveId] = useState<string | null>(null);
+  /**
+   * Where the card being dragged currently sits, before it is let go.
+   *
+   * Not `useOptimistic`: an optimistic update only survives the transition
+   * that applied it, and a drag is not a transition — it is a span of time
+   * with no server call in it yet. This is ordinary state, applied over the
+   * optimistic cards by the same function the drop will use, so the board
+   * during a drag and the board after one are computed the same way.
+   */
+  const [preview, setPreview] = useState<{
+    readonly id: string;
+    readonly stage: ApplicationStage;
+  } | null>(null);
   const [, startTransition] = useTransition();
 
   /* Until this flips, the move form posts to the server action, which is how
@@ -218,6 +285,8 @@ export function Board({
   useEffect(() => {
     setHydrated(true);
   }, []);
+
+  const reducedMotion = useReducedMotion();
 
   const sensors = useSensors(
     useSensor(CardPointerSensor, {
@@ -234,7 +303,13 @@ export function Board({
     }),
   );
 
-  const placed: readonly PlacedCard[] = optimisticCards.map(card => ({
+  /* The drag in progress, laid over the optimistic board. */
+  const shown =
+    preview === null
+      ? optimisticCards
+      : withMove(optimisticCards, {...preview, at: now});
+
+  const placed: readonly PlacedCard[] = shown.map(card => ({
     ...card,
     summary: summariseStage(card.history, now),
   }));
@@ -284,21 +359,87 @@ export function Board({
     });
   }
 
-  function handleDragEnd(event: DragEndEvent): void {
-    setActiveId(null);
+  /**
+   * The lane under the pointer.
+   *
+   * What is under it is usually another card, because cards are drop targets
+   * in a sortable list. A card answers for the lane it is in.
+   */
+  function laneUnder(over: Over | null): ApplicationStage | null {
+    if (over === null) {
+      return null;
+    }
+    if (isApplicationStage(over.id)) {
+      return over.id;
+    }
+    const card = placed.find(({id}) => id === over.id);
+    return card?.summary.stage ?? null;
+  }
 
-    const lane = event.over?.id;
-    if (typeof lane !== 'string' || !isApplicationStage(lane)) {
+  /**
+   * Moves the card into the lane it is being dragged over, during the drag.
+   *
+   * This is what makes the drop free of movement: by the time the card is
+   * let go it is already in the lane, at the position the board's own
+   * ordering gives it, and the other cards have already slid aside. There is
+   * nothing left to animate on release.
+   *
+   * It decides with `appendStageEvent`, the same function that decides on
+   * drop and on the server. A lane the rule refuses is a lane the card does
+   * not enter, so it cannot be dropped somewhere it could not be moved.
+   */
+  function handleDragOver(event: DragOverEvent): void {
+    const id = String(event.active.id);
+    const card = optimisticCards.find(entry => entry.id === id);
+    if (card === undefined) {
       return;
     }
-    const card = optimisticCards.find(({id}) => id === event.active.id);
+
+    const lane = laneUnder(event.over);
+    /* Back over its own lane: the drag is on its way to nowhere, and the
+       card belongs where it started until it is over something else. */
+    if (lane === null || !appendStageEvent(card.history, lane, now).ok) {
+      setPreview(current => (current === null ? current : null));
+      return;
+    }
+    setPreview(current =>
+      current?.stage === lane && current.id === id
+        ? current
+        : {id, stage: lane},
+    );
+  }
+
+  /**
+   * Commits what the board is already showing.
+   *
+   * The lane comes from the preview rather than from the drop event, so what
+   * was on screen when the pointer was released is what gets written. Both
+   * state updates happen in this one handler, so React applies them in a
+   * single render: the preview goes and the optimistic move arrives in the
+   * same frame, with no gap between them for the card to flicker through.
+   */
+  function handleDragEnd(_event: DragEndEvent): void {
+    const landed = preview;
+    setActiveId(null);
+    setPreview(null);
+
+    if (landed === null) {
+      return;
+    }
+    const card = optimisticCards.find(({id}) => id === landed.id);
     if (card !== undefined) {
-      move(card, lane);
+      move(card, landed.stage);
     }
   }
 
   function handleDragStart(event: DragStartEvent): void {
     setActiveId(String(event.active.id));
+    setPreview(null);
+  }
+
+  function handleDragCancel(): void {
+    setActiveId(null);
+    setPreview(null);
   }
 
   return (
@@ -312,13 +453,17 @@ export function Board({
         </p>
       ) : (
         <DndContext
+          /* A fixed id, because dnd-kit otherwise counts its contexts to
+             name the element it describes a draggable with, and the server
+             and the browser do not reach the same number. That mismatch is a
+             hydration error on every load. */
+          id="board"
           sensors={sensors}
           collisionDetection={closestCorners}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
-          onDragCancel={() => {
-            setActiveId(null);
-          }}
+          onDragCancel={handleDragCancel}
         >
           <div className="lanes">
             {lanes.map(lane => (
@@ -326,13 +471,14 @@ export function Board({
                 key={lane.stage ?? UNKNOWN_LANE}
                 stage={lane.stage}
                 count={lane.cards.length}
+                cardIds={lane.cards.map(card => card.id)}
               >
                 {lane.cards.map(card => (
                   <Card
                     key={card.id}
                     card={card}
-                    dragging={card.id === activeId}
                     hydrated={hydrated}
+                    reducedMotion={reducedMotion}
                     problem={problems[card.id] ?? null}
                     onMove={move}
                   />
@@ -341,8 +487,8 @@ export function Board({
             ))}
           </div>
 
-          {/* The dragged card follows the pointer from here, so the one in the
-              lane can stay where it is and simply fade. */}
+          {/* The card under the pointer is drawn here, while the one in the
+              lane turns into the gap it will drop into. */}
           <DragOverlay>
             {dragged === null ? null : (
               <ul className="cards">
@@ -362,25 +508,38 @@ export function Board({
 function Lane({
   stage,
   count,
+  cardIds,
   children,
 }: {
   readonly stage: ApplicationStage | null;
   readonly count: number;
+  readonly cardIds: readonly string[];
   readonly children: ReactNode;
 }) {
-  /* The unknown lane takes no drops: there is no stage to append. */
-  const {setNodeRef, isOver} = useDroppable({
+  /* The unknown lane takes no drops: there is no stage to append. The lane
+     is a droppable in its own right as well as a sortable list, because an
+     empty lane has no cards to aim at. */
+  const {setNodeRef} = useDroppable({
     id: stage ?? UNKNOWN_LANE,
     disabled: stage === null,
   });
 
+  /* A fresh array every render would give `SortableContext` a new identity
+     every render, and everything it memoises would be recomputed on each one.
+     The ids are uuids, so joining them is a safe way to say "these are the
+     same cards in the same order". */
+  const key = cardIds.join(',');
+  const items = useMemo(() => (key === '' ? [] : key.split(',')), [key]);
+
   return (
-    <section className={isOver ? 'lane over' : 'lane'} ref={setNodeRef}>
+    <section className="lane" ref={setNodeRef}>
       <div className="lane-head">
         <span className="lane-name">{stage ?? UNKNOWN_LANE}</span>
         <span className="lane-count">{count}</span>
       </div>
-      <ul className="cards">{children}</ul>
+      <SortableContext items={items} strategy={verticalListSortingStrategy}>
+        <ul className="cards">{children}</ul>
+      </SortableContext>
     </section>
   );
 }
@@ -420,18 +579,27 @@ function CardFace({card}: {readonly card: PlacedCard}) {
  */
 function Card({
   card,
-  dragging,
   hydrated,
+  reducedMotion,
   problem,
   onMove,
 }: {
   readonly card: PlacedCard;
-  readonly dragging: boolean;
   readonly hydrated: boolean;
+  readonly reducedMotion: boolean;
   readonly problem: string | null;
   readonly onMove: (card: BoardCard, stage: ApplicationStage) => void;
 }) {
-  const {attributes, listeners, setNodeRef} = useDraggable({id: card.id});
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} =
+    useSortable(
+      reducedMotion
+        ? {
+            id: card.id,
+            animateLayoutChanges: noLayoutAnimation,
+            transition: null,
+          }
+        : {id: card.id, animateLayoutChanges: noLayoutAnimation},
+    );
 
   function handleSubmit(event: SyntheticEvent<HTMLFormElement>): void {
     /* Hydrated, so this handles the submission instead of the server action
@@ -446,8 +614,15 @@ function Card({
   }
 
   return (
-    <li className={dragging ? 'dragging' : undefined}>
-      <div className="face" ref={setNodeRef} {...listeners} {...attributes}>
+    <li
+      ref={setNodeRef}
+      /* The card being dragged is drawn by the overlay instead, so this one
+         stays in the layout holding the space it will drop back into. That
+         space is the gap. */
+      className={isDragging ? 'placeholder' : undefined}
+      style={{transform: CSS.Translate.toString(transform), transition}}
+    >
+      <div className="face" {...listeners} {...attributes}>
         <CardFace card={card} />
       </div>
 
