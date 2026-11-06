@@ -5,7 +5,8 @@ import {
   DragOverlay,
   KeyboardCode,
   KeyboardSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   closestCorners,
   useDroppable,
   useSensor,
@@ -27,21 +28,17 @@ import {
   useEffect,
   useMemo,
   useOptimistic,
+  useRef,
   useState,
   useTransition,
 } from 'react';
-import type {
-  PointerEvent as ReactPointerEvent,
-  ReactNode,
-  SyntheticEvent,
-} from 'react';
+import type {ReactNode} from 'react';
 
 import {
   appendStageEvent,
   buildLanes,
   isApplicationStage,
   longestWaitingFirst,
-  movesFrom,
   regionLabel,
   summariseBoard,
   summariseStage,
@@ -53,22 +50,31 @@ import {
   type WorkMode,
 } from '@lfg/core';
 
-import {moveApplication, submitMoveApplication} from '@/app/actions';
+import {moveApplication} from '@/app/actions';
+import {ApplicationDetail} from '@/app/application-detail';
 
 /** One application, with the history everything about it is derived from. */
 export interface BoardCard {
   readonly id: string;
   readonly company: string;
+  readonly companyDomain: string | null;
   readonly role: string;
   readonly region: Region;
   readonly workMode: WorkMode | null;
   readonly sponsorship: Sponsorship;
+  readonly sponsorshipSource: string | null;
+  readonly sourceUrl: string | null;
   readonly language: string | null;
+  readonly notes: string | null;
+  readonly nextActionAt: Date | null;
+  readonly createdAt: Date;
+  /** How the résumé that was used is named, or `null` — never a guess. */
+  readonly resume: string | null;
   readonly history: readonly StageEvent[];
 }
 
 /** A card with its position worked out. */
-interface PlacedCard extends BoardCard {
+export interface PlacedCard extends BoardCard {
   readonly summary: StageSummary;
 }
 
@@ -114,28 +120,6 @@ function useReducedMotion(): boolean {
 /** An ISO date, because dates in this project are absolute (CLAUDE.md). */
 function isoDate(value: Date): string {
   return value.toISOString().slice(0, 10);
-}
-
-/**
- * Starts a drag from anywhere on a card except its controls.
- *
- * The card carries a select and two buttons, and a pointer going down on one
- * of those means the person is using it, not grabbing the card. Without this
- * the sensor swallows the click.
- */
-class CardPointerSensor extends PointerSensor {
-  static override activators = [
-    {
-      eventName: 'onPointerDown' as const,
-      handler: ({nativeEvent}: ReactPointerEvent): boolean => {
-        const {target} = nativeEvent;
-        return !(
-          target instanceof Element &&
-          target.closest('select, button, input, a, label') !== null
-        );
-      },
-    },
-  ];
 }
 
 /**
@@ -278,21 +262,47 @@ export function Board({
   } | null>(null);
   const [, startTransition] = useTransition();
 
-  /* Until this flips, the move form posts to the server action, which is how
-     it works with JavaScript disabled or not yet loaded. After hydration the
-     same form is handled here instead, so the move can be optimistic. */
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => {
-    setHydrated(true);
-  }, []);
+  const [openId, setOpenId] = useState<string | null>(null);
+  /* Letting go of a dragged card also fires a click on it, which would open
+     it. This suppresses that one click and nothing else: the flag is raised
+     when a drag ends and lowered in the next task, and the click arrives in
+     between. A flag that waited to be consumed would swallow the next tap
+     instead whenever a drag ended without producing a click — which is what
+     a touch drag does. */
+  const justDragged = useRef(false);
+
+  function suppressTheClickAfterADrag(): void {
+    justDragged.current = true;
+    setTimeout(() => {
+      justDragged.current = false;
+    }, 0);
+  }
 
   const reducedMotion = useReducedMotion();
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        setOpenId(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, []);
+
   const sensors = useSensors(
-    useSensor(CardPointerSensor, {
-      /* A click is not a drag until the pointer has travelled. Without this,
-         pressing a card to focus it would start one. */
-      activationConstraint: {distance: 4},
+    /* Mouse and touch are separate sensors rather than one pointer sensor,
+       because they need different answers to the same question: when does a
+       press become a drag? With a mouse it is distance — a click that does
+       not travel is a click, and opens the card. On a touch screen distance
+       cannot be the test, because the gesture for scrolling the board is
+       also a finger moving across it. So touch waits: hold a card briefly
+       and it lifts, swipe and the board scrolls. */
+    useSensor(MouseSensor, {activationConstraint: {distance: 4}}),
+    useSensor(TouchSensor, {
+      activationConstraint: {delay: 180, tolerance: 8},
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: laneByLane,
@@ -323,6 +333,9 @@ export function Board({
   );
   const totals = summariseBoard(placed.map(card => card.summary));
   const dragged = placed.find(card => card.id === activeId) ?? null;
+  /* Read from the same derived list the board renders, so an optimistic move
+     made from inside the panel is reflected in the panel. */
+  const opened = placed.find(card => card.id === openId) ?? null;
 
   function move(card: BoardCard, stage: ApplicationStage): void {
     /* The same check the server will make. A move it refuses — dropping a
@@ -420,6 +433,7 @@ export function Board({
    */
   function handleDragEnd(_event: DragEndEvent): void {
     const landed = preview;
+    suppressTheClickAfterADrag();
     setActiveId(null);
     setPreview(null);
 
@@ -438,8 +452,15 @@ export function Board({
   }
 
   function handleDragCancel(): void {
+    suppressTheClickAfterADrag();
     setActiveId(null);
     setPreview(null);
+  }
+
+  function openCard(id: string): void {
+    if (!justDragged.current) {
+      setOpenId(id);
+    }
   }
 
   return (
@@ -477,10 +498,9 @@ export function Board({
                   <Card
                     key={card.id}
                     card={card}
-                    hydrated={hydrated}
                     reducedMotion={reducedMotion}
                     problem={problems[card.id] ?? null}
-                    onMove={move}
+                    onOpen={openCard}
                   />
                 ))}
               </Lane>
@@ -499,6 +519,16 @@ export function Board({
             )}
           </DragOverlay>
         </DndContext>
+      )}
+
+      {opened === null ? null : (
+        <ApplicationDetail
+          card={opened}
+          onClose={() => {
+            setOpenId(null);
+          }}
+          onMove={move}
+        />
       )}
     </>
   );
@@ -571,24 +601,24 @@ function CardFace({card}: {readonly card: PlacedCard}) {
 }
 
 /**
- * One card: draggable by its face, movable by its control.
+ * One card: draggable by its face, and opened by clicking it.
  *
- * Both paths exist on purpose. Dragging is the fast one and needs a pointer
- * or a keyboard and JavaScript; the select and the button need none of those
- * and are what makes the board usable without them. They call the same move.
+ * It used to carry a select and a button for changing stage. They are gone:
+ * the author asked for the card to be the card and nothing else, and the
+ * stage lives in the detail view now. What that cost is written down in the
+ * pull request and in docs/product-spec.md — the board no longer works
+ * without JavaScript, because that control was the part that did.
  */
 function Card({
   card,
-  hydrated,
   reducedMotion,
   problem,
-  onMove,
+  onOpen,
 }: {
   readonly card: PlacedCard;
-  readonly hydrated: boolean;
   readonly reducedMotion: boolean;
   readonly problem: string | null;
-  readonly onMove: (card: BoardCard, stage: ApplicationStage) => void;
+  readonly onOpen: (id: string) => void;
 }) {
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} =
     useSortable(
@@ -601,18 +631,6 @@ function Card({
         : {id: card.id, animateLayoutChanges: noLayoutAnimation},
     );
 
-  function handleSubmit(event: SyntheticEvent<HTMLFormElement>): void {
-    /* Hydrated, so this handles the submission instead of the server action
-       the form still carries for the case where it is not. */
-    event.preventDefault();
-    const form = event.currentTarget;
-    const stage = new FormData(form).get('stage');
-    if (isApplicationStage(stage)) {
-      onMove(card, stage);
-    }
-    form.reset();
-  }
-
   return (
     <li
       ref={setNodeRef}
@@ -622,35 +640,18 @@ function Card({
       className={isDragging ? 'placeholder' : undefined}
       style={{transform: CSS.Translate.toString(transform), transition}}
     >
-      <div className="face" {...listeners} {...attributes}>
+      <div
+        className="face"
+        {...listeners}
+        {...attributes}
+        onClick={() => {
+          onOpen(card.id);
+        }}
+      >
         <CardFace card={card} />
       </div>
 
-      <form
-        className="move"
-        action={hydrated ? undefined : submitMoveApplication}
-        onSubmit={hydrated ? handleSubmit : undefined}
-      >
-        <input type="hidden" name="id" value={card.id} />
-
-        <select
-          name="stage"
-          defaultValue=""
-          required
-          aria-label={`Move ${card.role} at ${card.company} to another stage`}
-        >
-          <option value="">move to…</option>
-          {movesFrom(card.summary.stage).map(next => (
-            <option key={next} value={next}>
-              {next}
-            </option>
-          ))}
-        </select>
-
-        <button type="submit">Move</button>
-
-        {problem === null ? null : <p className="error">{problem}</p>}
-      </form>
+      {problem === null ? null : <p className="error">{problem}</p>}
     </li>
   );
 }

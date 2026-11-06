@@ -43,13 +43,19 @@ export default async function BoardPage() {
     .select(
       `id,
        stage_history,
+       notes,
+       next_action_at,
+       created_at,
+       resume_versions ( region_profile, locale ),
        jobs!inner (
          title,
          region,
          work_mode,
          visa_sponsorship,
+         visa_sponsorship_source,
+         source_url,
          language_required,
-         companies!inner ( name )
+         companies!inner ( name, domain )
        )`,
     )
     .order('created_at', {ascending: false});
@@ -60,15 +66,28 @@ export default async function BoardPage() {
 
   const cards: readonly BoardCard[] = data.map(row => {
     const requirement = parseLanguageRequirement(row.jobs.language_required);
+    const resume = row.resume_versions;
     return {
       id: row.id,
       company: row.jobs.companies.name,
+      companyDomain: row.jobs.companies.domain,
       role: row.jobs.title,
       region: row.jobs.region,
       workMode: row.jobs.work_mode,
       sponsorship: row.jobs.visa_sponsorship,
+      sponsorshipSource: row.jobs.visa_sponsorship_source,
+      sourceUrl: row.jobs.source_url,
       language:
         requirement === null ? null : formatLanguageRequirement(requirement),
+      notes: row.notes,
+      nextActionAt:
+        row.next_action_at === null ? null : new Date(row.next_action_at),
+      createdAt: new Date(row.created_at),
+      /* Null until Phase 2's `resume-tailor` creates one. The detail view
+         says so rather than showing an empty cell: a résumé nobody has
+         tailored yet is unknown, not none (CLAUDE.md rule 8). */
+      resume:
+        resume === null ? null : `${resume.region_profile} · ${resume.locale}`,
       history: parseStageHistory(row.stage_history),
     };
   });

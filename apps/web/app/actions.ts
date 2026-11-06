@@ -8,6 +8,7 @@ import {
   appendStageEvent,
   isApplicationStage,
   parseApplicationDraft,
+  parseApplicationEdit,
   parseStageHistory,
   reject,
   serialiseStageHistory,
@@ -17,6 +18,7 @@ import {
   type Validated,
 } from '@lfg/core';
 
+import {UNSAVED, type ApplicationEditState} from '@/app/application-edit-state';
 import {
   EMPTY_CREATE_FORM,
   type CreateApplicationState,
@@ -266,10 +268,7 @@ export async function createApplication(
  * (docs/data-model.md). Whether the move is allowed at all is decided by
  * `appendStageEvent` in `packages/core`.
  *
- * @returns `null` on success, or why the move was refused. The board shows
- *   that reason on the card; {@link submitMoveApplication} is the same call
- *   for the form that submits without JavaScript, where there is nowhere to
- *   show it.
+ * @returns `null` on success, or why the move was refused.
  */
 export async function moveApplication(
   formData: FormData,
@@ -341,14 +340,117 @@ export async function moveApplication(
 }
 
 /**
- * Moves an application from a form posted without JavaScript.
+ * Saves the properties of an application that already exists.
  *
- * Identical work, no answer. A `<form action={…}>` that Next.js has to
- * encode for a browser with no JavaScript cannot carry a return value back,
- * so a refusal here shows up as the page re-rendering with the card where it
- * already was — which is the truth, just a quiet one. The board uses
- * {@link moveApplication} directly and shows the reason.
+ * Two tables, because the properties belong to two rows: region, work mode,
+ * sponsorship and the advert link describe the job, while the note and the
+ * next action describe the application. Neither update filters by user id;
+ * row-level security decides which rows these ids can reach (ADR-0002).
+ *
+ * The stage is not here. It is appended to `stage_history` by
+ * {@link moveApplication}, which is the only way it ever changes.
+ *
+ * @returns The same state back, with every reason it was refused or nothing.
  */
-export async function submitMoveApplication(formData: FormData): Promise<void> {
-  await moveApplication(formData);
+export async function updateApplication(
+  previous: ApplicationEditState,
+  formData: FormData,
+): Promise<ApplicationEditState> {
+  const id = readField(formData, 'id').trim();
+  if (id === '') {
+    return {
+      ...UNSAVED,
+      problem: 'The form did not say which application to save.',
+    };
+  }
+
+  const supabase = await createClient();
+
+  /* The recorded sponsorship source is read from the row rather than taken
+     from the form. It is a claim about where a fact came from, and a hidden
+     field is not allowed to make that claim (CLAUDE.md rule 3). */
+  const current = await supabase
+    .from('applications')
+    .select('job_id, jobs!inner ( visa_sponsorship_source )')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (current.error) {
+    return {
+      saved: previous.saved,
+      problem: `Could not read the application: ${current.error.message}`,
+    };
+  }
+  if (current.data === null) {
+    return {
+      saved: previous.saved,
+      problem: 'That application no longer exists.',
+    };
+  }
+
+  const edit = parseApplicationEdit({
+    region: readField(formData, 'region'),
+    workMode: readField(formData, 'workMode'),
+    sponsorship: readField(formData, 'sponsorship'),
+    sourceUrl: readField(formData, 'sourceUrl'),
+    notes: readField(formData, 'notes'),
+    nextActionAt: readField(formData, 'nextActionAt'),
+    recordedSponsorshipSource: current.data.jobs.visa_sponsorship_source ?? '',
+  });
+  if (!edit.ok) {
+    return {saved: previous.saved, problem: edit.problems.join(' ')};
+  }
+
+  const job = await supabase
+    .from('jobs')
+    .update({
+      region: edit.value.job.region,
+      work_mode: edit.value.job.workMode,
+      visa_sponsorship: edit.value.job.sponsorship,
+      visa_sponsorship_source: edit.value.job.sponsorshipSource,
+      source_url: edit.value.job.sourceUrl,
+    })
+    .eq('id', current.data.job_id)
+    .select('id');
+
+  if (job.error) {
+    if (job.error.code === UNIQUE_VIOLATION) {
+      return {
+        saved: previous.saved,
+        problem: 'You have already saved a role from that link.',
+      };
+    }
+    return {
+      saved: previous.saved,
+      problem: `Could not save the role: ${job.error.message}`,
+    };
+  }
+
+  const application = await supabase
+    .from('applications')
+    .update({
+      notes: edit.value.application.notes,
+      next_action_at:
+        edit.value.application.nextActionAt?.toISOString() ?? null,
+    })
+    .eq('id', id)
+    .select('id');
+
+  if (application.error) {
+    return {
+      saved: previous.saved,
+      problem: `Could not save the notes: ${application.error.message}`,
+    };
+  }
+  if (application.data.length === 0 || job.data.length === 0) {
+    /* An update that matches no row succeeds and changes nothing, which is
+       what row-level security does to someone else's row. */
+    return {
+      saved: previous.saved,
+      problem: 'That application could not be saved.',
+    };
+  }
+
+  revalidatePath('/');
+  return {problem: null, saved: previous.saved + 1};
 }
