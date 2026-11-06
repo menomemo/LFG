@@ -178,6 +178,28 @@ function DerivedRow({
   );
 }
 
+/**
+ * Says who else sees this note, before it is written rather than after.
+ *
+ * Editing shared state from a page about one thing is the trap in every
+ * product that has relations, Notion included: someone annotating an
+ * application annotates every application to that employer and finds out
+ * later. We know what the relation means, so we can say it.
+ */
+function sharedWith(company: string, others: number): string {
+  const kept = `Kept on ${company}, not on this application.`;
+  if (others === 0) {
+    return `${kept} The next role you apply to there will open with it already written.`;
+  }
+  if (others === 1) {
+    return `${kept} One other application to this employer shows the same note, and editing it here changes it there too.`;
+  }
+  return (
+    `${kept} ${String(others)} other applications to this employer show the ` +
+    'same note, and editing it here changes it for all of them.'
+  );
+}
+
 /** Reads as "unknown" rather than as nothing (CLAUDE.md rule 8). */
 function Unknown({what}: {readonly what: string}) {
   return <span className="unknown">unknown — {what}</span>;
@@ -209,10 +231,13 @@ function isoDate(value: Date): string {
  */
 export function ApplicationDetail({
   card,
+  othersAtCompany,
   onClose,
   onMove,
 }: {
   readonly card: PlacedCard;
+  /** How many other applications share this company's note. */
+  readonly othersAtCompany: number;
   readonly onClose: () => void;
   readonly onMove: (card: BoardCard, stage: ApplicationStage) => void;
 }) {
@@ -346,6 +371,23 @@ export function ApplicationDetail({
               placeholder="What to prepare, what was said, what to chase."
               id="prop-notes"
             />
+          </Row>
+
+          {/* A property of the company, shown here because of the relation
+              rather than because a copy of it lives on this application.
+              Labelled with the employer's name so that is legible before
+              the typing starts, not after. */}
+          <Row label={`${card.company} · notes`}>
+            <textarea
+              name="companyNotes"
+              rows={5}
+              defaultValue={card.companyNotes ?? ''}
+              placeholder={`What ${card.company} does, what to read before an interview, who works there.`}
+              id="prop-companyNotes"
+            />
+            <p className="shared-warning">
+              {sharedWith(card.company, othersAtCompany)}
+            </p>
           </Row>
 
           <div className="detail-actions">

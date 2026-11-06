@@ -371,7 +371,7 @@ export async function updateApplication(
      field is not allowed to make that claim (CLAUDE.md rule 3). */
   const current = await supabase
     .from('applications')
-    .select('job_id, jobs!inner ( visa_sponsorship_source )')
+    .select('job_id, jobs!inner ( company_id, visa_sponsorship_source )')
     .eq('id', id)
     .maybeSingle();
 
@@ -394,6 +394,7 @@ export async function updateApplication(
     sponsorship: readField(formData, 'sponsorship'),
     sourceUrl: readField(formData, 'sourceUrl'),
     notes: readField(formData, 'notes'),
+    companyNotes: readField(formData, 'companyNotes'),
     nextActionAt: readField(formData, 'nextActionAt'),
     recordedSponsorshipSource: current.data.jobs.visa_sponsorship_source ?? '',
   });
@@ -426,6 +427,22 @@ export async function updateApplication(
     };
   }
 
+  /* The company note goes to the company, which is what makes it shared.
+     Nothing writes it onto the application as well: two copies of one
+     sentence is one sentence and one that is quietly going stale. */
+  const company = await supabase
+    .from('companies')
+    .update({notes: edit.value.company.notes})
+    .eq('id', current.data.jobs.company_id)
+    .select('id');
+
+  if (company.error) {
+    return {
+      saved: previous.saved,
+      problem: `Could not save the company note: ${company.error.message}`,
+    };
+  }
+
   const application = await supabase
     .from('applications')
     .update({
@@ -442,7 +459,11 @@ export async function updateApplication(
       problem: `Could not save the notes: ${application.error.message}`,
     };
   }
-  if (application.data.length === 0 || job.data.length === 0) {
+  if (
+    application.data.length === 0 ||
+    job.data.length === 0 ||
+    company.data.length === 0
+  ) {
     /* An update that matches no row succeeds and changes nothing, which is
        what row-level security does to someone else's row. */
     return {

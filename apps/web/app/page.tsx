@@ -55,7 +55,7 @@ export default async function BoardPage() {
          visa_sponsorship_source,
          source_url,
          language_required,
-         companies!inner ( name, domain )
+         companies!inner ( id, name, domain, notes )
        )`,
     )
     .order('created_at', {ascending: false});
@@ -70,7 +70,12 @@ export default async function BoardPage() {
     return {
       id: row.id,
       company: row.jobs.companies.name,
+      companyId: row.jobs.companies.id,
       companyDomain: row.jobs.companies.domain,
+      /* Read through the relation, not copied onto the application. Every
+         application to this employer reads the same row, which is the whole
+         point of it being on `companies` (supabase/migrations/20261106140000). */
+      companyNotes: row.jobs.companies.notes,
       role: row.jobs.title,
       region: row.jobs.region,
       workMode: row.jobs.work_mode,

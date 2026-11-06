@@ -57,7 +57,10 @@ import {ApplicationDetail} from '@/app/application-detail';
 export interface BoardCard {
   readonly id: string;
   readonly company: string;
+  readonly companyId: string;
   readonly companyDomain: string | null;
+  /** Shared by every application to this company; never copied here. */
+  readonly companyNotes: string | null;
   readonly role: string;
   readonly region: Region;
   readonly workMode: WorkMode | null;
@@ -524,6 +527,15 @@ export function Board({
       {opened === null ? null : (
         <ApplicationDetail
           card={opened}
+          /* How many other applications read the same company note. The
+             board already holds every application, so this is a count of
+             what is on screen rather than another query. */
+          othersAtCompany={
+            placed.filter(
+              card =>
+                card.companyId === opened.companyId && card.id !== opened.id,
+            ).length
+          }
           onClose={() => {
             setOpenId(null);
           }}
