@@ -23,20 +23,20 @@ anyone performs, and the rule below says it reverses itself the moment a reply a
 storing it would mean writing a row into an append-only history and later needing to unwrite
 it. It is derived from silence instead, by `isGhosted` in `packages/core`.
 
-| Scope    | Item                                                                                                                                                                                           |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ✅ MVP   | Board view: one lane per stage, derived from `stage_history`, with the longest wait first                                                                                                      |
-| ✅ MVP   | Create an application: one form across company, job and application                                                                                                                            |
-| ✅ MVP   | Change stage from a card. The move appends to the history and never overwrites it                                                                                                              |
-| ✅ MVP   | Drag to change stage (dnd-kit), by pointer or by keyboard. The select-and-submit control stays: it is the path that needs neither a pointer nor JavaScript                                     |
-| 📋 MVP   | Manual create: paste a JD link or body; AI extracts company, title, key skills, region, language requirement                                                                                   |
-| 📋 MVP   | Record which résumé version each application used                                                                                                                                              |
-| 📋 MVP   | Interview records: round, time, notes                                                                                                                                                          |
-| 📋 MVP   | Follow-up reminder 24h after an interview, with a drafted thank-you note                                                                                                                       |
-| 📋 MVP   | `next_action_at` reminders, in-app and email                                                                                                                                                   |
-| 📋 Later | Browser extension (Manifest V3): one-click JD clipping, then assisted form fill for Greenhouse / Lever / Ashby — fields and values shown for confirmation first, submission always by the user |
-| 📋 Later | Read-only Gmail scope: detect interview invitations and rejections, propose a stage change, user confirms                                                                                      |
-| 📋 Later | Calendar sync for interviews                                                                                                                                                                   |
+| Scope    | Item                                                                                                                                                                                                                         |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ✅ MVP   | Board view: one lane per stage, derived from `stage_history`, with the longest wait first. Order within a lane is derived too, so it cannot be set by hand — a card dropped into a lane lands where its waiting time puts it |
+| ✅ MVP   | Create an application: one form across company, job and application                                                                                                                                                          |
+| ✅ MVP   | Change stage from a card. The move appends to the history and never overwrites it                                                                                                                                            |
+| ✅ MVP   | Drag to change stage (dnd-kit), by pointer or by keyboard. The select-and-submit control stays: it is the path that needs neither a pointer nor JavaScript                                                                   |
+| 📋 MVP   | Manual create: paste a JD link or body; AI extracts company, title, key skills, region, language requirement                                                                                                                 |
+| 📋 MVP   | Record which résumé version each application used                                                                                                                                                                            |
+| 📋 MVP   | Interview records: round, time, notes                                                                                                                                                                                        |
+| 📋 MVP   | Follow-up reminder 24h after an interview, with a drafted thank-you note                                                                                                                                                     |
+| 📋 MVP   | `next_action_at` reminders, in-app and email                                                                                                                                                                                 |
+| 📋 Later | Browser extension (Manifest V3): one-click JD clipping, then assisted form fill for Greenhouse / Lever / Ashby — fields and values shown for confirmation first, submission always by the user                               |
+| 📋 Later | Read-only Gmail scope: detect interview invitations and rejections, propose a stage change, user confirms                                                                                                                    |
+| 📋 Later | Calendar sync for interviews                                                                                                                                                                                                 |
 
 **Build vs. use:** build the board, the clipper and the email classifier (rules first, a
 small model as fallback). Use dnd-kit, Supabase cron, and a transactional email provider.
