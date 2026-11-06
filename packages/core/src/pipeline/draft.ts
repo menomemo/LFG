@@ -223,6 +223,16 @@ export interface ApplicationEditFields {
   readonly sponsorship: string;
   readonly sourceUrl: string;
   readonly notes: string;
+  /**
+   * The note about the employer, which every application to it shares.
+   *
+   * It arrives in the same form as the rest because it is edited in the same
+   * place, and leaves in its own part of the result because it is written to
+   * its own row. It is never copied onto the application: the same sentence
+   * in two rows is one sentence and one stale copy, with nothing to say
+   * which is which.
+   */
+  readonly companyNotes: string;
   /** A calendar date from a date control: `YYYY-MM-DD`, or empty. */
   readonly nextActionAt: string;
   /**
@@ -239,6 +249,10 @@ export interface ApplicationEditFields {
 
 /** What an edit changes, split by the table it lands in. */
 export interface ApplicationEdit {
+  readonly company: {
+    /** `null` when nobody has written one, which is not the same as empty. */
+    readonly notes: string | null;
+  };
   readonly job: {
     readonly region: Region;
     readonly workMode: WorkMode | null;
@@ -325,6 +339,9 @@ export function parseApplicationEdit(
   const trimmedNotes = fields.notes.trim();
   const notes = trimmedNotes === '' ? null : trimmedNotes;
 
+  const trimmedCompanyNotes = fields.companyNotes.trim();
+  const companyNotes = trimmedCompanyNotes === '' ? null : trimmedCompanyNotes;
+
   if (problems.length > 0) {
     return reject(problems);
   }
@@ -335,6 +352,7 @@ export function parseApplicationEdit(
 
   const recorded = fields.recordedSponsorshipSource.trim();
   return accept({
+    company: {notes: companyNotes},
     job: {
       region,
       workMode,
