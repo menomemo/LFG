@@ -258,32 +258,6 @@ select {
   font-size: 14px;
 }
 
-/* A select and a button on one line, against the global form grid. */
-.move {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  max-width: none;
-  margin-top: 10px;
-}
-
-.move select,
-.move button {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-.move select {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.move .error {
-  flex: 1 1 100%;
-  font-size: 12px;
-}
-
 /* Drag-and-drop. Structure only — the lane and card styling above is
    unchanged, and the visual design is a separate round. */
 
