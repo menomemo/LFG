@@ -213,6 +213,7 @@ const EDIT: ApplicationEditFields = {
   sponsorship: 'unknown',
   sourceUrl: '',
   notes: '',
+  companyNotes: '',
   nextActionAt: '',
   recordedSponsorshipSource: '',
 };
@@ -238,6 +239,7 @@ const refused = (result: Validated<ApplicationEdit>): readonly string[] => {
 describe('parseApplicationEdit', () => {
   it('changes nothing it was not given', () => {
     expect(edited(parseApplicationEdit(EDIT))).toEqual({
+      company: {notes: null},
       job: {
         region: 'uk',
         workMode: null,
@@ -352,10 +354,49 @@ describe('parseApplicationEdit', () => {
           sponsorship: 'maybe',
           sourceUrl: 'nope',
           notes: '',
+          companyNotes: '',
           nextActionAt: 'soon',
           recordedSponsorshipSource: '',
         }),
       ),
     ).toHaveLength(5);
+  });
+
+  it('keeps the company note out of the application', () => {
+    const result = edited(
+      parseApplicationEdit(
+        edit({companyNotes: 'Sells payments infrastructure. Read the blog.'}),
+      ),
+    );
+    expect(result.company.notes).toBe(
+      'Sells payments infrastructure. Read the blog.',
+    );
+    /* The one that matters: the same sentence must not end up in two rows,
+       because then one of them starts going stale and nothing can say
+       which. */
+    expect(result.application.notes).toBeNull();
+  });
+
+  it('keeps the two notes apart when both are written', () => {
+    const result = edited(
+      parseApplicationEdit(
+        edit({notes: 'Ask about the on-call rota.', companyNotes: 'Series C.'}),
+      ),
+    );
+    expect(result.application.notes).toBe('Ask about the on-call rota.');
+    expect(result.company.notes).toBe('Series C.');
+  });
+
+  it('reads a blank company note as none written', () => {
+    expect(
+      edited(parseApplicationEdit(edit({companyNotes: '  \n '}))).company.notes,
+    ).toBeNull();
+  });
+
+  it('trims a company note that was written', () => {
+    expect(
+      edited(parseApplicationEdit(edit({companyNotes: '  Series C.  '})))
+        .company.notes,
+    ).toBe('Series C.');
   });
 });
