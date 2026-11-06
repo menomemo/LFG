@@ -331,3 +331,175 @@ select {
 .signed-in {
   margin-bottom: 0;
 }
+
+/* ---------------------------------------------------------------------------
+   The detail view
+   --------------------------------------------------------------------------- */
+
+.face {
+  cursor: pointer;
+}
+
+.detail-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* The click-away. A button so it can be reached and announced, sized to the
+   area beside the panel rather than drawn as anything. */
+.detail-dismiss {
+  flex: 1 1 auto;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: rgb(0 0 0 / 28%);
+  cursor: default;
+}
+
+.detail {
+  flex: 0 0 min(520px, 100%);
+  overflow-y: auto;
+  background: var(--card);
+  border-left: 1px solid var(--line);
+  padding: 24px;
+  box-shadow: -12px 0 32px rgb(0 0 0 / 12%);
+}
+
+.detail-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.detail-head h2 {
+  font-size: 18px;
+  margin: 2px 0 0;
+}
+
+.detail .props {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 24px;
+  max-width: none;
+}
+
+.props-head {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 0 0 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+/* Label left, value right. Every property is this shape; what differs is
+   which editor the value side got at compile time. */
+.prop {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 5px 0;
+}
+
+.prop-label {
+  color: var(--muted);
+  font-size: 13px;
+  padding-top: 7px;
+}
+
+.prop-value {
+  min-width: 0;
+}
+
+.prop-value input,
+.prop-value select,
+.prop-value textarea {
+  width: 100%;
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--fg);
+}
+
+.prop-value textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.prop-value input:hover,
+.prop-value select:hover,
+.prop-value textarea:hover {
+  background: var(--bg);
+}
+
+.prop-value input:focus,
+.prop-value select:focus,
+.prop-value textarea:focus {
+  background: var(--bg);
+  border-color: var(--line);
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+/* A derived property has no editor, and should not look as though it is
+   waiting for one. */
+.prop.derived .prop-value {
+  padding: 7px 8px;
+  font-size: 14px;
+}
+
+.unknown {
+  color: var(--muted);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.relation,
+.source {
+  display: inline-block;
+  padding: 7px 8px;
+  font-size: 14px;
+}
+
+.relation {
+  color: var(--accent);
+}
+
+.source {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+.saved {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .prop {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .prop-label {
+    padding-top: 0;
+  }
+
+  .detail {
+    padding: 16px;
+  }
+}
