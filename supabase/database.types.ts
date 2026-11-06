@@ -35,14 +35,14 @@ export type Database = {
           Tables: {
             "applications": {
                   Row: {
-                    "created_at": string,"id": string,"job_id": string,"next_action_at": string | null,"resume_version_id": string | null,"stage_history": NonNullable<Json>,"tier": Database["public"]['Enums']["effort_tier"] | null,"updated_at": string,"user_id": string
+                    "created_at": string,"id": string,"job_id": string,"next_action_at": string | null,"notes": string | null,"resume_version_id": string | null,"stage_history": NonNullable<Json>,"tier": Database["public"]['Enums']["effort_tier"] | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"id"?: string,"job_id": string,"next_action_at"?: string | null,"resume_version_id"?: string | null,"stage_history"?: NonNullable<Json>,"tier"?: Database["public"]['Enums']["effort_tier"] | null,"updated_at"?: string,"user_id": string
+                    "created_at"?: string,"id"?: string,"job_id": string,"next_action_at"?: string | null,"notes"?: string | null,"resume_version_id"?: string | null,"stage_history"?: NonNullable<Json>,"tier"?: Database["public"]['Enums']["effort_tier"] | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "created_at"?: string,"id"?: string,"job_id"?: string,"next_action_at"?: string | null,"resume_version_id"?: string | null,"stage_history"?: NonNullable<Json>,"tier"?: Database["public"]['Enums']["effort_tier"] | null,"updated_at"?: string,"user_id"?: string
+                    "created_at"?: string,"id"?: string,"job_id"?: string,"next_action_at"?: string | null,"notes"?: string | null,"resume_version_id"?: string | null,"stage_history"?: NonNullable<Json>,"tier"?: Database["public"]['Enums']["effort_tier"] | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     {
