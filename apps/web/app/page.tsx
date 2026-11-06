@@ -9,6 +9,7 @@ import {
 import {signOut} from '@/app/actions';
 import {Board, type BoardCard} from '@/app/board';
 import {CreateApplication} from '@/app/create-application';
+import {supabaseConfig} from '@/lib/env';
 import {createClient} from '@/lib/supabase/server';
 import {currentUser} from '@/lib/supabase/user';
 
@@ -117,7 +118,7 @@ export default async function BoardPage() {
         </form>
       </div>
 
-      <CreateApplication />
+      <CreateApplication config={supabaseConfig()} />
 
       <Board cards={cards} now={now} />
     </main>
