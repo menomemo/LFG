@@ -348,6 +348,39 @@ impossible rather than carefully avoided.
   violated it on purpose and confirming seven errors, then deleting the file.
 - **Next time.** Same. A boundary that is only in a document is a boundary that erodes.
 
+### 4.4 Two animations on the same property, and neither one finishes
+
+> **Lesson: when a library animates by measuring the DOM, a stylesheet that animates the
+> same property is not decoration — it is an input to that measurement.**
+
+- **Signal.** The page went white and the console said "maximum update depth exceeded",
+  every time a card was dragged out of a lane that had other cards in it. A single card in
+  a lane was fine, which is what made it look like a data problem rather than a rendering
+  one.
+- **Cause.** Two, and the first hid the second. dnd-kit animates a card that has changed
+  position by measuring it in a layout effect, deriving a transform from where it used to
+  be, and storing that in state. A `transition: transform` rule had been added to the same
+  element to make cards slide: the measurement therefore read a rectangle that was still
+  moving, derived a new transform from it, re-rendered and measured again. Removing the
+  rule did not fix it, because moving a card to a different sortable list triggers the same
+  derivation on every card whose index changed.
+- **Fix.** `animateLayoutChanges: () => false` on the sortable hook, which turns off that
+  derivation entirely, and the stylesheet rule deleted. Nothing was lost: the cards sliding
+  out of the way during a drag are animated by the sorting strategy, which is a different
+  mechanism, and that is the animation anyone actually sees.
+- **Why it was like that.** The brief asked for the transforms to be transitioned so that
+  cards slide rather than snap, and a CSS transition is the obvious way to transition
+  something. It is the right instinct for an element whose position the browser owns, and
+  the wrong one for an element whose position a library is measuring.
+- **Next time.** Before styling an element a drag library controls, find out how it
+  animates. If it measures, the stylesheet does not get to animate the same property — and
+  a render loop in a layout effect is the symptom to expect.
+- **Found the same day.** The same component rendered `aria-describedby` differently on the
+  server and in the browser, because dnd-kit names that element from a counter that starts
+  at zero in each process. A hydration error on every load, fixed by giving the context a
+  fixed `id`. Worth its own line only because it was invisible: the page looked correct,
+  and the attribute that was wrong is one only a screen reader reads.
+
 ---
 
 ## 5. Process as a safety net
@@ -557,6 +590,7 @@ For recall before an interview. Each line is a claim that §-references the evid
 | Test a migration in the order the tooling will apply it                                    | §3.2       |
 | Code and schema deploy on different clocks; expand–contract closes the window              | §3.3       |
 | The property that makes an architecture simple is what makes it slow                       | §4.1       |
+| A library that animates by measuring owns that property; CSS must not touch it             | §4.4       |
 | Optimistic UI is honest only when the client can predict the server                        | §4.1       |
 | Pick tooling for the hardest future consumer                                               | §4.2       |
 | A boundary enforced by lint is real; one in a document erodes                              | §4.3       |
