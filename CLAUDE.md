@@ -31,6 +31,10 @@ records where the project actually is, and it is more current than this section.
 - The schema is complete — fifteen tables, RLS and a 55-test isolation suite — and the
   **application board** is usable: an application is created from one form and moved
   between stages through the UI, with every stage change appended to `stage_history`.
+- A card opens into a **detail view**: stored properties are editable, derived ones are
+  read-only, and there are two note fields. `applications.notes` belongs to the one
+  application; `companies.notes` is the employer's and is shared by every application
+  to that company, which the UI says out loud before the field is edited.
 - Next: parsing a pasted job advert into that form, then insight capture.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
@@ -43,7 +47,7 @@ records where the project actually is, and it is more current than this section.
 **Every time a module is finished, update [docs/progress.md](docs/progress.md) in the same
 pull request** — the Gantt chart, the status table, the "Right now" block and the date. The
 protocol is at the bottom of that file. The point is that the whole picture stays visible:
-which of the 29 tracked items are done, which phase we are in, and which gate is still
+which of the 30 tracked items are done, which phase we are in, and which gate is still
 open. A module is finished when its gate-relevant behaviour works and is tested, not when
 it compiles.
 
