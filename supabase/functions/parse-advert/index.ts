@@ -55,9 +55,22 @@ const MAX_ADVERT_CHARS = 20_000;
 const MODEL = Deno.env.get('JD_PARSER_MODEL') ?? 'claude-haiku-5-5';
 const API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 
-/** Price per million tokens, in USD. Configuration, with the date it was checked. */
-const USD_PER_MTOK_IN = Number(Deno.env.get('JD_PARSER_USD_IN') ?? '1');
-const USD_PER_MTOK_OUT = Number(Deno.env.get('JD_PARSER_USD_OUT') ?? '5');
+/**
+ * Price per million tokens, in USD, for the default model.
+ *
+ * Checked 2026-11-09 against the published rates for `claude-haiku-5-5`, for
+ * prompts under 100K tokens. The first version of this file carried 1 and 5,
+ * written from memory and ten times too high, which would have made every
+ * cost_usd in the ledger overstate the spend by an order of magnitude. The
+ * meter would have been the most confidently wrong thing in the system.
+ *
+ * These are a default for one model, so changing MODEL without changing them
+ * leaves the ledger wrong rather than failing: an override belongs with the
+ * override. A figure with a checked date is what ADR-0004 asks for, and the
+ * same argument applies to a price as to a visa threshold.
+ */
+const USD_PER_MTOK_IN = Number(Deno.env.get('JD_PARSER_USD_IN') ?? '0.10');
+const USD_PER_MTOK_OUT = Number(Deno.env.get('JD_PARSER_USD_OUT') ?? '0.50');
 
 const CORS = {
   'Access-Control-Allow-Origin': Deno.env.get('WEB_ORIGIN') ?? '*',
