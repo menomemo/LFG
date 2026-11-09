@@ -72,9 +72,25 @@ const API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const USD_PER_MTOK_IN = Number(Deno.env.get('JD_PARSER_USD_IN') ?? '0.10');
 const USD_PER_MTOK_OUT = Number(Deno.env.get('JD_PARSER_USD_OUT') ?? '0.50');
 
+/*
+ * The browser's preflight decides whether this function is reachable at all,
+ * and it fails closed on any header the allow-list omits.
+ *
+ * The first version listed `authorization, content-type` -- "only what is
+ * needed" -- and blocked every real call: supabase-js sends `x-client-info`
+ * and `apikey` of its own accord, so the preflight was refused and the
+ * function never ran. A curl OPTIONS request passed throughout, because curl
+ * sends no `Access-Control-Request-Headers` and so asks the browser's
+ * question without asking it. Verifying that the module loads is not
+ * verifying that a browser can call it.
+ *
+ * So this list is the client's, not ours: it has to name every header the
+ * client library sends, whether or not this function reads them.
+ */
 const CORS = {
   'Access-Control-Allow-Origin': Deno.env.get('WEB_ORIGIN') ?? '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
