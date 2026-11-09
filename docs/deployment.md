@@ -166,15 +166,41 @@ keeps model calls out of the web host: a parse takes seconds rather than
 milliseconds, the web host bills execution time, and a provider key placed there is
 readable by every server component in the app.
 
+Both commands below are **remote only** and act on the project `supabase link` pointed
+at in step 2 — so neither takes a project flag. `--project-ref` is `link`'s flag and not
+theirs; for a different project these take `--remote=<ref>` instead. Confirm which project
+is linked before running them, because the whole point of a flagless command is that it
+does not say out loud what it is about to change:
+
 ```bash
-npx supabase functions deploy parse-advert --project-ref <your-ref>
+cat supabase/.temp/project-ref
+```
+
+```bash
+npx supabase functions deploy parse-advert
+```
+
+That bundles with Docker. If Docker is not running, or it fails in it, bundle server-side
+instead — same result, no local container:
+
+```bash
+npx supabase functions deploy parse-advert --use-api
 ```
 
 Then set its secrets, **in Supabase and not in Netlify**:
 
 ```bash
-npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref <your-ref>
+npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 ```
+
+**The one thing most likely to go wrong** is not a flag. `index.ts` imports
+`packages/core` from three directories above `supabase/functions/`, which is further out
+than Supabase's own convention (`_shared/`, a sibling inside `functions/`). The bundler
+follows the import graph, so it should pull those files in, and `deno check` proves they
+resolve on disk — but resolving locally and being uploaded are two different things. If
+the deploy succeeds and the function then answers 500 with a module-not-found, that is
+this and not the key. The `database.types.ts` import is `import type`, so it is erased
+before bundling and cannot cause it.
 
 | Secret                 | Where                               | Notes                                                                                                                       |
 | ---------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -187,9 +213,22 @@ npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref <your-ref>
 **Never set `ANTHROPIC_API_KEY` in Netlify.** Nothing in `apps/web` reads it, and a web
 surface that can reach it is a web surface that can leak it.
 
-Check it from the deployed site: paste an advert into the box above the create form. Then
-confirm the meter actually recorded the spend, because a parse that works and does not
-meter is the failure this design exists to prevent:
+Check the function exists before opening the site, because the two failures look
+different and only one of them is yours to fix:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://<your-ref>.supabase.co/functions/v1/parse-advert -H 'content-type: application/json' -d '{"advert":"x"}'
+```
+
+| Code  | Means                                                                    |
+| ----- | ------------------------------------------------------------------------ |
+| `404` | Not deployed. The deploy did not happen or went to another project       |
+| `401` | Deployed, and refusing an unauthenticated caller — which is correct here |
+| `503` | Deployed, but `ANTHROPIC_API_KEY` is not set                             |
+
+Then paste an advert into the box above the create form on the site. Then confirm the
+meter actually recorded the spend, because a parse that works and does not meter is the
+failure this design exists to prevent:
 
 ```sql
 select plugin, task, model, tokens_in, tokens_out, cost_usd, created_at
