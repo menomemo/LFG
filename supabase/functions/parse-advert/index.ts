@@ -102,9 +102,12 @@ function json(body: unknown, status: number): Response {
 }
 
 interface ModelCall {
+  /** Every text block joined. Empty when the model produced none. */
   readonly text: string;
   readonly tokensIn: number;
   readonly tokensOut: number;
+  /** Why generation stopped, for an error that has to explain itself. */
+  readonly stopReason: string;
 }
 
 /**
@@ -140,7 +143,15 @@ async function callModel(
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 1024,
+      /* Has to cover the thinking tokens as well as the JSON, because
+         thinking counts against this budget. At 1024 a thinking model can
+         spend the whole allowance before writing a single field, and the
+         response then comes back with no text block at all. */
+      max_tokens: 4096,
+      /* Mechanical extraction from text that is in hand. Low effort is what
+         this workload wants: fewer thinking tokens, lower latency, and no
+         judgement being asked for that the prompt has not already made. */
+      output_config: {effort: 'low'},
       system: jobAdvertPrompt(),
       messages: [{role: 'user', content: user}],
     }),
@@ -151,15 +162,37 @@ async function callModel(
   }
 
   const body = await response.json();
-  const text = body?.content?.[0]?.text;
-  if (typeof text !== 'string') {
-    throw new Error('The model provider returned no text.');
-  }
 
+  /* The answer is not necessarily content[0].
+     Thinking is on by default on the models this runs against, so the first
+     block is usually a thinking block -- and with the default display it
+     carries an empty string. `content[0].text` is the shape from before
+     thinking existed: it finds nothing, and finds it silently.
+     Every text block, joined, is the shape that keeps working. */
+  const blocks: readonly unknown[] = Array.isArray(body?.content)
+    ? (body.content as readonly unknown[])
+    : [];
+  const text = blocks
+    .filter((block): block is {type: string; text: string} => {
+      if (typeof block !== 'object' || block === null) {
+        return false;
+      }
+      const candidate = block as {type?: unknown; text?: unknown};
+      return candidate.type === 'text' && typeof candidate.text === 'string';
+    })
+    .map((block) => block.text)
+    .join('');
+
+  /* Returned rather than thrown, even when empty. A throw here skipped the
+     caller's `spent +=` lines, so a call that consumed tokens and produced
+     no usable text went unmetered -- money spent and nothing in the ledger,
+     which is the one hole llm_usage exists to close. */
   return {
     text,
     tokensIn: Number(body?.usage?.input_tokens ?? 0),
     tokensOut: Number(body?.usage?.output_tokens ?? 0),
+    stopReason:
+      typeof body?.stop_reason === 'string' ? body.stop_reason : 'unknown',
   };
 }
 
@@ -282,6 +315,18 @@ Deno.serve(async (request: Request): Promise<Response> => {
       const call = await callModel(advert, problems);
       spentIn += call.tokensIn;
       spentOut += call.tokensOut;
+
+      /* No text is a failed attempt, not a crash: the tokens above are
+         already counted, and the retry gets to say what went wrong. The stop
+         reason is in the message because "no text" has several causes that
+         need different fixes -- `max_tokens` means thinking used the budget,
+         `refusal` means the request was declined. */
+      if (call.text === '') {
+        problems = [
+          `The model returned no text (stop_reason: ${call.stopReason}).`,
+        ];
+        continue;
+      }
 
       const result = parseJobAdvert(readJson(call.text), advert);
       if (result.ok) {
