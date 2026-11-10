@@ -180,7 +180,7 @@ async function callModel(
       const candidate = block as {type?: unknown; text?: unknown};
       return candidate.type === 'text' && typeof candidate.text === 'string';
     })
-    .map((block) => block.text)
+    .map(block => block.text)
     .join('');
 
   /* Returned rather than thrown, even when empty. A throw here skipped the
