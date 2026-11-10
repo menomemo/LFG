@@ -213,8 +213,20 @@ before bundling and cannot cause it.
 **Never set `ANTHROPIC_API_KEY` in Netlify.** Nothing in `apps/web` reads it, and a web
 surface that can reach it is a web surface that can leak it.
 
-Check the function exists before opening the site, because the two failures look
-different and only one of them is yours to fix:
+**Check the CORS contract first.** This is the one failure a status code cannot show you:
+
+```bash
+scripts/check-function-cors.sh $(cat supabase/.temp/project-ref)
+```
+
+It asks for the headers `supabase-js` actually sends and checks each one against the
+allow-list that comes back. The server answers `200` whatever it allows — the browser then
+compares the two itself and refuses the request client-side, so nothing on the wire looks
+wrong. On 2026-11-09 the parser was unreachable from the browser for its whole first day
+behind a `200`, and the script exists because of that day.
+
+Then check the function exists, because the remaining failures look different and only
+some of them are yours to fix:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://<your-ref>.supabase.co/functions/v1/parse-advert -H 'content-type: application/json' -d '{"advert":"x"}'
