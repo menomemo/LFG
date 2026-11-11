@@ -42,6 +42,12 @@ records where the project actually is, and it is more current than this section.
   answers ([ADR-0009](docs/adr/0009-run-model-calls-from-supabase-not-the-web-host.md)).
   Fields the advert does not establish come back blank and named; an invented domain or
   URL is dropped. About $0.0002 a parse.
+- **ATS polling works.** A company carrying an `ats_type` and an `ats_slug` is one whose
+  board is read — Greenhouse, Lever and Ashby, all public JSON, no key and no scraping. A
+  posting that survives the market and title filter in `packages/core` becomes a `jobs` row
+  with no application, and that list is where applying now starts
+  ([ADR-0010](docs/adr/0010-poll-ats-boards-and-store-leads-as-jobs.md)). It runs when the
+  button is pressed; the schedule is cut and recorded in [docs/roadmap.md](docs/roadmap.md).
 - Next: insight capture.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.

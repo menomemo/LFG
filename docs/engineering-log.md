@@ -312,6 +312,44 @@ impossible rather than carefully avoided.
 
 ---
 
+### 3.4 A unique index the one statement that needed it could not use
+
+> **Lesson: an index is only usable by the statements that can infer it. A partial unique
+> index cannot be inferred by `ON CONFLICT` unless the statement repeats its predicate —
+> and PostgREST cannot write that predicate.**
+
+- **Signal.** The first real poll of three company job boards reported, in the UI,
+  `Monzo — there is no unique or exclusion constraint matching the ON CONFLICT
+specification`. Stripe said the same. Only Wise reported success, and it had kept zero
+  postings.
+- **Cause.** `jobs` had carried a unique index on `(user_id, source_url)` since
+  `20261105090000`, written `where source_url is not null`. The poller stores postings with
+  `on conflict (user_id, source_url) do nothing`, so that a role seen on a second run is
+  skipped. Postgres will only infer a **partial** unique index for `ON CONFLICT` if the
+  statement repeats the index's predicate, and the `on_conflict` parameter PostgREST
+  exposes can only name columns. The index existed, matched on columns, and was unusable by
+  the one statement that depended on it.
+- **Why the predicate was there, and why dropping it is not a weakening.** In a
+  multi-column unique index Postgres treats two rows as distinct if any indexed column is
+  null, so `(user_id, null)` never conflicts with anything either way. The predicate bought
+  a smaller index and nothing else. `20261111160000` drops it; the rule it encodes — one job
+  per source URL per user — is unchanged.
+- **What hid it.** The only board that reached the insert at all had kept nothing, and the
+  store function returns before the insert when there is nothing to store. So the single
+  company that reported success was the only one that never exercised the broken path.
+  Three failures and one vacuous success read, in aggregate, as a working feature.
+- **What found it.** Not a test. The first version of the poll summary said
+  `4 boards read, nothing new` — it summed the per-company results and never looked at their
+  `problem` field. That sentence was true in every word and wrong as a whole: three of the
+  four boards had failed outright. Changing the UI to name each failing board, which was a
+  correction to a different defect, surfaced this one on the next click.
+- **Next time.** A per-item operation reports per-item outcomes before it reports a total.
+  A total is a summary of outcomes that were individually visible, never a replacement for
+  them — the aggregate of "failed, failed, failed, nothing found" must not be allowed to
+  render as "nothing found".
+
+---
+
 ## 4. Architecture: what each choice bills you for
 
 ### 4.1 The server owns the truth, and the bill is a round trip per write
@@ -691,6 +729,8 @@ For recall before an interview. Each line is a claim that §-references the evid
 | Derived state buys retroactive analysis and sells write latency                            | §3.1, §4.1 |
 | Test a migration in the order the tooling will apply it                                    | §3.2       |
 | Code and schema deploy on different clocks; expand–contract closes the window              | §3.3       |
+| A partial unique index cannot be inferred by `ON CONFLICT`                                 | §3.4       |
+| A total must never be allowed to stand in for the per-item outcomes it summarises          | §3.4       |
 | The property that makes an architecture simple is what makes it slow                       | §4.1       |
 | A library that animates by measuring owns that property; CSS must not touch it             | §4.4       |
 | Optimistic UI is honest only when the client can predict the server                        | §4.1       |

@@ -9,6 +9,7 @@ import {
 import {signOut} from '@/app/actions';
 import {Board, type BoardCard} from '@/app/board';
 import {CreateApplication} from '@/app/create-application';
+import {Discover, type Lead, type WatchedCompany} from '@/app/discover';
 import {supabaseConfig} from '@/lib/env';
 import {createClient} from '@/lib/supabase/server';
 import {currentUser} from '@/lib/supabase/user';
@@ -65,6 +66,74 @@ export default async function BoardPage() {
     throw new Error(`Could not load applications: ${error.message}`);
   }
 
+  /* The two reads that board polling needs, beside the board's own.
+     Separate queries rather than one nested select because they answer
+     different questions and neither is a property of an application:
+     which boards are watched, and which discovered roles have not become
+     one (ADR-0010). Neither filters by user id -- row-level security does
+     (ADR-0002). */
+  const watchedRows = await supabase
+    .from('companies')
+    .select('id, name, ats_type, ats_slug, ats_checked_at')
+    .not('ats_type', 'is', null)
+    .not('ats_slug', 'is', null)
+    .order('name');
+
+  if (watchedRows.error) {
+    throw new Error(
+      `Could not load watched boards: ${watchedRows.error.message}`,
+    );
+  }
+
+  /* A lead is a shape, not a table: a job with no application. The nested
+     `applications ( id )` is how that is asked -- PostgREST has no
+     "where not exists" -- and the emptiness is checked here rather than
+     being trusted to a filter that would silently include a job whose
+     application belongs to the relation but not to the array. */
+  const leadRows = await supabase
+    .from('jobs')
+    .select(
+      `id,
+       title,
+       region,
+       source_url,
+       posted_at,
+       dismissed_at,
+       created_at,
+       companies!inner ( name ),
+       applications ( id )`,
+    )
+    .order('posted_at', {ascending: false, nullsFirst: false})
+    .order('created_at', {ascending: false});
+
+  if (leadRows.error) {
+    throw new Error(`Could not load found roles: ${leadRows.error.message}`);
+  }
+
+  const watched: readonly WatchedCompany[] = watchedRows.data.map(row => ({
+    id: row.id,
+    name: row.name,
+    /* Non-null without a fallback, and not by assumption: the query's own
+       `.not(..., 'is', null)` filters narrow these in the generated types,
+       so lint refuses a default here as unreachable. */
+    ats: row.ats_type,
+    slug: row.ats_slug,
+    checkedAt:
+      row.ats_checked_at === null ? null : new Date(row.ats_checked_at),
+  }));
+
+  const leads: readonly Lead[] = leadRows.data
+    .filter(row => row.applications.length === 0)
+    .map(row => ({
+      id: row.id,
+      title: row.title,
+      company: row.companies.name,
+      region: row.region,
+      sourceUrl: row.source_url,
+      postedAt: row.posted_at === null ? null : new Date(row.posted_at),
+      dismissed: row.dismissed_at !== null,
+    }));
+
   const cards: readonly BoardCard[] = data.map(row => {
     const requirement = parseLanguageRequirement(row.jobs.language_required);
     const resume = row.resume_versions;
@@ -119,6 +188,13 @@ export default async function BoardPage() {
       </div>
 
       <CreateApplication config={supabaseConfig()} />
+
+      <Discover
+        config={supabaseConfig()}
+        watched={watched}
+        leads={leads}
+        now={now}
+      />
 
       <Board cards={cards} now={now} />
     </main>
