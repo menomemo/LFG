@@ -108,3 +108,6 @@ export type {
   BoardReading,
   BoardCriteria,
 } from './jobs/board.ts';
+
+export {parseCompanyWatch} from './companies/watch.ts';
+export type {CompanyWatch, CompanyWatchFields} from './companies/watch.ts';

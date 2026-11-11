@@ -528,3 +528,113 @@ select {
   font-size: 13px;
   color: var(--muted);
 }
+
+/* Board watching and what it turned up. Styled as a sibling of .create
+   rather than inside it: adding an application and discovering one are two
+   acts, and the second one ends in the first. */
+.discover {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 12px 16px;
+  margin: 0 0 24px;
+}
+
+.discover summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.discover form {
+  display: block;
+  max-width: none;
+  margin-top: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.discover > button {
+  margin-top: 12px;
+}
+
+/* The watched boards: one line each, because the list is reference material
+   and a card for every row would bury the two lines that matter. */
+.watched {
+  margin: 16px 0 0;
+}
+
+.watched li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+}
+
+.watched .meta {
+  flex: 1;
+}
+
+.leads-head {
+  margin: 20px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.leads {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.leads li {
+  padding: 10px 12px;
+}
+
+.leads .role {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.leads .role a {
+  color: inherit;
+}
+
+.lead-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Passed over, and still here. Dimmed rather than hidden: the row is kept so
+   that the next poll does not rediscover it, and a row with no visible
+   consequence is one nobody trusts
+   (supabase/migrations/20261111150000). */
+.leads.dismissed {
+  margin-top: 10px;
+  opacity: 0.6;
+}
+
+/* Boards that could not be read, named one per line. Not styled as an error:
+   a wrong slug and a company that moved providers are both ordinary, and
+   both need the name of the company to be actionable. */
+.failures {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.failures li {
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}

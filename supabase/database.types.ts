@@ -209,14 +209,14 @@ isOneToOne: false
                   ]
                 },"jobs": {
                   Row: {
-                    "company_id": string,"created_at": string,"id": string,"jd_text": string | null,"language_required": Json | null,"posted_at": string | null,"region": Database["public"]['Enums']["region"],"source_url": string | null,"title": string,"updated_at": string,"user_id": string,"visa_sponsorship": Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source": string | null,"work_mode": Database["public"]['Enums']["work_mode"] | null
+                    "company_id": string,"created_at": string,"dismissed_at": string | null,"id": string,"jd_text": string | null,"language_required": Json | null,"posted_at": string | null,"region": Database["public"]['Enums']["region"],"source_url": string | null,"title": string,"updated_at": string,"user_id": string,"visa_sponsorship": Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source": string | null,"work_mode": Database["public"]['Enums']["work_mode"] | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "company_id": string,"created_at"?: string,"id"?: string,"jd_text"?: string | null,"language_required"?: Json | null,"posted_at"?: string | null,"region": Database["public"]['Enums']["region"],"source_url"?: string | null,"title": string,"updated_at"?: string,"user_id": string,"visa_sponsorship"?: Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source"?: string | null,"work_mode"?: Database["public"]['Enums']["work_mode"] | null
+                    "company_id": string,"created_at"?: string,"dismissed_at"?: string | null,"id"?: string,"jd_text"?: string | null,"language_required"?: Json | null,"posted_at"?: string | null,"region": Database["public"]['Enums']["region"],"source_url"?: string | null,"title": string,"updated_at"?: string,"user_id": string,"visa_sponsorship"?: Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source"?: string | null,"work_mode"?: Database["public"]['Enums']["work_mode"] | null
                   }
                   Update: {
-                    "company_id"?: string,"created_at"?: string,"id"?: string,"jd_text"?: string | null,"language_required"?: Json | null,"posted_at"?: string | null,"region"?: Database["public"]['Enums']["region"],"source_url"?: string | null,"title"?: string,"updated_at"?: string,"user_id"?: string,"visa_sponsorship"?: Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source"?: string | null,"work_mode"?: Database["public"]['Enums']["work_mode"] | null
+                    "company_id"?: string,"created_at"?: string,"dismissed_at"?: string | null,"id"?: string,"jd_text"?: string | null,"language_required"?: Json | null,"posted_at"?: string | null,"region"?: Database["public"]['Enums']["region"],"source_url"?: string | null,"title"?: string,"updated_at"?: string,"user_id"?: string,"visa_sponsorship"?: Database["public"]['Enums']["sponsorship"],"visa_sponsorship_source"?: string | null,"work_mode"?: Database["public"]['Enums']["work_mode"] | null
                   }
                   Relationships: [
                     {

@@ -9,12 +9,14 @@ import {
   isApplicationStage,
   parseApplicationDraft,
   parseApplicationEdit,
+  parseCompanyWatch,
   parseStageHistory,
   reject,
   serialiseStageHistory,
   type ApplicationDraftFields,
   type CompanyDraft,
   type JobDraft,
+  type Region,
   type Validated,
 } from '@lfg/core';
 
@@ -23,6 +25,10 @@ import {
   EMPTY_CREATE_FORM,
   type CreateApplicationState,
 } from '@/app/create-application-state';
+import {
+  EMPTY_WATCH_FORM,
+  type WatchCompanyState,
+} from '@/app/watch-company-state';
 import {createClient} from '@/lib/supabase/server';
 import {currentUser} from '@/lib/supabase/user';
 import type {Database} from '@lfg/database';
@@ -83,27 +89,64 @@ export async function signOut(): Promise<void> {
  * No query here filters by `user_id`. Row-level security does that, and a
  * query that filters in code is a query that can forget to (ADR-0002).
  */
+/** The company columns every lookup here needs. */
+const COMPANY_COLUMNS = 'id, name, regions';
+
+interface CompanyRow {
+  readonly id: string;
+  readonly name: string;
+  readonly regions: readonly Region[];
+}
+
+/**
+ * Finds the company a display name refers to, or reports that there is none.
+ *
+ * Kept in one function because of the subtlety in the middle of it: `ilike`
+ * treats `%` and `_` as wildcards, so the pattern match is only a prefilter
+ * and the exact comparison after it is the actual rule. A company called
+ * `C_` must not attach a role to a company called `Co`. Both the create form
+ * and the watch form reach this, and a second copy would be a second chance
+ * to forget the confirmation.
+ */
+async function companyByName(
+  supabase: Client,
+  name: string,
+): Promise<Validated<CompanyRow | null>> {
+  const {data, error} = await supabase
+    .from('companies')
+    .select(COMPANY_COLUMNS)
+    .ilike('name', name);
+
+  if (error) {
+    return reject([`Could not look up the company: ${error.message}`]);
+  }
+  const found = data.find(row => row.name.toLowerCase() === name.toLowerCase());
+  return accept(found ?? null);
+}
+
 async function findOrCreateCompany(
   supabase: Client,
   userId: string,
   company: CompanyDraft,
 ): Promise<Validated<string>> {
-  const query = supabase.from('companies').select('id, name, regions');
-  const match =
-    company.domain === null
-      ? await query.ilike('name', company.name)
-      : await query.eq('domain', company.domain);
+  let existing: CompanyRow | undefined;
 
-  if (match.error) {
-    return reject([`Could not look up the company: ${match.error.message}`]);
+  if (company.domain === null) {
+    const byName = await companyByName(supabase, company.name);
+    if (!byName.ok) {
+      return byName;
+    }
+    existing = byName.value ?? undefined;
+  } else {
+    const match = await supabase
+      .from('companies')
+      .select(COMPANY_COLUMNS)
+      .eq('domain', company.domain);
+    if (match.error) {
+      return reject([`Could not look up the company: ${match.error.message}`]);
+    }
+    existing = match.data[0];
   }
-
-  const existing =
-    company.domain === null
-      ? match.data.find(
-          row => row.name.toLowerCase() === company.name.toLowerCase(),
-        )
-      : match.data[0];
 
   if (existing !== undefined) {
     /* `regions` answers which of our markets this company hires in, so a
@@ -474,4 +517,220 @@ export async function updateApplication(
 
   revalidatePath('/');
   return {problem: null, saved: previous.saved + 1};
+}
+
+/**
+ * Starts watching a company's ATS board.
+ *
+ * ADR-0010: a company row carrying both `ats_type` and `ats_slug` is one the
+ * poller reads. There is no separate watch list and no `watch` flag — this
+ * action writes those two columns onto the company, and that is the whole
+ * subscription.
+ *
+ * It reuses the company if there is one, which is the point of going through
+ * {@link companyByName}: watching a board for an employer already on the
+ * board must not create a second employer with its own research profile and
+ * its own notes.
+ *
+ * A new company is created with no markets. `companies.regions` answers
+ * which of our markets this employer hires in, and watching a board is not
+ * evidence about that — the postings the poll finds are. An empty array here
+ * is "not known yet", and the first application fills it in
+ * (CLAUDE.md rule 8).
+ */
+export async function watchCompany(
+  previous: WatchCompanyState,
+  formData: FormData,
+): Promise<WatchCompanyState> {
+  const attempt = previous.attempt + 1;
+  const fields = {
+    name: readField(formData, 'name'),
+    ats: readField(formData, 'ats'),
+    board: readField(formData, 'board'),
+  };
+  const refused = (problems: readonly string[]): WatchCompanyState => ({
+    problem: problems.join(' '),
+    fields,
+    attempt,
+    watching: null,
+  });
+
+  const parsed = parseCompanyWatch(fields);
+  if (!parsed.ok) {
+    return refused(parsed.problems);
+  }
+  const {name, ats, slug} = parsed.value;
+
+  const supabase = await createClient();
+  const user = await currentUser();
+  if (!user) {
+    redirect('/login');
+  }
+
+  const existing = await companyByName(supabase, name);
+  if (!existing.ok) {
+    return refused(existing.problems);
+  }
+
+  if (existing.value !== null) {
+    /* `ats_checked_at` is deliberately not cleared. It records when this
+       board was last read, and pointing the row at a different slug does not
+       un-read it — what it means afterwards is "last looked, under whatever
+       settings were current then", which is the truth. */
+    const {error} = await supabase
+      .from('companies')
+      .update({ats_type: ats, ats_slug: slug})
+      .eq('id', existing.value.id)
+      .select('id');
+    if (error) {
+      return refused([`Could not save the board: ${error.message}`]);
+    }
+  } else {
+    const {error} = await supabase.from('companies').insert({
+      user_id: user.id,
+      name,
+      ats_type: ats,
+      ats_slug: slug,
+      regions: [],
+    });
+    if (error) {
+      return refused([`Could not save the company: ${error.message}`]);
+    }
+  }
+
+  revalidatePath('/');
+  return {...EMPTY_WATCH_FORM, attempt, watching: name};
+}
+
+/**
+ * Stops watching a company's board.
+ *
+ * Both columns are cleared together, because either one alone is a row that
+ * looks half-configured and the poller's own condition is that both are
+ * present. The company itself stays: it may have applications, notes and
+ * research hanging off it, none of which are about its board.
+ */
+export async function unwatchCompany(
+  formData: FormData,
+): Promise<string | null> {
+  const id = readField(formData, 'companyId').trim();
+  if (id === '') {
+    return 'The form did not say which company to stop watching.';
+  }
+
+  const supabase = await createClient();
+  const {data, error} = await supabase
+    .from('companies')
+    .update({ats_type: null, ats_slug: null})
+    .eq('id', id)
+    .select('id');
+
+  if (error) {
+    return `Could not stop watching: ${error.message}`;
+  }
+  if (data.length === 0) {
+    /* An update matching no row succeeds and changes nothing, which is what
+       row-level security does to someone else's row. */
+    return 'That company could not be changed.';
+  }
+
+  revalidatePath('/');
+  return null;
+}
+
+/**
+ * Puts a discovered role on the board.
+ *
+ * The job row already exists — the poll wrote it (ADR-0010) — so this writes
+ * only the application, at `saved`, which is what a role you have not yet
+ * applied for is. Nothing about the job is changed: the title, link and
+ * market came from the company's own board and are not improved by being
+ * copied.
+ *
+ * The existence check is not belt-and-braces. The lead list is a snapshot,
+ * and two clicks on one card, or a click on a card the list still shows after
+ * another tab adopted it, would otherwise be two applications to one job —
+ * and the second one is invisible on a board that shows one card per
+ * application.
+ */
+export async function adoptLead(formData: FormData): Promise<string | null> {
+  const jobId = readField(formData, 'jobId').trim();
+  if (jobId === '') {
+    return 'The form did not say which lead to add.';
+  }
+
+  const supabase = await createClient();
+  const user = await currentUser();
+  if (!user) {
+    redirect('/login');
+  }
+
+  const already = await supabase
+    .from('applications')
+    .select('id')
+    .eq('job_id', jobId)
+    .limit(1);
+  if (already.error) {
+    return `Could not check the lead: ${already.error.message}`;
+  }
+  if (already.data.length > 0) {
+    return 'That role is already on the board.';
+  }
+
+  /* The clock is read here, at the boundary, and passed inwards (ADR-0003). */
+  const history = appendStageEvent([], 'saved', new Date());
+  if (!history.ok) {
+    return history.problems.join(' ');
+  }
+
+  const {error} = await supabase.from('applications').insert({
+    user_id: user.id,
+    job_id: jobId,
+    stage_history: [...serialiseStageHistory(history.value)],
+  });
+  if (error) {
+    return `Could not add the lead: ${error.message}`;
+  }
+
+  revalidatePath('/');
+  return null;
+}
+
+/**
+ * Dismisses a lead, or brings it back.
+ *
+ * One action for both directions so that undoing is the same code path as
+ * doing, rather than a second one that can disagree with it.
+ *
+ * The row is marked, never deleted. The poller deduplicates on
+ * `(user_id, source_url)`, so a deleted lead is one the next run cannot tell
+ * it has already shown — and the posting the author has decided about twice
+ * would be the one that keeps coming back
+ * (supabase/migrations/20261111150000).
+ */
+export async function setLeadDismissed(
+  formData: FormData,
+): Promise<string | null> {
+  const jobId = readField(formData, 'jobId').trim();
+  if (jobId === '') {
+    return 'The form did not say which lead to change.';
+  }
+  const dismissed = readField(formData, 'dismissed') === 'true';
+
+  const supabase = await createClient();
+  const {data, error} = await supabase
+    .from('jobs')
+    .update({dismissed_at: dismissed ? new Date().toISOString() : null})
+    .eq('id', jobId)
+    .select('id');
+
+  if (error) {
+    return `Could not change the lead: ${error.message}`;
+  }
+  if (data.length === 0) {
+    return 'That lead could not be changed.';
+  }
+
+  revalidatePath('/');
+  return null;
 }
