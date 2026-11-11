@@ -32,6 +32,14 @@ and one real plugin end to end.
 
 **Gate:** four consecutive weeks with every application in the system and no spreadsheet.
 
+**Scope cut 2026-11-11.** ATS polling ships as a button, not a schedule. A schedule has
+no user, so it needs the service key, which [ADR-0002](adr/0002-use-supabase-as-the-primary-datastore.md)
+permits only for scheduler plugins passing an explicit user context — a larger decision
+than this function. Running it by hand first is also how the relevance filter gets tuned
+against real boards before anything runs unattended: a posting it wrongly discards leaves
+no trace, and that is a bad property to automate before it has been watched. The schedule
+is the next step, not an abandoned one.
+
 **Reordered 2026-11-06.** The detail view was not in this list and `jd-parser` was next.
 The author used the board, found there was nowhere to put what they knew about an
 application, and asked for the detail view first. It jumps the queue because it serves the
