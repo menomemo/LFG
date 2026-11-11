@@ -187,6 +187,64 @@ impossible rather than carefully avoided.
 
 ---
 
+### 2.4 A verification that lies on the path it was written to check
+
+> **Lesson: a check that cannot tell "no answer" from "the wrong answer" will report the
+> wrong answer confidently. Exercise the failure path, not only the success path.**
+
+- **Signal.** Shipping the JD parser took five days and four production deploys. The real
+  defects took minutes to fix once seen. What consumed the days was a sequence of checks
+  that returned a confident, wrong verdict on a case their author had not considered.
+- **Cause.** Four instances, same shape.
+
+  | Check                                                       | Case it did not consider                                                                                                                            | What it reported                                                           |
+  | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+  | `curl -X OPTIONS` to prove the CORS contract                | The server answers `200` whatever it allows; the browser compares the asked-for headers with the returned allow-list and refuses the request itself | "The function is reachable." It was unreachable from any browser for a day |
+  | `grep` for the paste box in the served HTML                 | The box is on the authenticated board page, and the check looked at `/login`                                                                        | "The front end did not deploy." It had                                     |
+  | `cut -d= -f1` to confirm a secret file's shape              | A line with no `=` at all — the exact malformed case being looked for                                                                               | Printed the whole line, which was the credential                           |
+  | `sha256` comparison of a key file against the stored digest | The file not existing; `cut` failed to stderr and the pipeline hashed empty input                                                                   | "This is a different key." It was the same key, and the file was gone      |
+
+  The last two are the instructive pair: both were written _because_ something had gone
+  wrong, and both failed in the situation they existed to detect.
+
+- **Fix.** `scripts/check-function-cors.sh` performs the comparison a browser performs —
+  it asks for every header the client library sends and names the ones missing from the
+  response — and exits non-zero when there is no response, no allow-list header, or a
+  missing entry. The three failure paths are the three the previous check could not see.
+- **Why it was like that.** Each check was written to confirm something that had just been
+  built, with attention on the behaviour being confirmed rather than on what the check
+  would do if its input were absent, empty or malformed. A check is a program, and the
+  failure paths of a verification program are exactly the paths it runs on when something
+  is wrong — which is the only time anyone reads its output.
+- **Next time.** Before trusting a check, run it against a known-bad input and confirm it
+  fails. For a check that reads a file or a command's output, assert the input exists
+  before interpreting it; a pipeline that hashes, counts or greps missing data produces a
+  number, and a number looks like an answer. Where the real consumer is a browser, a
+  database or another service, the check has to be that consumer or ask its question
+  exactly — `200` from a server says nothing about what a browser does with the response.
+
+### 2.5 Claiming a check that was not run
+
+> **Lesson: the cost of asserting a verification you skipped is paid by whoever believes
+> you.**
+
+- **Signal.** A pull request stating "`npm run check` green"; CI refused the merge on
+  Prettier formatting.
+- **Cause.** The change was to a Deno file, verified with `deno check` and `deno lint`,
+  both of which passed. Two formatters apply to that path — `eslint.config.mjs` ignores
+  `supabase/functions` because it is Deno, Prettier does not — so a passing `deno lint`
+  said nothing about Prettier, and the file had been edited by a script that never
+  formatted it. The claim was written from the shape of the work rather than from a
+  command's output.
+- **Fix.** Ran it, fixed the formatting, and left the correction as a comment on the pull
+  request rather than editing the description, so the record shows what was claimed.
+- **Why it was like that.** Writing the verification section of a pull request alongside
+  the code invites describing intent rather than result.
+- **Next time.** The verification section gets filled in from a terminal, after the fact,
+  or it says what was not run. Branch protection caught this one — it exists because
+  `gh pr merge` landed two pull requests while CI was still running (§5.2), which is an
+  earlier instance of the same habit: trusting a state instead of reading it.
+
 ## 3. Schema evolution against a running system
 
 ### 3.1 Derived state instead of stored state
@@ -382,6 +440,50 @@ impossible rather than carefully avoided.
   and the attribute that was wrong is one only a screen reader reads.
 
 ---
+
+### 4.5 Every defect in the first model call was in the adapter
+
+> **Lesson: the layer that "just moves bytes" is where a model integration breaks. Read the
+> response shape from the reference; a throw on a billable call is an unmetered spend.**
+
+- **Signal.** Three deploys, three different errors, before one advert parsed:
+  `The advert could not be read` → `The model provider answered 401.` →
+  `The model provider returned no text.`
+- **Cause.** Nothing was wrong with `packages/core`, the response contract, the versioned
+  prompt, the grounding checks or the board. Every fault was in the Edge Function:
+  - A CORS allow-list naming the headers the _function reads_ rather than the headers the
+    _client sends_, so `supabase-js`'s `x-client-info` was refused and the function never
+    ran (§2.4).
+  - A bad provider key, which took a detour because the first diagnosis was a guess: a
+    `sk-ant-usr-` prefix was asserted to be unusable as an API key. It is usable. The guess
+    sent the search in the wrong direction and produced the broken key that followed.
+  - `body.content[0].text`. Thinking is on by default on the models this calls, so the
+    first block is usually a thinking block whose text is empty under the default display.
+    That expression is the response shape from before thinking existed: it finds nothing,
+    silently. Written from memory with a reference to hand.
+  - `max_tokens: 1024` with thinking counting against it — the same symptom, a second
+    cause. The error now names `stop_reason` so `max_tokens`, `refusal` and an empty
+    `end_turn` stop being one message.
+  - **The one that mattered most:** `callModel` threw on a missing text, which skipped the
+    caller's `spent += call.tokens` lines. A call that consumed tokens and produced nothing
+    usable was never written to `llm_usage` — money spent, ledger silent, inside the
+    function built to prevent exactly that.
+- **Fix.** Join every `text` block; return usage from the call even when the text is empty
+  and treat "no text" as a failed attempt the retry is told about, so tokens are counted
+  before anything can fail; `effort: low`, since this is mechanical extraction from text
+  already in hand.
+- **Why it was like that.** `core` was written against its own tests and was correct from
+  the first run. The adapter was written against a remembered API, had no tests because it
+  is I/O, and was verified by checks that could not see their own failure paths (§2.4). The
+  split in defect density follows the split in how the two were verified, not their
+  difficulty.
+- **Next time.** Read the provider's current response shape from the reference before
+  writing the call, not after it fails. Treat every exit from a billable call as a place
+  the meter must already have been written — if a `throw` can skip it, the meter is a
+  convention and not a structure. And when the error message is the only instrument,
+  invest in it first: each of the three errors above was only as informative as the layer
+  beneath it allowed, and the first one pointed at the advert while the cause was a header
+  list.
 
 ## 5. Process as a safety net
 
@@ -598,6 +700,12 @@ For recall before an interview. Each line is a claim that §-references the evid
 | A check that can be skipped by accident will be                                            | §5.2       |
 | "Done" is measured against the written definition, not the built thing                     | §5.3       |
 | Structural checks cannot see drift in meaning; detect the cause                            | §5.4       |
+| A check that cannot tell "no answer" from "wrong answer" reports the wrong one             | §2.4       |
+| Exercise a verification's failure path; it is the only path anyone reads output on         | §2.5, §2.4 |
+| A `200` from a server says nothing about what a browser does with the response             | §2.4, §6.2 |
+| Claiming a check you skipped is paid for by whoever believes you                           | §2.5       |
+| Read the response shape from the reference, not from memory                                | §4.5       |
+| A throw on a billable call is an unmetered spend                                           | §4.5       |
 | A portability claim is a belief until you are forced to use it                             | §6.1       |
 | A status code tells you which layer answered                                               | §6.2       |
 | Two hosts can require exactly inverted settings                                            | §6.3       |
