@@ -35,14 +35,14 @@ records where the project actually is, and it is more current than this section.
   read-only, and there are two note fields. `applications.notes` belongs to the one
   application; `companies.notes` is the employer's and is shared by every application
   to that company, which the UI says out loud before the field is edited.
-- **JD parsing is deployed but has no key yet.** The response contract and the
+- **JD parsing works.** A pasted advert fills the create form; the person checks it and
+  submits through the same validation a typed-in form gets. The response contract and the
   versioned prompt are in `packages/core`; the model call lives in the `parse-advert`
   Supabase Edge Function, which holds the provider key and writes `llm_usage` before it
   answers ([ADR-0009](docs/adr/0009-run-model-calls-from-supabase-not-the-web-host.md)).
-  The function is live and verified to load; `ANTHROPIC_API_KEY` is not set, so the paste
-  box returns an error rather than a guess — see
-  [docs/deployment.md](docs/deployment.md).
-- Next: finishing that deployment, then insight capture.
+  Fields the advert does not establish come back blank and named; an invented domain or
+  URL is dropped. About $0.0002 a parse.
+- Next: insight capture.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.
