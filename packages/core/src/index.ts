@@ -92,3 +92,19 @@ export {
   JOB_ADVERT_TASK,
   JOB_ADVERT_PROMPT_VERSION,
 } from './jobs/advert-prompt.ts';
+
+export {
+  POLLABLE_ATS,
+  isPollableAts,
+  isWantedTitle,
+  regionFromLocation,
+  readBoard,
+  boardUrl,
+  regionsFrom,
+} from './jobs/board.ts';
+export type {
+  PollableAts,
+  BoardPosting,
+  BoardReading,
+  BoardCriteria,
+} from './jobs/board.ts';
