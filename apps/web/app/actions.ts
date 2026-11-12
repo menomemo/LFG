@@ -10,6 +10,7 @@ import {
   parseApplicationDraft,
   parseApplicationEdit,
   parseCompanyWatch,
+  parseInsightCapture,
   parseStageHistory,
   reject,
   serialiseStageHistory,
@@ -21,6 +22,10 @@ import {
 } from '@lfg/core';
 
 import {UNSAVED, type ApplicationEditState} from '@/app/application-edit-state';
+import {
+  EMPTY_CAPTURE_FORM,
+  type CaptureInsightState,
+} from '@/app/capture-insight-state';
 import {
   EMPTY_CREATE_FORM,
   type CreateApplicationState,
@@ -733,4 +738,63 @@ export async function setLeadDismissed(
 
   revalidatePath('/');
   return null;
+}
+
+/**
+ * Stores something the author learned.
+ *
+ * Two columns and nothing else. `insights` makes every later field nullable
+ * on purpose (supabase/migrations/20261105160000), because capture has to be
+ * nearly free and a row that is raw text and nothing more is finished as far
+ * as the person is concerned. The summary, the principle, the dimensions and
+ * the drills are written by a pipeline that has not been built yet; what this
+ * action must not do is wait for it, or ask the person to stand in for it.
+ *
+ * `generated_by` is left null, and that is the honest value: nothing
+ * generated this (CLAUDE.md rule 3). The table's own constraint ties it to
+ * the summary, so the first write that adds one has to say where it came
+ * from.
+ *
+ * Nothing deduplicates. A lesson learned twice is two captures, and both are
+ * true — the pipeline's clustering step is what notices they are the same
+ * lesson, and it reinforces one insight rather than discarding one capture.
+ */
+export async function captureInsight(
+  previous: CaptureInsightState,
+  formData: FormData,
+): Promise<CaptureInsightState> {
+  const attempt = previous.attempt + 1;
+  const fields = {
+    text: readField(formData, 'text'),
+    sourceUrl: readField(formData, 'sourceUrl'),
+  };
+  const refused = (problems: readonly string[]): CaptureInsightState => ({
+    problem: problems.join(' '),
+    fields,
+    attempt,
+    captured: false,
+  });
+
+  const parsed = parseInsightCapture(fields);
+  if (!parsed.ok) {
+    return refused(parsed.problems);
+  }
+
+  const supabase = await createClient();
+  const user = await currentUser();
+  if (!user) {
+    redirect('/login');
+  }
+
+  const {error} = await supabase.from('insights').insert({
+    user_id: user.id,
+    raw_text: parsed.value.rawText,
+    source_url: parsed.value.sourceUrl,
+  });
+  if (error) {
+    return refused([`Could not capture that: ${error.message}`]);
+  }
+
+  revalidatePath('/insights');
+  return {...EMPTY_CAPTURE_FORM, attempt, captured: true};
 }

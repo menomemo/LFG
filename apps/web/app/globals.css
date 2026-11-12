@@ -638,3 +638,111 @@ select {
   border-radius: 0;
   background: none;
 }
+
+/* ---------------------------------------------------------------------------
+   The insight library
+   --------------------------------------------------------------------------- */
+
+/* Page links beside the sign-out button, which is a form and so needs
+   something to sit next to it. */
+nav {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+/* The capture box. Wider than the global form and not folded away behind a
+   disclosure like the create form: this page exists to be pasted into, and
+   one click before a paste is the friction module 6 is meant not to have. */
+.capture {
+  max-width: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  padding: 12px 16px;
+  margin: 0 0 24px;
+}
+
+.capture label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.capture textarea {
+  font: inherit;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--fg);
+  resize: vertical;
+}
+
+.capture .row {
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.ok {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* `pre-wrap` because the parser deliberately keeps the blank line between two
+   pasted paragraphs: collapsing it here would undo that in the one place the
+   paste is read. */
+.insights .said {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* The actionable half of a processed insight. A rule rather than a colour:
+   accent text beside a muted source link reads as a second link. */
+.insights .principle {
+  margin: 8px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--accent);
+  font-size: 14px;
+}
+
+.insights .dims {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+
+.dim {
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.insights .meta {
+  margin: 10px 0 0;
+}
+
+.insights .meta a {
+  color: var(--muted);
+}
+
+/* The capture itself, under a summary that claims to stand for it. */
+.raw {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.raw summary {
+  cursor: pointer;
+}
+
+.raw p {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
