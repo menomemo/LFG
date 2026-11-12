@@ -131,3 +131,12 @@ export type {
 
 export {parseInsightCapture} from './insights/capture.ts';
 export type {InsightCaptureFields, InsightCapture} from './insights/capture.ts';
+
+export {parseInsightTagging, MAX_WRITTEN_CHARS} from './insights/tagging.ts';
+export type {InsightTagging} from './insights/tagging.ts';
+
+export {
+  insightTaggingPrompt,
+  INSIGHT_TAGGING_TASK,
+  INSIGHT_TAGGING_PROMPT_VERSION,
+} from './insights/tagging-prompt.ts';
