@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {redirect} from 'next/navigation';
 
 import {
@@ -180,11 +181,16 @@ export default async function BoardPage() {
           <h1>Applications</h1>
           <p className="sub signed-in">signed in as {user.email}</p>
         </div>
-        <form action={signOut}>
-          <button type="submit" className="linkish">
-            Sign out
-          </button>
-        </form>
+        <nav>
+          <Link className="linkish" href="/insights">
+            Insights
+          </Link>
+          <form action={signOut}>
+            <button type="submit" className="linkish">
+              Sign out
+            </button>
+          </form>
+        </nav>
       </div>
 
       <CreateApplication config={supabaseConfig()} />

@@ -48,7 +48,14 @@ records where the project actually is, and it is more current than this section.
   with no application, and that list is where applying now starts
   ([ADR-0010](docs/adr/0010-poll-ats-boards-and-store-leads-as-jobs.md)). It runs when the
   button is pressed; the schedule is cut and recorded in [docs/roadmap.md](docs/roadmap.md).
-- Next: insight capture.
+- **Insight capture works.** `/insights` is a paste box and the library under it. A
+  capture is `raw_text` and, when there is one, `source_url` — everything else the table
+  holds is written by a pipeline that does not exist yet, so each entry says what has not
+  happened to it and the header counts how few have been read or tagged. A paste that is
+  nothing but a link becomes its own source. The rules are `parseInsightCapture` in
+  `packages/core`, so the mobile share sheet will get the same answers.
+- Next: the rest of module 6 — a summary, an actionable principle and one to three sales
+  dimensions per insight, which is the first model call that is not about a job advert.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.
