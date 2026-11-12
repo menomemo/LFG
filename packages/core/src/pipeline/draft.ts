@@ -15,6 +15,7 @@
  */
 
 import {normaliseDomain} from '../companies/domain.ts';
+import {isHttpUrl} from '../links.ts';
 import {isRegion, REGIONS, type Region} from '../regions/region.ts';
 import {
   isSponsorship,
@@ -87,11 +88,6 @@ export interface ApplicationDraft {
   /** The stage the application starts in. */
   readonly stage: ApplicationStage;
 }
-
-/* Accepts what a person can reasonably paste as a job advert's address.
-   Narrow on purpose: `jobs.source_url` is the key the JD parser caches on and
-   the unique index that stops the same posting being paid for twice. */
-const HTTP_URL = /^https?:\/\/[^\s/]+\.[^\s/]+(?:\/\S*)?$/;
 
 function list(values: readonly string[]): string {
   return values.join(', ');
@@ -170,7 +166,7 @@ export function parseApplicationDraft(
 
   const rawSourceUrl = fields.sourceUrl.trim();
   const sourceUrl = rawSourceUrl === '' ? null : rawSourceUrl;
-  if (sourceUrl !== null && !HTTP_URL.test(sourceUrl)) {
+  if (sourceUrl !== null && !isHttpUrl(sourceUrl)) {
     problems.push('The job advert link must be an http or https address.');
   }
 
@@ -317,7 +313,7 @@ export function parseApplicationEdit(
 
   const rawSourceUrl = fields.sourceUrl.trim();
   const sourceUrl = rawSourceUrl === '' ? null : rawSourceUrl;
-  if (sourceUrl !== null && !HTTP_URL.test(sourceUrl)) {
+  if (sourceUrl !== null && !isHttpUrl(sourceUrl)) {
     problems.push('The job advert link must be an http or https address.');
   }
 

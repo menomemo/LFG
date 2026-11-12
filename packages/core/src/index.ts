@@ -111,3 +111,23 @@ export type {
 
 export {parseCompanyWatch} from './companies/watch.ts';
 export type {CompanyWatch, CompanyWatchFields} from './companies/watch.ts';
+
+export {isHttpUrl} from './links.ts';
+
+export {
+  SALES_DIMENSIONS,
+  isSalesDimension,
+  salesDimensionLabel,
+  insightProgress,
+  insightProgressLabel,
+  summariseLibrary,
+} from './insights/insight.ts';
+export type {
+  SalesDimension,
+  InsightProcessing,
+  InsightProgress,
+  LibraryTotals,
+} from './insights/insight.ts';
+
+export {parseInsightCapture} from './insights/capture.ts';
+export type {InsightCaptureFields, InsightCapture} from './insights/capture.ts';
