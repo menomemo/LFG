@@ -746,3 +746,20 @@ nav {
   margin: 6px 0 0;
   white-space: pre-wrap;
 }
+
+/* The button that reads the backlog, and what it reports. Absent entirely
+   when there is nothing unprocessed (ADR-0011). */
+.process {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+
+.process .sub {
+  margin: 0;
+}
+
+.process .failures {
+  margin: 0;
+}

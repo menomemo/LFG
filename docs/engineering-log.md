@@ -523,6 +523,38 @@ specification`. Stripe said the same. Only Wise reported success, and it had kep
   beneath it allowed, and the first one pointed at the advert while the cause was a header
   list.
 
+### 4.6 A refusal that was treated as a failure, and paid for twice
+
+> **Lesson: "I have nothing to say about this" is an answer, not an error. Retrying it
+> pays twice to pressure a model into inventing the thing it correctly declined to
+> invent.**
+
+- **Signal.** The first real run of `tag-insights` filed one of three captures and
+  reported the other two as left alone. That was correct — one was a bare link and one was
+  a reminder to self, neither of which carries a lesson. The meter said something else:
+  the insight that succeeded cost 709 input tokens, and the two that were declined cost
+  1,443 and 1,427. Twice the price for the answers that produced nothing.
+- **Cause.** The prompt tells the model to return `{}` when a capture says nothing worth
+  filing, and `parseInsightTagging` turned that into a rejection. The caller treats a
+  rejection the way [CLAUDE.md](../CLAUDE.md) rule 5 requires — retry once, with the
+  problem quoted back — so every deliberate decline was sent again, this time with
+  "the model found nothing worth summarising" presented to the model as its own mistake.
+- **Why that is worse than the money.** The second call is an instruction to try harder on
+  a capture the model has already judged empty. The cheapest way for it to satisfy that is
+  to invent a plausible lesson, which would be written to the row with `generated_by` and
+  rendered as a finished insight. The retry was pushing the system toward exactly the
+  confident invention rules 3 and 8 exist to prevent — and the saving grace was only that
+  the model held its position both times.
+- **Fix.** `parseInsightTagging` returns a verdict — `tagged` or `declined` — and declining
+  is an accepted outcome, so the caller never retries it. The function reports three
+  outcomes rather than two, because a capture nobody could summarise and a capture whose
+  answer was refused are both raw rows and only one of them is a fault. The next run cost
+  699 and 691 tokens for the same two captures: one call each.
+- **Next time.** When a contract gives a model a way to say "nothing here", decide what
+  that is _before_ wiring the retry. A validator that only has `ok` and `rejected` will
+  quietly file every refusal as an error, and the retry policy will then spend money
+  arguing with correct answers.
+
 ## 5. Process as a safety net
 
 > Every entry in this section is a mistake that discipline, not cleverness, would have
@@ -745,6 +777,7 @@ For recall before an interview. Each line is a claim that §-references the evid
 | A `200` from a server says nothing about what a browser does with the response             | §2.4, §6.2 |
 | Claiming a check you skipped is paid for by whoever believes you                           | §2.5       |
 | Read the response shape from the reference, not from memory                                | §4.5       |
+| A model's "nothing here" is an answer; retrying it buys an invention                       | §4.6       |
 | A throw on a billable call is an unmetered spend                                           | §4.5       |
 | A portability claim is a belief until you are forced to use it                             | §6.1       |
 | A status code tells you which layer answered                                               | §6.2       |
