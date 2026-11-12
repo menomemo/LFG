@@ -54,8 +54,13 @@ records where the project actually is, and it is more current than this section.
   happened to it and the header counts how few have been read or tagged. A paste that is
   nothing but a link becomes its own source. The rules are `parseInsightCapture` in
   `packages/core`, so the mobile share sheet will get the same answers.
-- Next: the rest of module 6 — a summary, an actionable principle and one to three sales
-  dimensions per insight, which is the first model call that is not about a job advert.
+- **Insight tagging works.** A button on the library reads the captures that have no
+  summary — ten at a time, only when it is pressed — and writes a one-sentence point, an
+  actionable principle and one to three sales dimensions, with `generated_by` in the same
+  statement ([ADR-0011](docs/adr/0011-process-insights-in-a-batch-the-person-asks-for.md)).
+  Capture itself never calls a model, so it stays free and offline-capable. An insight the
+  model could not read is left exactly as it was and named in the result.
+- Next: `followup-writer`, the first plugin, which closes Phase 1's scope.
 - Phase 1 scope: Supabase foundation, application board, insight capture with tagging, the
   agent runtime running against a local model, and `followup-writer` as the first plugin.
 - Gate to Phase 2: four consecutive weeks with every application in the system.

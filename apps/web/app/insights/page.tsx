@@ -7,9 +7,12 @@ import {
   salesDimensionLabel,
   summariseLibrary,
   type InsightProcessing,
+  type LibraryTotals,
 } from '@lfg/core';
 
 import {CaptureInsight} from '@/app/capture-insight';
+import {ProcessInsights} from '@/app/process-insights';
+import {supabaseConfig} from '@/lib/env';
 import {createClient} from '@/lib/supabase/server';
 import {currentUser} from '@/lib/supabase/user';
 
@@ -84,14 +87,13 @@ interface LibraryEntry extends InsightProcessing {
  * flattering number: a library of forty-one captures and no summaries is a
  * notebook, and nothing else on this page would say so.
  */
-function librarySentence(entries: readonly LibraryEntry[]): string {
-  const totals = summariseLibrary(entries);
+function librarySentence(totals: LibraryTotals): string {
   if (totals.captured === 0) {
     return 'Nothing captured yet.';
   }
   const captured = `${totals.captured.toString()} captured`;
   if (totals.read === 0 && totals.tagged === 0) {
-    return `${captured}, none read or tagged — the pipeline that does that is not built yet.`;
+    return `${captured}, none read or tagged yet.`;
   }
   return `${captured}, ${totals.read.toString()} read, ${totals.tagged.toString()} tagged.`;
 }
@@ -133,12 +135,16 @@ export default async function InsightsPage() {
      apart cannot be labelled from two different clocks. */
   const now = new Date();
 
+  /* Counted once and used twice: the header's sentence and the button's
+     number are the same two facts, and two calls could disagree. */
+  const totals = summariseLibrary(entries);
+
   return (
     <main className="library">
       <div className="row">
         <div>
           <h1>Insights</h1>
-          <p className="sub">{librarySentence(entries)}</p>
+          <p className="sub">{librarySentence(totals)}</p>
         </div>
         <Link className="linkish" href="/">
           Applications
@@ -146,6 +152,11 @@ export default async function InsightsPage() {
       </div>
 
       <CaptureInsight />
+
+      <ProcessInsights
+        config={supabaseConfig()}
+        unprocessed={totals.captured - totals.read}
+      />
 
       {entries.length === 0 ? (
         <p className="empty">
